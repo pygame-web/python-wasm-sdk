@@ -23,14 +23,16 @@ then
     echo " ------------------- building cpython wasm plus -------------------"
     if ./scripts/cpython-build-emsdk-deps.sh > /dev/null
     then
-        echo "make tarball"
+        cd $GITHUB_WORKSPACE
+        echo "making tarball"
+
         mkdir -p sdk
         cat > sdk/index.html <<END
 <html>
 <a href=python-wasm-sdk-stable.tar.gz>python-wasm-sdk (emsdk tot, python 3.11b1)</a>
 </html>
 END
-        tar -cpR emsdk devices/* prebuilt/* > sdk/python-wasm-sdk-stable.tar.gz
+        tar -cpR emsdk devices/* prebuilt/* > sdk/python-wasm-sdk-stable.tar
     else
         echo " cpython-build-emsdk-deps failed"
         exit 2
