@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: pygame-wasm-builder prepare
+    - name: python-wasm-builder prepare
       run: |
             WD=$(pwd)
             python3 -V
@@ -25,8 +25,8 @@ jobs:
             cd $GITHUB_WORKSPACE
             time bash ./python-wasm-sdk.sh
 
-    - name : "Upload to GitHub pages"
-      uses: JamesIves/github-pages-deploy-action@4.1.7
+    - name: Package SDK
+      uses: actions/upload-artifact@v2
       with:
-        branch: gh-pages
-        folder: sdk
+        name: sdk
+        path: $GITHUB_WORKSPACE/sdk
