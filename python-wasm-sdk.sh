@@ -25,7 +25,12 @@ then
     then
         echo "make tarball"
         mkdir -p sdk
-        tar -cpR emsdk devices/* prebuilt/* > sdk/stable.tar
+        cat > sdk/index.html <<END
+<html>
+<a href=python-wasm-sdk-stable.tar.gz>python-wasm-sdk (emsdk tot, python 3.11b1)</a>
+</html>
+END
+        tar -cpRz emsdk devices/* prebuilt/* > sdk/python-wasm-sdk-stable.tar.gz
     else
         echo " cpython-build-emsdk-deps failed"
         exit 2
@@ -37,3 +42,4 @@ else
 fi
 
 echo done
+
