@@ -1,6 +1,8 @@
-name: CI
+name: CI 
 
 on:
+  workflow_dispatch:
+
   release:
     # this runs CI only when a release is created at first (and not when it is
     # edited or published)
@@ -11,8 +13,6 @@ on:
 
   pull_request:
     branches: main
-
-  workflow_dispatch
 
 jobs:
   build:
