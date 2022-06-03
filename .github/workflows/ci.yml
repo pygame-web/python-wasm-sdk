@@ -1,32 +1,58 @@
 name: CI
 
-on: [push, workflow_dispatch]
+on:
+  release:
+    # this runs CI only when a release is created at first (and not when it is
+    # edited or published)
+    types: [created]
+
+  push:
+    branches: main
+
+  pull_request:
+    branches: main
+
+  workflow_dispatch
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
     - uses: actions/checkout@v1
-    - name: python-wasm-builder prepare
-      run: |
-            WD=$(pwd)
-            python3 -V
-            echo $WD
-            clang --version | head -n 1
-            echo
-            gcc --version | head -n 1
-            echo
-            env|grep GITHUB
-            echo
-            grep "^Pkg.Revision =" ${ANDROID_HOME}/ndk-bundle/source.properties
-            sudo apt-get update
-            # git clang libffi-dev libssl-dev zlib1g-dev libncursesw5-dev make
-            sudo apt-get install -y bash wget
-            cd $GITHUB_WORKSPACE
-            time bash ./python-wasm-sdk.sh
 
-    - name: Package SDK
+    - name: Display CI properties
+      run: |
+        WD=$(pwd)
+        python3 -V
+        echo $WD
+        clang --version | head -n 1
+        echo
+        gcc --version | head -n 1
+        echo
+        env|grep GITHUB
+        echo
+        grep "^Pkg.Revision =" ${ANDROID_HOME}/ndk-bundle/source.properties
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update --fix-missing
+        # git clang libffi-dev libssl-dev zlib1g-dev libncursesw5-dev make
+        sudo apt-get install -y bash wget
+
+    - name: Build sdk
+      run: bash ./python-wasm-sdk.sh
+
+    - name: Upload sdk to Github artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: sdk
-        path: /home/runner/work/python-wasm-sdk/python-wasm-sdk/sdk
+        path: ./sdk
+    
+    - name: Upload sdk to Github Releases
+      if: github.event_name == 'release'
+      uses: svenstaro/upload-release-action@v2.2.1
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: ./sdk/*
+        file_glob: true
+        tag: ${{ github.ref }}
