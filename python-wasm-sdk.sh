@@ -1,42 +1,51 @@
 #!/bin/bash
 reset
+sudo mkdir -p /opt/python-wasm-sdk
+sudo chmod 777 /opt/python-wasm-sdk
 
-mkdir -p build/pycache
-export PYTHONDONTWRITEBYTECODE=1
+mv * /opt/python-wasm-sdk/
 
-# make install cpython will force bytecode generation
-export PYTHONPYCACHEPREFIX="$(realpath build/pycache)"
-
-. ${CONFIG:-config}
-
-. scripts/cpython-fetch.sh
-. support/__EMSCRIPTEN__.sh
-. scripts/cpython-build-host.sh >/dev/null
-. scripts/cpython-build-host-deps.sh >/dev/null
-
-# use ./ or emsdk will pollute env
-./scripts/emsdk-fetch.sh
-
-echo " ------------------- building cpython wasm -----------------------"
-if ./scripts/cpython-build-emsdk.sh > /dev/null
+if cd /opt/python-wasm-sdk/
 then
-    echo " ------------------- building cpython wasm plus -------------------"
-    if ./scripts/cpython-build-emsdk-deps.sh > /dev/null
-    then
-        cd $GITHUB_WORKSPACE
-        echo "making tarball"
+    mkdir -p build/pycache
+    export PYTHONDONTWRITEBYTECODE=1
 
+    # make install cpython will force bytecode generation
+    export PYTHONPYCACHEPREFIX="$(realpath build/pycache)"
+
+    . ${CONFIG:-config}
+
+    . scripts/cpython-fetch.sh
+    . support/__EMSCRIPTEN__.sh
+    . scripts/cpython-build-host.sh >/dev/null
+    . scripts/cpython-build-host-deps.sh >/dev/null
+
+    # use ./ or emsdk will pollute env
+    ./scripts/emsdk-fetch.sh
+
+    echo " ------------------- building cpython wasm -----------------------"
+    if ./scripts/cpython-build-emsdk.sh > /dev/null
+    then
+        echo " ------------------- building cpython wasm plus -------------------"
+        if ./scripts/cpython-build-emsdk-deps.sh > /dev/null
+        then
+            cd $GITHUB_WORKSPACE
+            echo "making tarball"
+
+            mkdir -p sdk
+            tar -cpRj config emsdk devices/* prebuilt/* > sdk/python-wasm-sdk-stable.tar.bz2
+        else
+            echo " cpython-build-emsdk-deps failed"
+            exit 2
+        fi
         mkdir -p sdk
         tar -cpRj config emsdk devices/* prebuilt/* > sdk/python-wasm-sdk-stable.tar.bz2
     else
-        echo " cpython-build-emsdk-deps failed"
-        exit 2
+        echo " cpython-build-emsdk failed"
+        exit 1
     fi
 
+    echo done
 else
-    echo " cpython-build-emsdk failed"
-    exit 1
+    echo failed
 fi
-
-echo done
-
