@@ -1,11 +1,13 @@
 #!/bin/bash
 reset
-sudo mkdir -p /opt/python-wasm-sdk
-sudo chmod 777 /opt/python-wasm-sdk
+export SDKDIR=/opt/python-wasm-sdk
 
-mv * /opt/python-wasm-sdk/
+sudo mkdir -p ${SDKDIR}
+sudo chmod 777 ${SDKDIR}
 
-if cd /opt/python-wasm-sdk/
+mv * ${SDKDIR}/
+
+if cd ${SDKDIR}/
 then
     mkdir -p build/pycache
     export PYTHONDONTWRITEBYTECODE=1
@@ -33,13 +35,11 @@ then
             echo "making tarball"
 
             mkdir -p sdk
-            tar -cpRj config emsdk devices/* prebuilt/* > sdk/python-wasm-sdk-stable.tar.bz2
+            tar -cpRj ${SDKDIR}/config ${SDKDIR}/emsdk ${SDKDIR}/devices/* ${SDKDIR}/prebuilt/* > sdk/python-wasm-sdk-stable.tar.bz2
         else
             echo " cpython-build-emsdk-deps failed"
             exit 2
         fi
-        mkdir -p sdk
-        tar -cpRj config emsdk devices/* prebuilt/* > sdk/python-wasm-sdk-stable.tar.bz2
     else
         echo " cpython-build-emsdk failed"
         exit 1

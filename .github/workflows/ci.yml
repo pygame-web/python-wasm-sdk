@@ -33,7 +33,7 @@ jobs:
         env|grep GITHUB
         echo
         grep "^Pkg.Revision =" ${ANDROID_HOME}/ndk-bundle/source.properties
-    
+
     - name: Install dependencies
       run: |
         sudo apt-get update --fix-missing
@@ -46,13 +46,13 @@ jobs:
     - name: Upload sdk to Github artifacts
       uses: actions/upload-artifact@v2
       with:
-        path: ./sdk
-    
+        path: /opt/sdk
+
     - name: Upload sdk to Github Releases
       if: github.event_name == 'release'
       uses: svenstaro/upload-release-action@2.2.1
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: ./sdk/*
+        file: /opt/sdk/*
         file_glob: true
         tag: ${{ github.ref }}
