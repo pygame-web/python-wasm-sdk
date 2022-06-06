@@ -21,7 +21,7 @@ export LDFLAGS="-L$PREFIX/lib"
 # module build opts
 export CFLDPFX="$CPPFLAGS $LDFLAGS -Wno-unused-command-line-argument"
 
-if [ -f dev ]
+if [ -f /opt/python-wasm-sdk/dev ]
 then
     export COPTS="-O0 -g3 -fPIC"
     export VERBOSE=""
@@ -56,3 +56,5 @@ else
     export PATH="${HOST_PREFIX}/bin:$PATH"
     export PYDK=minimal
 fi
+
+$@
