@@ -46,7 +46,7 @@ jobs:
     - name: Upload sdk to Github artifacts
       uses: actions/upload-artifact@v2
       with:
-        path: /opt/sdk
+        path: /opt/python-wasm-sdk/sdk
 
     - name: Upload sdk to Github Releases
       if: github.event_name == 'release'
