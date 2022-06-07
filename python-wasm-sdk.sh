@@ -38,6 +38,7 @@ then
             mkdir -p /tmp/sdk
             tar -cpRj \
                 .${SDKDIR}/config \
+                .${SDKDIR}/build/pycache/sysconfig/_sysconfigdata__emscripten_debug.py
                 .${SDKDIR}/python3-wasm \
                 .${SDKDIR}/wasm32-*-shell.sh \
                 .${SDKDIR}/emsdk \
