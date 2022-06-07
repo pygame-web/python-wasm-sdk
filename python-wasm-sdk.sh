@@ -5,10 +5,11 @@ export SDKDIR=/opt/python-wasm-sdk
 sudo mkdir -p ${SDKDIR}
 sudo chmod 777 ${SDKDIR}
 
-mv * ${SDKDIR}/
+cp -Rf * ${SDKDIR}/
 
 if cd ${SDKDIR}/
 then
+    pwd
     mkdir -p build/pycache
     export PYTHONDONTWRITEBYTECODE=1
 

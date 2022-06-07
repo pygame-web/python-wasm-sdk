@@ -62,7 +62,7 @@ done
 
 
 rm cffi-branch-default.zip
-wget https://foss.heptapod.net/pypy/cffi/-/archive/branch/default/cffi-branch-default.zip
+wget -q https://foss.heptapod.net/pypy/cffi/-/archive/branch/default/cffi-branch-default.zip
 unzip -o -q cffi-branch-default.zip
 
 pushd cffi-branch-default
@@ -80,6 +80,7 @@ else
     $PIP install .
     popd
 fi
+
 
 if [ -d pymunk-4.0.0 ]
 then
