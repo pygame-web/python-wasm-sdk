@@ -34,17 +34,17 @@ then
         then
             echo "making tarball"
             cd /
-            rm -rf ${SDKDIR}/emsdk/upstream/emscripten/cache
+            rm -rf ${SDKDIR}/emsdk/upstream/emscripten/cache/ports*
             mkdir -p /tmp/sdk
             tar -cpRj \
                 .${SDKDIR}/config \
-                .${SDKDIR}/build/pycache/sysconfig/_sysconfigdata__emscripten_debug.py
+                .${SDKDIR}/build/pycache/sysconfig/_sysconfigdata__emscripten_debug.py \
                 .${SDKDIR}/python3-wasm \
                 .${SDKDIR}/wasm32-*-shell.sh \
                 .${SDKDIR}/emsdk \
                 .${SDKDIR}/devices/* \
                 .${SDKDIR}/prebuilt/* \
-                 > /tmp/sdk/python-wasm-sdk-stable.tar.bz2
+                > /tmp/sdk/python-wasm-sdk-stable.tar.bz2
         else
             echo " cpython-build-emsdk-deps failed"
             exit 2

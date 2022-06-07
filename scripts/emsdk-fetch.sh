@@ -119,7 +119,7 @@ unset _PYTHON_SYSCONFIGDATA_NAME
 unset PYTHONHOME
 unset PYTHONPATH
 
-$EMSDK_PYTHON -E \$0.py "\$@"
+\$SYS_PYTHON -E \$0.py "\$@"
 END
 
         cat emsdk/upstream/emscripten/emar > emsdk/upstream/emscripten/emcmake
