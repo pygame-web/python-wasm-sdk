@@ -22,10 +22,9 @@ then
             ./emsdk install tot
             ./emsdk activate tot
             popd
-            tar -cpR emsdk > emsdk.tar
+            [ -f dev ] && tar -cpR emsdk > emsdk.tar
         fi
     fi
-
 
     if [ -f emsdk/emsdk_env.sh ]
     then
@@ -79,7 +78,9 @@ then
             #embuilder build $one
         done
 
-        #tar xvfp emsdk-fix.tar
+
+# -Wno-limited-postlink-optimizations
+
 
         cat > emsdk/upstream/emscripten/emcc <<END
 #!/bin/bash
@@ -133,6 +134,8 @@ END
         touch embuild.done
         sync
     fi
+
+    export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig"
 
     if echo $PATH|grep -q $EMSDK/upstream/emscripten/system/bin
     then

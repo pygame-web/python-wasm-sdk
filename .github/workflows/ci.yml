@@ -37,7 +37,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update --fix-missing
-        # git clang libffi-dev libssl-dev zlib1g-dev libncursesw5-dev make
+        # git clang libffi-dev libssl-dev zlib1g-dev libncursesw5-dev python3-pip make
         sudo apt-get install -y bash wget
 
     - name: Build sdk

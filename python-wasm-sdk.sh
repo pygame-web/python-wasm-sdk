@@ -20,8 +20,10 @@ then
 
     . scripts/cpython-fetch.sh
     . support/__EMSCRIPTEN__.sh
-    . scripts/cpython-build-host.sh >/dev/null
-    . scripts/cpython-build-host-deps.sh >/dev/null
+    . scripts/cpython-build-host.sh
+# >/dev/null
+    . scripts/cpython-build-host-deps.sh
+# >/dev/null
 
     # use ./ or emsdk will pollute env
     ./scripts/emsdk-fetch.sh
@@ -36,14 +38,15 @@ then
             cd /
             rm -rf ${SDKDIR}/emsdk/upstream/emscripten/cache/ports*
             mkdir -p /tmp/sdk
-            tar -cpRj \
-                .${SDKDIR}/config \
-                .${SDKDIR}/build/pycache/sysconfig/_sysconfigdata__emscripten_debug.py \
-                .${SDKDIR}/python3-wasm \
-                .${SDKDIR}/wasm32-*-shell.sh \
-                .${SDKDIR}/emsdk \
-                .${SDKDIR}/devices/* \
-                .${SDKDIR}/prebuilt/* \
+            tar -cpPRj \
+                ${SDKDIR}/config \
+                ${SDKDIR}/build/pycache/.??* \
+                ${SDKDIR}/build/pycache/sysconfig/_sysconfigdata__emscripten_debug.py \
+                ${SDKDIR}/python3-wasm \
+                ${SDKDIR}/wasm32-*-shell.sh \
+                ${SDKDIR}/emsdk \
+                ${SDKDIR}/devices/* \
+                ${SDKDIR}/prebuilt/* \
                 > /tmp/sdk/python-wasm-sdk-stable.tar.bz2
         else
             echo " cpython-build-emsdk-deps failed"

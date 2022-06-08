@@ -31,11 +31,30 @@ then
 
 
 #export OPT="$CPOPTS -DNDEBUG -fwrapv"
+    cat $ROOT/src/cpython/Tools/wasm/config.host-wasm32-emscripten <<END
+ac_cv_lib_intl_textdomain=no
+ac_cv_func_bind_textdomain_codeset=no
+END
+
+    CONFIG_SITE=$ROOT/src/cpython/Tools/wasm/config.host-wasm32-emscripten \
     PYOPTS="--disable-ipv6 \
      --with-c-locale-coercion --without-pymalloc --without-pydebug \
      --with-ensurepip\
      --with-decimal-contextvar --disable-shared \
      --with-computed-gotos"
+
+    cat >> pyconfig.h <<END
+#ifdef HAVE_LIBINTL_H
+#undef HAVE_LIBINTL_H
+#endif
+
+#ifdef WITH_LIBINTL
+#undef WITH_LIBINTL
+#endif
+
+END
+
+
 
     # Prevent freezing bytecode with a different magic
     rm -f $HOST_PREFIX/bin/python3*
@@ -65,6 +84,9 @@ then
     then
         eval make -j$(nproc) install $QUIET
         rm -rf $(find $ROOT/devices/ -type d|grep __pycache__$)
+
+        patchelf --remove-needed libintl.so.8  $HOST_PREFIX/bin/python3.11
+        sed -i 's|-lintl ||g' /opt/python-wasm-sdk/devices/x86_64/usr/bin/python3.11-config
 
         cp -Rfv $ROOT/support/__EMSCRIPTEN__.patches/. $HOST_PREFIX/lib/python3.??/
     else

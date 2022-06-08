@@ -8,11 +8,19 @@ echo "
 # https://stackoverflow.com/questions/6301003/stopping-setup-py-from-installing-as-egg
 # python3 setup.py install --single-version-externally-managed --root=/
 
+# just in case
+$PIP install pip --upgrade
+
 # to remove ctypes deps
 $PIP install setuptools --upgrade
 
-# just in case
-$PIP install pip --upgrade
+HPFX=./devices/x86_64/usr/lib/python3.11
+rm $HPFX/ensurepip/_bundled/setuptools-*-py3-none-any.whl
+mv $HPFX/site-packages/setuptool* $HPFX/
+mv $HPFX/site-packages/_distutils* $HPFX/
+mv $HPFX/site-packages/pkg_resources $HPFX/
+
+
 
 export CC=clang
 

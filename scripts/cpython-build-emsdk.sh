@@ -121,7 +121,7 @@ else
 
 # CFLAGS="-DHAVE_FFI_PREP_CIF_VAR=1 -DHAVE_FFI_PREP_CLOSURE_LOC=1 -DHAVE_FFI_CLOSURE_ALLOC=1"
 
-    CONFIG_SITE=$ROOT/src/cpython/Tools/wasm/config.site-wasm32-emscripten\
+    CONFIG_SITE=$ROOT/src/cpython/Tools/wasm/config.site-wasm32-emscripten \
     OPT="$CPOPTS -DNDEBUG -fwrapv" \
     eval emconfigure $ROOT/src/cpython/configure -C --without-pymalloc --disable-ipv6 \
      --cache-file=${PYTHONPYCACHEPREFIX}/config.cache \
@@ -191,6 +191,15 @@ do
     fi
 done
 
+for arg do
+    shift
+    [ "\$arg" = "-I/usr/include" ] && continue
+    [ "\$arg" = "-I/usr/include/SDL2" ] && continue
+    [ "\$arg" = "-L/usr/lib64" ]	&& continue
+    [ "\$arg" = "-L/usr/lib" ]   && continue
+    set -- "\$@" "\$arg"
+done
+
 SHARED=""
 IS_SHARED=false
 
@@ -223,6 +232,12 @@ set tabsize 4
 set tabstospaces
 END
 
+cat >${PYTHONPYCACHEPREFIX}/.numpy-site.cfg <<NUMPY
+[DEFAULT]
+library_dirs = $PREFIX/lib
+include_dirs = $PREFIX/include
+NUMPY
+
 cat > $ROOT/${PYDK_PYTHON_HOST_PLATFORM}-shell.sh <<END
 #!/bin/bash
 
@@ -233,10 +248,11 @@ then
 else
     . ${ROOT}/config
     . ${ROOT}/emsdk/emsdk_env.sh
+    export PATH=$ROOT/emsdk/upstream/emscripten/system/bin:\$PATH
+    export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig"
 fi
 
 export PATH=${HOST_PREFIX}/bin:\$PATH
-export PKG_CONFIG_PATH=${PKG_CONFIG_PATH}
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}
 export HOME=${PYTHONPYCACHEPREFIX}
 export PLATFORM_TRIPLET=${PYDK_PYTHON_HOST_PLATFORM}
@@ -249,12 +265,6 @@ export PYTHONSTARTUP="${ROOT}/support/__EMSCRIPTEN__.py"
 export PS1="[PyDK:wasm] \w $ "
 
 export _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__emscripten_
-
-cat >${PYTHONPYCACHEPREFIX}/.numpy-site.cfg <<NUMPY
-[DEFAULT]
-library_dirs = $PREFIX/lib
-include_dirs = $PREFIX/include
-NUMPY
 
 END
 
