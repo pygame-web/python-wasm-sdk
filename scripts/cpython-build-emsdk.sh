@@ -189,7 +189,6 @@ COMMON="-Wno-unused-command-line-argument -Wno-unreachable-code-fallthrough"
 SHARED=""
 IS_SHARED=false
 
-
 for arg do
     shift
 
@@ -216,10 +215,10 @@ done
 if \$IS_SHARED
 then
     $SYS_PYTHON -E $EMSDK/upstream/emscripten/emcc.py \
-        \$SHARED $COPTS $LDFLAGS -sSIDE_MODULE -gsource-map --source-map-base / "\$@" \$COMMON
+     \$SHARED $COPTS $LDFLAGS -sSIDE_MODULE -gsource-map --source-map-base / "\$@" \$COMMON
 else
     $SYS_PYTHON -E $EMSDK/upstream/emscripten/emcc.py \
-        $COPTS $CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
+     $COPTS $CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
 fi
 END
 
