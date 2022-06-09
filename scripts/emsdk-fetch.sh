@@ -106,13 +106,13 @@ for arg do
     if [ "\$arg" = "-shared" ]
     then
         IS_SHARED=true
-        SHARED="$SHARED -sSIDE_MODULE"
+        SHARED="\$SHARED -sSIDE_MODULE"
     fi
 
     if echo "\$arg"|grep -q wasm32-emscripten.so\$
     then
         IS_SHARED=true
-        SHARED="$SHARED -shared -sSIDE_MODULE"
+        SHARED="\$SHARED -shared -sSIDE_MODULE"
     fi
     set -- "\$@" "\$arg"
 done
