@@ -80,6 +80,21 @@ then
             #embuilder build $one
         done
 
+        if $CI
+        then
+            echo "
+
+        ==========================================================
+                            stripping emsdk
+        ==========================================================
+"
+            rm -rf ${SDKDIR}/emsdk/upstream/emscripten/cache/ports*
+            # something triggers sdl2 *full* rebuild in pygame.
+            # but only that one.
+            embuilder --pic build sdl2
+            embuilder --pic sdl2
+            rm -rf ${SDKDIR}/emsdk/upstream/emscripten/tests
+        fi
 
 # -Wno-limited-postlink-optimizations
 

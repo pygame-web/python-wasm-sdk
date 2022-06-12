@@ -36,9 +36,9 @@ then
         then
             echo "making tarball"
             cd /
-            rm -rf ${SDKDIR}/emsdk/upstream/emscripten/cache/ports*
+
             mkdir -p /tmp/sdk
-            tar -cpPRj \
+            tar -cpPR \
                 ${SDKDIR}/config \
                 ${SDKDIR}/build/pycache/.??* \
                 ${SDKDIR}/build/pycache/sysconfig/_sysconfigdata__emscripten_debug.py \
@@ -47,7 +47,10 @@ then
                 ${SDKDIR}/emsdk \
                 ${SDKDIR}/devices/* \
                 ${SDKDIR}/prebuilt/* \
-                > /tmp/sdk/python-wasm-sdk-stable.tar.bz2
+                > /tmp/sdk/python-wasm-sdk-stable.tar
+                lz4 /tmp/sdk/python-wasm-sdk-${$CIVER:-ubuntu-latest}.tar
+                # bzip2 will remove original
+                bzip2 /tmp/sdk/python-wasm-sdk-${$CIVER:-ubuntu-latest}.tar
         else
             echo " cpython-build-emsdk-deps failed"
             exit 2

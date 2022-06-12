@@ -38,10 +38,12 @@ jobs:
       run: |
         sudo apt-get update --fix-missing
         # git clang libffi-dev libssl-dev zlib1g-dev libncursesw5-dev python3-pip make
-        sudo apt-get install -y bash wget
+        sudo apt-get install -y bash wget lz4
 
     - name: Build sdk
-      run: bash ./python-wasm-sdk.sh
+      run: |
+        chmod +x ./python-wasm-sdk.sh
+        bash -c "CIVER=ubuntu-22.04 ./python-wasm-sdk.sh"
 
     - name: Upload sdk to Github artifacts
       uses: actions/upload-artifact@v2
