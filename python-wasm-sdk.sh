@@ -48,9 +48,9 @@ then
                 ${SDKDIR}/devices/* \
                 ${SDKDIR}/prebuilt/* \
                 > /tmp/sdk/python-wasm-sdk-stable.tar
-                lz4 /tmp/sdk/python-wasm-sdk-${$CIVER:-ubuntu-latest}.tar
+                lz4 /tmp/sdk/python-wasm-sdk-${CIVER:-ubuntu-latest}.tar
                 # bzip2 will remove original
-                bzip2 /tmp/sdk/python-wasm-sdk-${$CIVER:-ubuntu-latest}.tar
+                bzip2 /tmp/sdk/python-wasm-sdk-${CIVER:-ubuntu-latest}.tar
         else
             echo " cpython-build-emsdk-deps failed"
             exit 2
