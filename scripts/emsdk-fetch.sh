@@ -64,7 +64,7 @@ then
         ALL="libembind libgl libal libhtml5 libstubs libnoexit libsockets"
         ALL="$ALL libc libdlmalloc libcompiler_rt libc++-noexcept libc++abi-noexcept"
         ALL="$ALL struct_info libfetch zlib bzip2"
-        ALL="$ALL libpng libjpeg freetype harfbuzz "
+        ALL="$ALL libpng libjpeg freetype harfbuzz"
         ALL="$ALL sdl2 sdl2_mixer sdl2_gfx sdl2_ttf"
 
         echo "
@@ -92,7 +92,7 @@ then
             # something triggers sdl2 *full* rebuild in pygame.
             # but only that one.
             embuilder --pic build sdl2
-            embuilder --pic sdl2
+            embuilder build sdl2
             rm -rf ${SDKDIR}/emsdk/upstream/emscripten/cache/ports/sdl2/SDL-*
             rm -rf ${SDKDIR}/emsdk/upstream/emscripten/tests
         fi
