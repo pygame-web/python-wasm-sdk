@@ -48,7 +48,7 @@ then
                 ${SDKDIR}/prebuilt/* \
                  > /tmp/sdk/python-wasm-sdk-${CIVER:-ubuntu-latest}.tar
                 lz4 -c --favor-decSpeed --best /tmp/sdk/python-wasm-sdk-${CIVER:-ubuntu-latest}.tar \
-                 > /tmp/sdk/python-wasm-sdk-${CIVER:-ubuntu-latest}.lz4
+                 > /tmp/sdk/python-wasm-sdk-${CIVER:-ubuntu-latest}.tar.lz4
                 # bzip2 will remove original
                 bzip2 -9 /tmp/sdk/python-wasm-sdk-${CIVER:-ubuntu-latest}.tar
         else
