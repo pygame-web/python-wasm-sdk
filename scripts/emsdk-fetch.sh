@@ -93,11 +93,11 @@ then
             # but only that one.
             embuilder --pic build sdl2
             embuilder --pic sdl2
+            rm -rf ${SDKDIR}/emsdk/upstream/emscripten/cache/ports/sdl2/SDL-*
             rm -rf ${SDKDIR}/emsdk/upstream/emscripten/tests
         fi
 
-# -Wno-limited-postlink-optimizations
-
+#
 
         cat > emsdk/upstream/emscripten/emcc <<END
 #!/bin/bash
@@ -106,6 +106,7 @@ unset _PYTHON_SYSCONFIGDATA_NAME
 unset PYTHONHOME
 unset PYTHONPATH
 
+COMMON="-Wno-limited-postlink-optimizations"
 SHARED=""
 IS_SHARED=false
 
@@ -134,9 +135,9 @@ done
 
 if \$IS_SHARED
 then
-    \$SYS_PYTHON -E \$0.py $SHARED $LDFLAGS "\$@"
+    \$SYS_PYTHON -E \$0.py $SHARED $LDFLAGS "\$@" $COMMON
 else
-    \$SYS_PYTHON -E \$0.py $CPPFLAGS "\$@"
+    \$SYS_PYTHON -E \$0.py $CPPFLAGS "\$@" $COMMON
 fi
 END
         cat emsdk/upstream/emscripten/emcc > emsdk/upstream/emscripten/em++

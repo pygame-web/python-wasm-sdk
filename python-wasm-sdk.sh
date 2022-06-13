@@ -36,7 +36,6 @@ then
         then
             echo "making tarball"
             cd /
-
             mkdir -p /tmp/sdk
             tar -cpPR \
                 ${SDKDIR}/config \
