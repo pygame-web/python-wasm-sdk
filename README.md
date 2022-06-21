@@ -11,11 +11,21 @@ sudo apt-get install -y git bash python3-pip curl lz4 pv
 sudo mkdir -p /opt/python-wasm-sdk && sudo chown $(whoami) /opt/python-wasm-sdk
 
 
-# in github CI, current working dir would be /home/runner/pygame/pygame.
-[ -d ../pygame ] || git clone https://github.com/pygame/pygame
+
+if [ -d ../pygame ]
+then
+    echo " using local tree"
+else
+    git clone https://github.com/pygame/pygame
+    cd pygame
+fi
+
+
+# in github CI, current working dir would now be /home/runner/pygame/pygame.
 if [ -f setup.py ]
 then
-
+    echo "cannot find pygame source code"
+else
     # update cython
     if [ -f ../dev ]
     then
