@@ -3,7 +3,7 @@ reset
 . /etc/lsb-release
 export CIVER=${CIVER:-$DISTRIB_ID}
 export SDKDIR=/opt/python-wasm-sdk
-export PYBUILD=3.10
+export PYBUILD=3.11
 
 
 sudo mkdir -p ${SDKDIR}
