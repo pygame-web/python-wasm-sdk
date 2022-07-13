@@ -1,6 +1,10 @@
 #!/bin/bash
 reset
+. /etc/lsb-release
+export CIVER=${CIVER:-$DISTRIB_ID}
 export SDKDIR=/opt/python-wasm-sdk
+export PYBUILD=3.10
+
 
 sudo mkdir -p ${SDKDIR}
 sudo chmod 777 ${SDKDIR}
@@ -28,10 +32,10 @@ then
     # use ./ or emsdk will pollute env
     ./scripts/emsdk-fetch.sh
 
-    echo " ------------------- building cpython wasm -----------------------"
+    echo " ------------------- building cpython wasm $PYBUILD $CIVER -----------------------"
     if ./scripts/cpython-build-emsdk.sh > /dev/null
     then
-        echo " ------------------- building cpython wasm plus -------------------"
+        echo " ------------------- building cpython wasm plus $PYBUILD $CIVER -------------------"
         if ./scripts/cpython-build-emsdk-deps.sh > /dev/null
         then
             echo "making tarball"
@@ -46,11 +50,11 @@ then
                 ${SDKDIR}/emsdk \
                 ${SDKDIR}/devices/* \
                 ${SDKDIR}/prebuilt/* \
-                 > /tmp/sdk/python-wasm-sdk-${CIVER:-ubuntu-latest}.tar
-                lz4 -c --favor-decSpeed --best /tmp/sdk/python-wasm-sdk-${CIVER:-ubuntu-latest}.tar \
-                 > /tmp/sdk/python-wasm-sdk-${CIVER:-ubuntu-latest}.tar.lz4
+                 > /tmp/sdk/python${PYBUILD}-wasm-sdk-${CIVER}.tar
+                lz4 -c --favor-decSpeed --best /tmp/sdk/python${PYBUILD}-wasm-sdk-${CIVER}.tar \
+                 > /tmp/sdk/python${PYBUILD}-wasm-sdk-${CIVER}.tar.lz4
                 # bzip2 will remove original
-                bzip2 -9 /tmp/sdk/python-wasm-sdk-${CIVER:-ubuntu-latest}.tar
+                bzip2 -9 /tmp/sdk/python${PYBUILD}-wasm-sdk-${CIVER}.tar
         else
             echo " cpython-build-emsdk-deps failed"
             exit 2
