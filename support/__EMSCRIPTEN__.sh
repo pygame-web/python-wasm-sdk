@@ -1,5 +1,5 @@
 echo "
-    *__EMSCRIPTEN__*
+    *__EMSCRIPTEN__* $(pwd)
 "
 
 

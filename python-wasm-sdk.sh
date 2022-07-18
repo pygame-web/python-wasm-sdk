@@ -34,8 +34,12 @@ do
 
         . ${CONFIG:-config}
 
+        cd ${SDKDIR}
         . scripts/cpython-fetch.sh
+       
+        cd ${SDKDIR}
         . support/__EMSCRIPTEN__.sh
+
         . scripts/cpython-build-host.sh
     # >/dev/null
         . scripts/cpython-build-host-deps.sh
