@@ -8,7 +8,11 @@ export HOST_PREFIX=${HOST_PREFIX:-$ROOT/devices/$(arch)/usr}
 export PREFIX=${PREFIX:-${ROOT}/devices/emsdk/usr}
 export PYTHONPYCACHEPREFIX=$(realpath ${ROOT}/build/pycache)
 
-export HPY=$(echo -n ${HOST_PREFIX}/bin/python3.1?)
+export PYMAJOR=3
+export PYBUILD=${PYBUILD:-${PYMAJOR}.11}
+export PYMINOR=$(echo -n $PYBUILD|cut -d. -f2)
+
+export HPY=$(echo -n ${HOST_PREFIX}/bin/python${PYBUILD:-3.1?})
 export PIP=$(echo -n ${HOST_PREFIX}/bin/pip3.$(echo $HPY|cut -d. -f2))
 
 export CI=${CI:-false}
