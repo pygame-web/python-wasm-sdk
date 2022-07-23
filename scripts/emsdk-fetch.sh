@@ -67,7 +67,7 @@ then
             + $done
     "
             embuilder --pic build $one
-            #embuilder build $one
+            embuilder build $one
         done
 
         if $CI
