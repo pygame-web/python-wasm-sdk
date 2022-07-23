@@ -55,7 +55,25 @@ do
             echo " ------------------- building cpython wasm plus $PYBUILD $CIVER -------------------"
             if ./scripts/cpython-build-emsdk-deps.sh > /dev/null
             then
+                echo "
+
+                ==========================================================
+                                    stripping emsdk
+                ==========================================================
+        "
+                    rm -rf ${SDKROOT}/emsdk/upstream/emscripten/cache/ports*
+                    # something triggers sdl2 *full* rebuild in pygame.
+                    # but only that one.
+                    # embuilder --pic build sdl2
+                    # embuilder build sdl2
+                    rm -rf ${SDKROOT}/emsdk/upstream/emscripten/cache/ports/sdl2/SDL-*
+                    rm -rf ${SDKROOT}/emsdk/upstream/emscripten/cache/ports
+                    rm -rf ${SDKROOT}/emsdk/upstream/emscripten/cache/ports-builds
+                    rm -rf ${SDKROOT}/emsdk/upstream/emscripten/tests
+        #
+
                 echo "making tarball"
+
                 cd /
                 mkdir -p /tmp/sdk
                 tar -cpPR \
