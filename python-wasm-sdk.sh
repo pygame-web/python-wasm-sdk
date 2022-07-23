@@ -15,9 +15,8 @@ sudo chmod 777 ${SDKDIR}
 
 ORIGIN=$(pwd)
 
-# 3.12 3.11 3.10
 
-for PYBUILD in  3.11 3.10
+for PYBUILD in 3.12 3.11 3.10
 do
     cd "$ORIGIN"
 
