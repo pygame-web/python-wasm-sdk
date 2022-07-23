@@ -4,6 +4,8 @@ reset
 DISTRIB="${DISTRIB_ID}-${DISTRIB_RELEASE}"
 
 export SDKDIR=/opt/python-wasm-sdk
+export SDKROOT=/opt/python-wasm-sdk
+
 export CIVER=${CIVER:-$DISTRIB}
 export CI=true
 
@@ -15,11 +17,11 @@ ORIGIN=$(pwd)
 
 # 3.12 3.11 3.10
 
-for PYBUILD in 3.12 3.11
+for PYBUILD in  3.11 3.10
 do
     cd "$ORIGIN"
 
-    rm -rf ${SDKDIR}/*
+    [ -f ${SDKDIR}/dev ] || rm -rf ${SDKDIR}/*
 
     cp -Rf * ${SDKDIR}/
 
@@ -36,14 +38,14 @@ do
 
         cd ${SDKDIR}
         . scripts/cpython-fetch.sh
-       
+
         cd ${SDKDIR}
         . support/__EMSCRIPTEN__.sh
 
-        . scripts/cpython-build-host.sh
-    # >/dev/null
+        . scripts/cpython-build-host.sh 2>&1 >/dev/null
+
         . scripts/cpython-build-host-deps.sh
-    # >/dev/null
+# >/dev/null
 
         # use ./ or emsdk will pollute env
         ./scripts/emsdk-fetch.sh

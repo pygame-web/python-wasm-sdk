@@ -14,32 +14,34 @@ then
         # emsdk could have been deleted for full rebuild
         rm embuild.done
 
-        if git clone https://github.com/emscripten-core/emsdk.git
+        if git clone --no-tags --depth 1 --single-branch --branch main https://github.com/emscripten-core/emsdk.git
         then
             pushd emsdk
-            #./emsdk install latest
-            #./emsdk activate latest
-            ./emsdk install tot
-            ./emsdk activate tot
+            ./emsdk install ${EMFLAVOUR:-latest}
+            ./emsdk activate ${EMFLAVOUR:-latest}
             popd
-            [ -f dev ] && tar -cpR emsdk > emsdk.tar
         fi
     fi
 
-    if [ -f emsdk/emsdk_env.sh ]
+    export EMSDK_PYTHON=$SYS_PYTHON
+
+    if [ -f ${SDKROOT}/emsdk/emsdk_env.sh ]
     then
         echo "
-        * activating emsdk via emsdk_env.sh
+        * activating emsdk via emsdk_env.sh with EMSDK_PYTHON=$EMSDK_PYTHON
 "
-        . emsdk/emsdk_env.sh 2>&1 > /dev/null
+        . ${SDKROOT}/emsdk/emsdk_env.sh
         # EMSDK_PYTHON may be cleared, restore it
-        export EMSDK_PYTHON=$SYS_PYTHON
+
     else
         echo "
         ERROR cannot find emsdk/emsdk_env.sh in $(pwd)
 "
         exit 1
     fi
+
+    export EMSDK_PYTHON=$SYS_PYTHON
+
 
     if [ -f embuild.done ]
     then
@@ -53,6 +55,7 @@ then
         ALL="$ALL struct_info libfetch zlib bzip2"
         ALL="$ALL libpng libjpeg freetype harfbuzz"
         ALL="$ALL sdl2 sdl2_mixer sdl2_gfx sdl2_ttf"
+        ALL="$ALL sqlite3"
 
         echo "
         * building third parties libraries for emsdk ( can take time ... )
@@ -75,15 +78,15 @@ then
                             stripping emsdk
         ==========================================================
 "
-            rm -rf ${SDKDIR}/emsdk/upstream/emscripten/cache/ports*
+            rm -rf ${SDKROOT}/emsdk/upstream/emscripten/cache/ports*
             # something triggers sdl2 *full* rebuild in pygame.
             # but only that one.
             embuilder --pic build sdl2
             embuilder build sdl2
-            rm -rf ${SDKDIR}/emsdk/upstream/emscripten/cache/ports/sdl2/SDL-*
-            rm -rf ${SDKDIR}/emsdk/upstream/emscripten/cache/ports
-            rm -rf ${SDKDIR}/emsdk/upstream/emscripten/cache/ports-builds
-            rm -rf ${SDKDIR}/emsdk/upstream/emscripten/tests
+            rm -rf ${SDKROOT}/emsdk/upstream/emscripten/cache/ports/sdl2/SDL-*
+            rm -rf ${SDKROOT}/emsdk/upstream/emscripten/cache/ports
+            rm -rf ${SDKROOT}/emsdk/upstream/emscripten/cache/ports-builds
+            rm -rf ${SDKROOT}/emsdk/upstream/emscripten/tests
         fi
 
 #
@@ -114,19 +117,25 @@ for arg do
         SHARED="\$SHARED -sSIDE_MODULE"
     fi
 
-    if echo "\$arg"|grep -q wasm32-emscripten.so\$
+    if \$IS_SHARED
     then
-        IS_SHARED=true
-        SHARED="\$SHARED -shared -sSIDE_MODULE"
+        true
+    else
+        if echo "\$arg"|grep -q wasm32-emscripten.so\$
+        then
+            IS_SHARED=true
+            SHARED="\$SHARED -shared -sSIDE_MODULE"
+        fi
     fi
+
     set -- "\$@" "\$arg"
 done
 
 if \$IS_SHARED
 then
-    $EMSDK_PYTHON -E \$0.py $SHARED $LDFLAGS "\$@" $COMMON
+    $EMSDK_PYTHON -E \$0.py \$SHARED $LDFLAGS "\$@" \$COMMON
 else
-    $EMSDK_PYTHON -E \$0.py $CPPFLAGS "\$@" $COMMON
+    $EMSDK_PYTHON -E \$0.py \$CPPFLAGS "\$@" \$COMMON
 fi
 END
         cat emsdk/upstream/emscripten/emcc > emsdk/upstream/emscripten/em++
