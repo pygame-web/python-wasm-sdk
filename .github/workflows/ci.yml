@@ -29,10 +29,10 @@ jobs:
         clang --version | head -n 1
         echo
         gcc --version | head -n 1
-        echo
+        echo "Github env:"
         env|grep GITHUB
-        echo
-        grep "^Pkg.Revision =" ${ANDROID_HOME}/ndk-bundle/source.properties
+        echo "Android support:"
+        env|grep ANDROID
 
     - name: Install dependencies
       run: |
