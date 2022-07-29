@@ -1,5 +1,10 @@
 #!/bin/bash
 reset
+
+# TODO: check how dbg tools work with default settings
+# https://developer.chrome.com/blog/wasm-debugging-2020/
+
+
 . /etc/lsb-release
 DISTRIB="${DISTRIB_ID}-${DISTRIB_RELEASE}"
 
@@ -15,8 +20,11 @@ sudo chmod 777 ${SDKDIR}
 
 ORIGIN=$(pwd)
 
+# 3.12 3.11 3.10
 
-for PYBUILD in 3.12 3.11 3.10
+BUILDS=${BUILDS:-3.12 3.11 3.10}
+
+for PYBUILD in $BUILDS
 do
     cd "$ORIGIN"
 
