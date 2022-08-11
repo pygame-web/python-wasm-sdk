@@ -8,7 +8,7 @@
 
     echo "
     * building cpython-wasm EMSDK_PYTHON=$SYS_PYTHON
-"
+" 1>&2
 
 
 export PYTHON_FOR_BUILD=${PYTHON_FOR_BUILD:-${HPY}}
@@ -25,13 +25,14 @@ if $REBUILD || $REBUILD_WASMPY
 then
     rm -rf build/cpython-wasm/ build/pycache/config.cache
     rm build/cpython-wasm/libpython${PYBUILD}.a 2>/dev/null
+    rm prebuilt/emsdk/libpython${PYBUILD}.a prebuilt/emsdk/${PYBUILD}/*.so
     REBUILD=true
 fi
 
 # 3.10 is not wasm stable
 if [ -f support/__EMSCRIPTEN__.patches/${PYBUILD}.diff ]
 then
-    pushd src/cpython 2>&1 >/dev/null
+    pushd src/cpython${PYBUILD} 2>&1 >/dev/null
     patch -p1 < ../../support/__EMSCRIPTEN__.patches/${PYBUILD}.diff
     popd 2>&1 >/dev/null
 fi
@@ -40,15 +41,13 @@ fi
 if [ -f $EMSDK/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/pic/libffi.a ]
 then
     echo "
-    * ffi already built"
+        * ffi already built
+    " 1>&2
 else
     echo "
+        * building libffi javascript port
+    " 1>&2
 
-
-    *************************************************************************
-    *************************************************************************
-
-"
     if [ -d src/libffi ]
     then
         echo -n
@@ -78,6 +77,23 @@ else
 
     cp -fv  ${PREFIX}/lib/libffi.a $EMSDK/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/pic/
     cp -vf  ${PREFIX}/include/ffi*.h ${EMSDK}/upstream/emscripten/cache/sysroot/include/
+
+    ffipc=${SDKROOT}/emsdk/upstream/emscripten/system/lib/pkgconfig/libffi.pc
+    cat > $ffipc <<END
+prefix=${SDKROOT}/emsdk/upstream/emscripten/cache/sysroot
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib/wasm32-emscripten/pic
+toolexeclibdir=\${libdir}
+includedir=\${prefix}/include
+
+Name: libffi
+Description: Library supporting Foreign Function Interfaces
+Version: 3.4.2
+Libs: -L\${toolexeclibdir} -lffi
+Cflags: -I\${includedir}
+END
+    chmod +x $ffipc
+
 echo "
 
     *************************************************************************
@@ -87,40 +103,42 @@ echo "
 fi
 
 # in this special case build testsuite
-if echo $GITHUB_WORKSPACE|grep -q /python-wasm-plus
+# main repo https://github.com/pmp-p/python-wasm-plus
+
+# pygame-web won't build test modules
+
+if echo $GITHUB_WORKSPACE|grep -q /python-wasm-plus/
 then
     TESTSUITE="--enable-test-modules"
+    #TESTSUITE=""
 else
     TESTSUITE=""
 fi
 
 echo "
 
-TESTSUITE=$TESTSUITE
 
-"
+
+
+    ********** TESTSUITE test-modules == $TESTSUITE *******************
+
+
+
+
+" 1>&2
+
 
 
 if [ -f build/cpython-wasm/libpython${PYBUILD}.a ]
 then
     echo "
-    * not rebuilding cpython-wasm for [$PYDK_PYTHON_HOST_PLATFORM]
-"
+        * not rebuilding cpython-wasm for [$PYDK_PYTHON_HOST_PLATFORM]
+    " 1>&2
 else
     echo "
-    * rebuilding build/cpython-wasm for [$PYDK_PYTHON_HOST_PLATFORM]
-        PYTHON_FOR_BUILD=${PYTHON_FOR_BUILD}
-"
-
-
-    if [ -f /lowend ]
-    then
-        # yes, i only have a amd200GE with 32G
-        NPROC=1
-        export EMSDK_NUM_CORES=1
-    else
-        NPROC=$(nproc)
-    fi
+        * rebuilding build/cpython-wasm for [$PYDK_PYTHON_HOST_PLATFORM]
+            PYTHON_FOR_BUILD=${PYTHON_FOR_BUILD}
+    " 1>&2
 
 
     mkdir -p build/cpython-wasm $PREFIX
@@ -128,34 +146,74 @@ else
 
 #     --with-tzpath="/usr/share/zoneinfo" \
 
-    export EMCC_CFLAGS="$CPOPTS -I$PREFIX/include/ncursesw -sUSE_ZLIB -sUSE_BZIP2"
+    export EMCC_CFLAGS="$CPOPTS -D_XOPEN_SOURCE_EXTENDED=1 -I$PREFIX/include/ncursesw -sUSE_ZLIB -sUSE_BZIP2"
 
     CPPFLAGS="$CPPFLAGS -I$PREFIX/include/ncursesw"
     CFLAGS="$CPPFLAGS -I$PREFIX/include/ncursesw"
 
 # CFLAGS="-DHAVE_FFI_PREP_CIF_VAR=1 -DHAVE_FFI_PREP_CLOSURE_LOC=1 -DHAVE_FFI_CLOSURE_ALLOC=1"
 
-    CONFIG_SITE=$ROOT/src/cpython/Tools/wasm/config.site-wasm32-emscripten \
-    OPT="$CPOPTS -DNDEBUG -fwrapv" \
-    eval emconfigure $ROOT/src/cpython/configure -C --without-pymalloc --disable-ipv6 \
+    cat $ROOT/src/cpython${PYBUILD}/Tools/wasm/config.site-wasm32-emscripten \
+         > $ROOT/src/cpython${PYBUILD}/Tools/wasm/config.site-wasm32-pydk
+
+    cat >> $ROOT/src/cpython${PYBUILD}/Tools/wasm/config.site-wasm32-pydk << END
+
+
+have_libffi=yes
+ac_cv_func_dlopen=yes
+ac_cv_lib_ffi_ffi_call=yes
+py_cv_module__ctypes=yes
+py_cv_module__ctypes_test=yes
+END
+
+
+
+# OPT="$CPOPTS -DNDEBUG -fwrapv" \
+#      --with-c-locale-coercion --without-pydebug --without-pymalloc --disable-ipv6  \
+
+#     --with-libs='-lz -lffi' \
+
+
+    CONFIG_SITE=$ROOT/src/cpython${PYBUILD}/Tools/wasm/config.site-wasm32-pydk \
+    emconfigure $ROOT/src/cpython${PYBUILD}/configure -C --with-emscripten-target=browser \
      --cache-file=${PYTHONPYCACHEPREFIX}/config.cache \
-     --with-c-locale-coercion --without-pydebug \
      --enable-wasm-dynamic-linking $TESTSUITE\
      --host=$PYDK_PYTHON_HOST_PLATFORM \
-     --build=$($ROOT/src/cpython/config.guess) \
-     --with-emscripten-target=browser \
+     --build=$($ROOT/src/cpython${PYBUILD}/config.guess) \
      --prefix=$PREFIX \
-     --with-build-python=${PYTHON_FOR_BUILD} $QUIET
+     --with-build-python=${PYTHON_FOR_BUILD}
 
     mkdir -p ${PYTHONPYCACHEPREFIX}/empty
     touch ${PYTHONPYCACHEPREFIX}/empty/$($HPY -V|cut -f2 -d' ')
 
     #echo "#define HAVE_NCURSES_H" >> pyconfig.h
-    cat > Modules/Setup.local <<END
+    if echo $PYBUILD|grep -q 3.10
+    then
+        cat > Modules/Setup.local <<END
 *disabled*
 _decimal
+xxsubtype
+_crypt
+curses
+
+*static*
+zlib zlibmodule.c
+END
+# _ctypes _ctypes/_ctypes.c _ctypes/callbacks.c _ctypes/callproc.c _ctypes/stgdict.c _ctypes/cfield.c
+    else
+        cat > Modules/Setup.local <<END
+*disabled*
+_decimal
+xxsubtype
+_crypt
+
+*static*
+_ctypes _ctypes/_ctypes.c _ctypes/callbacks.c _ctypes/callproc.c _ctypes/stgdict.c _ctypes/cfield.c ${SDKROOT}/emsdk/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/pic/libffi.a
+
 END
 
+
+fi
 
     if emmake make -j$NPROC WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/
     then
@@ -183,7 +241,7 @@ END
         mv $PREFIX/lib/python${PYBUILD}/lib-dynload/* ${SDKROOT}/prebuilt/emsdk/${PYBUILD}/lib-dynload/
 
         # specific platform support
-        cp -Rfv $ROOT/support/__EMSCRIPTEN__.patches/${PYBUILD}/. $HOST_PREFIX/lib/python${PYBUILD}/
+        cp -Rfv $ROOT/support/__EMSCRIPTEN__.patches/${PYBUILD}/. $PREFIX/lib/python${PYBUILD}/
 
         cp -vf build/cpython-wasm/libpython${PYBUILD}.a prebuilt/emsdk/
         if [ -f build/cpython-wasm/Modules/expat/libexpat.a ]
@@ -198,9 +256,11 @@ mkdir -p $PYTHONPYCACHEPREFIX/sysconfig
 
 
 # FIXME: seems CI cannot locate that one with python3-wasm
-cp $PREFIX/lib/python${PYBUILD}/_sysconfigdata__emscripten_wasm32-emscripten.py $PYTHONPYCACHEPREFIX/sysconfig/_sysconfigdata__emscripten_debug.py
-sed -i 's|-Os|-O0|g' $PYTHONPYCACHEPREFIX/sysconfig/_sysconfigdata__emscripten_debug.py
-sed -i 's|-g0|-g3|g' $PYTHONPYCACHEPREFIX/sysconfig/_sysconfigdata__emscripten_debug.py
+cp $PREFIX/lib/python${PYBUILD}/_sysconfigdata__emscripten_wasm32-emscripten.py \
+ ${SDKROOT}/prebuilt/emsdk/${PYBUILD}/_sysconfigdata__emscripten_debug.py
+
+sed -i 's|-Os|-O0|g' ${SDKROOT}/prebuilt/emsdk/${PYBUILD}/_sysconfigdata__emscripten_debug.py
+sed -i 's|-g0|-g3|g' ${SDKROOT}/prebuilt/emsdk/${PYBUILD}/_sysconfigdata__emscripten_debug.py
 
 
 # python setup.py install --single-version-externally-managed --root=/
@@ -208,6 +268,8 @@ sed -i 's|-g0|-g3|g' $PYTHONPYCACHEPREFIX/sysconfig/_sysconfigdata__emscripten_d
 
 cat > $HOST_PREFIX/bin/cc <<END
 #!/bin/bash
+if [ -z "\$_EMCC_CCACHE" ]
+then
 unset _PYTHON_SYSCONFIGDATA_NAME
 unset PYTHONHOME
 unset PYTHONPATH
@@ -247,6 +309,10 @@ else
     $SYS_PYTHON -E $EMSDK/upstream/emscripten/emcc.py \
      $COPTS $CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
 fi
+else
+    unset _EMCC_CCACHE
+    exec ccache "\$0" "\$@"
+fi
 END
 
 chmod +x $HOST_PREFIX/bin/cc
@@ -264,27 +330,38 @@ NUMPY
 
 cat > $ROOT/${PYDK_PYTHON_HOST_PLATFORM}-shell.sh <<END
 #!/bin/bash
+export ROOT=${SDKROOT}
+export SDKROOT=${SDKROOT}
+
 
 if [[ ! -z \${EMSDK+z} ]]
 then
     # emsdk_env already parsed
     echo -n
 else
-    . ${ROOT}/config
-    . ${ROOT}/emsdk/emsdk_env.sh
-    export PATH=$ROOT/emsdk/upstream/emscripten/system/bin:\$PATH
+    . ${SDKROOT}/config
+    . ${SDKROOT}/emsdk/emsdk_env.sh
+    export PATH=$SDKROOT/emsdk/upstream/emscripten/system/bin:\$PATH
     export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig"
 fi
 
+export SYS_PYTHON=${SYS_PYTHON}
+export EMSDK_PYTHON=${SYS_PYTHON}
+
 export PATH=${HOST_PREFIX}/bin:\$PATH
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}
-export HOME=${PYTHONPYCACHEPREFIX}
+export HOME=${SDKROOT}
 export PLATFORM_TRIPLET=${PYDK_PYTHON_HOST_PLATFORM}
 export PREFIX=$PREFIX
+export PYTHONPYCACHEPREFIX=${PYTHONPYCACHEPREFIX:-$PYTHONPYCACHEPREFIX}
+mkdir -p \$PYTHONPYCACHEPREFIX
+
+# so pip does not think everything in ~/.local is useable
+export HOME=${SDKROOT}
 
 export PYTHONDONTWRITEBYTECODE=1
-export PYTHONSTARTUP="${ROOT}/support/__EMSCRIPTEN__.py"
-> ${PYTHONPYCACHEPREFIX}/.pythonrc.py
+export PYTHONSTARTUP="${SDKROOT}/support/__EMSCRIPTEN__.py"
+> \${HOME}/.pythonrc.py
 
 export PS1="[PyDK:wasm] \w $ "
 
@@ -295,10 +372,10 @@ END
 cat > $HOST_PREFIX/bin/python3-wasm <<END
 #!/bin/bash
 export PYBUILD=\${PYBUILD:-$PYBUILD}
-export PYMAJOR=$(echo -n \$PYBUILD|cut -d. -f1)
-export PYMINOR=$(echo -n \$PYBUILD|cut -d. -f2)
+export PYMAJOR=\$(echo -n \$PYBUILD|cut -d. -f1)
+export PYMINOR=\$(echo -n \$PYBUILD|cut -d. -f2)
 
-. $ROOT/${PYDK_PYTHON_HOST_PLATFORM}-shell.sh
+. ${SDKROOT}/${PYDK_PYTHON_HOST_PLATFORM}-shell.sh
 
 # most important
 export CC=cc
@@ -310,30 +387,43 @@ export PYTHONSTARTUP=$ROOT/support/__EMSCRIPTEN__.py
 # so include dirs are good
 export PYTHONHOME=$PREFIX
 
-# so pip does not think everything in ~/.local is useable
-export HOME=${PYTHONPYCACHEPREFIX}
-
-
 # find sysconfig ( tweaked )
 # but still can load dynload and setuptools
-PYTHONPATH=$(echo -n ${HOST_PREFIX}/lib/python/\${PYBUILD}/site-packages):\$PYTHONPATH
-export PYTHONPATH=$PYTHONPYCACHEPREFIX/sysconfig:$(echo -n ${HOST_PREFIX}/lib/python\${PYBUILD}/lib-dynload):\$PYTHONPATH
+
+PYTHONPATH=${HOST_PREFIX}/lib/python\${PYBUILD}/site-packages:\$PYTHONPATH
+export PYTHONPATH=${SDKROOT}/prebuilt/emsdk/${PYBUILD}:${HOST_PREFIX}/lib/python\${PYBUILD}/lib-dynload:\$PYTHONPATH
 
 
 # just in case
 export _PYTHON_HOST_PLATFORM=${PYDK_PYTHON_HOST_PLATFORM}
 export PYTHON_FOR_BUILD=${HOST_PREFIX}/bin/python\${PYBUILD}
 
-${HOST_PREFIX}/bin/python\${PYBUILD} -u -B \$@
+${HOST_PREFIX}/bin/python\${PYBUILD} -u -B "\$@"
 END
 
 chmod +x $HOST_PREFIX/bin/python3-wasm
+
+# TODO: FIXME:
+echo "368 cannot use python3-wasm as python3 for setup.py in pygame build" 1>&2
+ln -sf $HOST_PREFIX/bin/python${PYBUILD} $HOST_PREFIX/bin/python3
+
 cp -f $HOST_PREFIX/bin/python3-wasm ${ROOT}/
+
+
+HPFX=./devices/$(arch)/usr/lib/python${PYBUILD}
+TPFX=./devices/emsdk/usr/lib/python${PYBUILD}
+
+rm $TPFX/ensurepip/_bundled/setuptools-*.whl
+
+for moveit in setuptools distutils _distutils _distutils_hack pkg_resources
+do
+    echo "
+    * migrating ${moveit}
+" 1>&2
+    cp -rf $HPFX/${moveit}   $TPFX/
+    cp -rf $HPFX/${moveit}-* $TPFX/
+done
 
 
 unset PYTHON_FOR_BUILD
 unset EMCC_CFLAGS
-
-
-
-

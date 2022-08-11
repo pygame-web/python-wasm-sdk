@@ -8,15 +8,14 @@ reset
 . /etc/lsb-release
 DISTRIB="${DISTRIB_ID}-${DISTRIB_RELEASE}"
 
-export SDKDIR=/opt/python-wasm-sdk
 export SDKROOT=/opt/python-wasm-sdk
 
 export CIVER=${CIVER:-$DISTRIB}
 export CI=true
 
 
-sudo mkdir -p ${SDKDIR}
-sudo chmod 777 ${SDKDIR}
+sudo mkdir -p ${SDKROOT}
+sudo chmod 777 ${SDKROOT}
 
 ORIGIN=$(pwd)
 
@@ -28,13 +27,18 @@ for PYBUILD in $BUILDS
 do
     cd "$ORIGIN"
 
-    [ -f ${SDKDIR}/dev ] || rm -rf ${SDKDIR}/*
-
-    cp -Rf * ${SDKDIR}/
-
-    if cd ${SDKDIR}/
+    if [ -f ${SDKROOT}/dev ]
     then
-        pwd
+        rm ${SDKROOT}/embuild.done
+    else
+        rm -rf ${SDKROOT}/*
+    fi
+
+
+    cp -Rf * ${SDKROOT}/
+
+    if cd ${SDKROOT}/
+    then
         mkdir -p build/pycache
         export PYTHONDONTWRITEBYTECODE=1
 
@@ -43,16 +47,18 @@ do
 
         . ${CONFIG:-config}
 
-        cd ${SDKDIR}
+        cd ${SDKROOT}
         . scripts/cpython-fetch.sh
 
-        cd ${SDKDIR}
+        cd ${SDKROOT}
         . support/__EMSCRIPTEN__.sh
 
         . scripts/cpython-build-host.sh 2>&1 >/dev/null
 
         . scripts/cpython-build-host-deps.sh
 # >/dev/null
+
+        [ -f /lowend ] && sleep 45
 
         # use ./ or emsdk will pollute env
         ./scripts/emsdk-fetch.sh
@@ -63,12 +69,13 @@ do
             echo " ------------------- building cpython wasm plus $PYBUILD $CIVER -------------------"
             if ./scripts/cpython-build-emsdk-deps.sh > /dev/null
             then
+                [ -f /lowend ] && sleep 45
                 echo "
 
                 ==========================================================
                                     stripping emsdk
                 ==========================================================
-        "
+        " 1>&2
                     rm -rf ${SDKROOT}/emsdk/upstream/emscripten/cache/ports*
                     # something triggers sdl2 *full* rebuild in pygame.
                     # but only that one.
@@ -78,37 +85,46 @@ do
                     rm -rf ${SDKROOT}/emsdk/upstream/emscripten/cache/ports
                     rm -rf ${SDKROOT}/emsdk/upstream/emscripten/cache/ports-builds
                     rm -rf ${SDKROOT}/emsdk/upstream/emscripten/tests
-        #
 
-                echo "making tarball"
+
+                echo "making tarball" 1>&2
 
                 cd /
                 mkdir -p /tmp/sdk
                 tar -cpPR \
-                    ${SDKDIR}/config \
-                    ${SDKDIR}/build/pycache/.??* \
-                    ${SDKDIR}/build/pycache/sysconfig/_sysconfigdata__emscripten_debug.py \
-                    ${SDKDIR}/python3-wasm \
-                    ${SDKDIR}/wasm32-*-shell.sh \
-                    ${SDKDIR}/emsdk \
-                    ${SDKDIR}/devices/* \
-                    ${SDKDIR}/prebuilt/* \
+                    ${SDKROOT}/config \
+                    ${SDKROOT}/python3-wasm \
+                    ${SDKROOT}/wasm32-*-shell.sh \
+                    ${SDKROOT}/emsdk \
+                    ${SDKROOT}/devices/* \
+                    ${SDKROOT}/prebuilt/* \
                      > /tmp/sdk/python${PYBUILD}-wasm-sdk-${CIVER}.tar
                     lz4 -c --favor-decSpeed --best /tmp/sdk/python${PYBUILD}-wasm-sdk-${CIVER}.tar \
                      > /tmp/sdk/python${PYBUILD}-wasm-sdk-${CIVER}.tar.lz4
-                    # bzip2 will remove original
-                    bzip2 -9 /tmp/sdk/python${PYBUILD}-wasm-sdk-${CIVER}.tar
+
+                    if [ -f /lowend ]
+                    then
+                        # bzip2 is energy waste for local build
+                        rm /tmp/sdk/python${PYBUILD}-wasm-sdk-${CIVER}.tar
+                    else
+                        # bzip2 will remove original
+                        [ -f /lowend ] || bzip2 -9 /tmp/sdk/python${PYBUILD}-wasm-sdk-${CIVER}.tar
+                    fi
             else
-                echo " cpython-build-emsdk-deps failed"
-                exit 2
+                echo " cpython-build-emsdk-deps failed" 1>&2
+                exit 111
             fi
         else
-            echo " cpython-build-emsdk failed"
-            exit 1
+            echo " cpython-build-emsdk failed" 1>&2
+            exit 115
         fi
 
-        echo done
+        echo "done"  1>&2
+
+        # cool down
+        [ -f /lowend ] && sleep 60
     else
-        echo failed
+        echo "cd failed"  1>&2
+        exit 124
     fi
 done

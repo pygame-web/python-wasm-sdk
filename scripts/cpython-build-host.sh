@@ -9,17 +9,45 @@ mkdir -p build/cpython-host
 if $REBUILD
 then
     echo "
-    * building CPython $PYBUILD for $CIVER
-"
+        * building CPython $PYBUILD for $CIVER
+    " 1>&2
 else
     if [ -f ${PYTHON_FOR_BUILD} ]
     then
         REBUILD=false
-        echo "  * will *RE-USE* PYTHON_FOR_BUILD found at ${PYTHON_FOR_BUILD}" 1>&2
+        echo "
+            * will *RE-USE* PYTHON_FOR_BUILD found at ${PYTHON_FOR_BUILD}
+        " 1>&2
     else
         REBUILD=true
     fi
 fi
+
+# in this special case build testsuite
+# main repo https://github.com/pmp-p/python-wasm-plus
+
+# pygame-web won't build test modules
+
+if echo $GITHUB_WORKSPACE|grep -q /python-wasm-plus/
+then
+    TESTSUITE="--enable-test-modules"
+    #TESTSUITE=""
+else
+    TESTSUITE=""
+fi
+
+echo "
+
+
+
+
+    ********** TESTSUITE test-modules == $TESTSUITE *******************
+
+
+
+
+" 1>&2
+
 
 if $REBUILD
 then
@@ -31,15 +59,15 @@ then
 
 
 #export OPT="$CPOPTS -DNDEBUG -fwrapv"
-    cat > $ROOT/src/cpython/Tools/wasm/config.host-wasm32-emscripten <<END
+    cat > $ROOT/src/cpython${PYBUILD}/Tools/wasm/config.host-wasm32-emscripten <<END
 ac_cv_lib_intl_textdomain=no
 ac_cv_func_bind_textdomain_codeset=no
 END
 
-    CONFIG_SITE=$ROOT/src/cpython/Tools/wasm/config.host-wasm32-emscripten \
+    CONFIG_SITE=$ROOT/src/cpython${PYBUILD}/Tools/wasm/config.host-wasm32-emscripten \
     PYOPTS="--disable-ipv6 \
      --with-c-locale-coercion --without-pymalloc --without-pydebug \
-     --with-ensurepip\
+     --with-ensurepip $TESTSUITE \
      --with-decimal-contextvar --disable-shared \
      --with-computed-gotos"
 
@@ -78,19 +106,20 @@ END
         fi
     fi
 
-
 # OPT="$OPT"
 # CFLAGS="-DHAVE_FFI_PREP_CIF_VAR=1 -DHAVE_FFI_PREP_CLOSURE_LOC=1 -DHAVE_FFI_CLOSURE_ALLOC=1"
     if \
     CC=clang CXX=clang++ CFLAGS="-fPIC" CPPFLAGS="-fPIC" \
-    ${ROOT}/src/cpython/configure \
+    ${ROOT}/src/cpython${PYBUILD}/configure \
      --prefix=$HOST_PREFIX $PYOPTS
     then
         make -j$(nproc) install
         rm -rf $(find $ROOT/devices/ -type d|grep __pycache__$)
 
-        patchelf --remove-needed libintl.so.8  $HOST_PREFIX/bin/python3.${PYMINOR}
-        sed -i 's|-lintl ||g' /opt/python-wasm-sdk/devices/x86_64/usr/bin/python3.${PYMINOR}-config
+        rm $HOST_PREFIX/bin/*3 $HOST_PREFIX/bin/python3-config
+
+        patchelf --remove-needed libintl.so.8  $HOST_PREFIX/bin/python${PYBUILD}
+        sed -i 's|-lintl ||g' ${SDKROOT}/devices/x86_64/usr/bin/python${PYBUILD}-config
 
         cp -Rfv $ROOT/support/__EMSCRIPTEN__.patches/${PYBUILD}/. $HOST_PREFIX/lib/python${PYBUILD}/
     else
@@ -107,10 +136,9 @@ END
     popd
 else
     echo "
-
-    *   cpython host already built :
-            PYTHON_FOR_BUILD=${PYTHON_FOR_BUILD}
-" 1>&2
+        *   cpython host already built :
+                PYTHON_FOR_BUILD=${PYTHON_FOR_BUILD}
+    " 1>&2
 fi
 
 
