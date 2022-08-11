@@ -102,7 +102,8 @@ do
                     lz4 -c --favor-decSpeed --best /tmp/sdk/python${PYBUILD}-wasm-sdk-${CIVER}.tar \
                      > /tmp/sdk/python${PYBUILD}-wasm-sdk-${CIVER}.tar.lz4
 
-                    if [ -f /lowend ]
+                    #if [ -f /lowend ]
+                    if true
                     then
                         # bzip2 is energy waste for local build
                         rm /tmp/sdk/python${PYBUILD}-wasm-sdk-${CIVER}.tar
