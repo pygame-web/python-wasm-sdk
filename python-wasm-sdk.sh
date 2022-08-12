@@ -21,7 +21,7 @@ ORIGIN=$(pwd)
 
 # 3.12 3.11 3.10
 
-BUILDS=${BUILDS:-3.12 3.11 3.10}
+BUILDS=${BUILDS:-3.12 3.11}
 
 for PYBUILD in $BUILDS
 do
@@ -63,17 +63,17 @@ do
         # use ./ or emsdk will pollute env
         ./scripts/emsdk-fetch.sh
 
-        echo " ------------------- building cpython wasm $PYBUILD $CIVER -----------------------"
+        echo " ------------ building cpython wasm ${PYBUILD} ${CIVER} ----------------" 1>&2
         if ./scripts/cpython-build-emsdk.sh > /dev/null
         then
-            echo " ------------------- building cpython wasm plus $PYBUILD $CIVER -------------------"
+            echo " ---------- building cpython wasm plus ${PYBUILD} ${CIVER} -----------" 1>&2
             if ./scripts/cpython-build-emsdk-deps.sh > /dev/null
             then
                 [ -f /lowend ] && sleep 45
                 echo "
 
                 ==========================================================
-                                    stripping emsdk
+                                    stripping emsdk ${PYBUILD} ${CIVER}
                 ==========================================================
         " 1>&2
                     rm -rf ${SDKROOT}/emsdk/upstream/emscripten/cache/ports*
@@ -129,3 +129,6 @@ do
         exit 124
     fi
 done
+
+exit 0
+
