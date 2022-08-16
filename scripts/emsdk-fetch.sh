@@ -134,6 +134,7 @@ else
 fi
 
 END
+
         cat emsdk/upstream/emscripten/emcc > emsdk/upstream/emscripten/em++
 
         cat > emsdk/upstream/emscripten/emar <<END

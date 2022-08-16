@@ -244,10 +244,11 @@ fi
         cp -Rfv $ROOT/support/__EMSCRIPTEN__.patches/${PYBUILD}/. $PREFIX/lib/python${PYBUILD}/
 
         cp -vf build/cpython-wasm/libpython${PYBUILD}.a prebuilt/emsdk/
-        if [ -f build/cpython-wasm/Modules/expat/libexpat.a ]
-        then
-            cp build/cpython-wasm/Modules/expat/libexpat.a prebuilt/emsdk/libexpat${PYBUILD}.a
-        fi
+        for lib in $(find build/cpython-wasm/|grep lib.*.a$)
+        do
+            name=$(basename $lib .a)
+            cp $lib prebuilt/emsdk/${name}${PYBUILD}.a
+        done
         rmdir  $PREFIX/lib/python${PYBUILD}/lib-dynload
     fi
 fi
