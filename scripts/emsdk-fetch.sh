@@ -209,4 +209,3 @@ else
     echo "emsdk: config already set !" 1>&2
 fi
 
-

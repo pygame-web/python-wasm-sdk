@@ -70,6 +70,12 @@ do
             if ./scripts/cpython-build-emsdk-deps.sh > /dev/null
             then
                 [ -f /lowend ] && sleep 45
+
+
+                echo " --------- adding some usefull pkg ${PYBUILD} ${CIVER} ---------" 1>&2
+                ./scripts/cpython-build-emsdk-prebuilt.sh
+
+
                 echo "
 
                 ==========================================================

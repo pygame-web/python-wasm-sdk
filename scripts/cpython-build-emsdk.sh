@@ -18,7 +18,6 @@ export PYTHON_FOR_BUILD=${PYTHON_FOR_BUILD:-${HPY}}
 
 . ./scripts/emsdk-fetch.sh
 
-
 REBUILD_WASM=${REBUILD_WASMPY:-false}
 
 if $REBUILD || $REBUILD_WASMPY
@@ -36,7 +35,6 @@ then
     patch -p1 < ../../support/__EMSCRIPTEN__.patches/${PYBUILD}.diff
     popd 2>&1 >/dev/null
 fi
-
 
 if [ -f $EMSDK/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/pic/libffi.a ]
 then
@@ -116,7 +114,6 @@ else
 fi
 
 echo "
-
 
 
 
@@ -338,6 +335,11 @@ export PYBUILD=\${PYBUILD:-$PYBUILD}
 export PYMAJOR=\$(echo -n \$PYBUILD|cut -d. -f1)
 export PYMINOR=\$(echo -n \$PYBUILD|cut -d. -f2)
 
+export CARGO_HOME=\${CARGO_HOME:-/opt/python-rust-sdk}
+export RUSTUP_HOME=\${RUSTUP_HOME:-/opt/python-rust-sdk}
+export PATH=\${CARGO_HOME}/bin:$PATH
+
+
 if [[ ! -z \${EMSDK+z} ]]
 then
     # emsdk_env already parsed
@@ -352,7 +354,7 @@ fi
 export SYS_PYTHON=${SYS_PYTHON}
 export EMSDK_PYTHON=${SYS_PYTHON}
 
-export PATH=${HOST_PREFIX}/bin:\$PATH
+export PATH=${HOST_PREFIX}/bin:\$PATH:${SDKROOT}/devices/emsdk/usr/bin
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}
 export HOME=${SDKROOT}
 export PLATFORM_TRIPLET=${PYDK_PYTHON_HOST_PLATFORM}

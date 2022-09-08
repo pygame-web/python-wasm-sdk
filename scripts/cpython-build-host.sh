@@ -57,8 +57,8 @@ then
     unset CPPFLAGS
     unset LDFLAGS
 
-
 #export OPT="$CPOPTS -DNDEBUG -fwrapv"
+    mkdir -p $ROOT/src/cpython${PYBUILD}/Tools/wasm
     cat > $ROOT/src/cpython${PYBUILD}/Tools/wasm/config.host-wasm32-emscripten <<END
 ac_cv_lib_intl_textdomain=no
 ac_cv_func_bind_textdomain_codeset=no

@@ -47,11 +47,14 @@ fi
 
 export EMFLAVOUR=${EMFLAVOUR:-tot}
 
+# no extra wasm features
+export WASMFLAVOUR=mvp
+
 #temp fix for oom on CI (Error: Process completed with exit code 143.)
 export EMSDK_NUM_CORES=1
 
 
-export PYDK_PYTHON_HOST_PLATFORM=wasm32-$EMFLAVOUR-emscripten
+export PYDK_PYTHON_HOST_PLATFORM=wasm32-$WASMFLAVOUR-emscripten
 
 if echo $LD_LIBRARY_PATH |grep -q ${HOST_PREFIX}/lib
 then
