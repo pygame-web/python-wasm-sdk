@@ -260,6 +260,8 @@ cp $PREFIX/lib/python${PYBUILD}/_sysconfigdata__emscripten_wasm32-emscripten.py 
 sed -i 's|-Os|-O0|g' ${SDKROOT}/prebuilt/emsdk/${PYBUILD}/_sysconfigdata__emscripten_debug.py
 sed -i 's|-g0|-g3|g' ${SDKROOT}/prebuilt/emsdk/${PYBUILD}/_sysconfigdata__emscripten_debug.py
 
+#cp ${SDKROOT}/prebuilt/emsdk/${PYBUILD}/_sysconfigdata__emscripten_debug.py \
+# $PREFIX/lib/python${PYBUILD}/
 
 # python setup.py install --single-version-externally-managed --root=/
 # pip3 install .
@@ -394,7 +396,7 @@ export PYTHONHOME=$PREFIX
 # but still can load dynload and setuptools
 
 PYTHONPATH=${HOST_PREFIX}/lib/python\${PYBUILD}/site-packages:\$PYTHONPATH
-export PYTHONPATH=${SDKROOT}/prebuilt/emsdk/${PYBUILD}:${HOST_PREFIX}/lib/python\${PYBUILD}/lib-dynload:\$PYTHONPATH
+export PYTHONPATH=${SDKROOT}/prebuilt/emsdk/\${PYBUILD}:${HOST_PREFIX}/lib/python\${PYBUILD}/lib-dynload:\$PYTHONPATH
 
 # just in case
 export _PYTHON_HOST_PLATFORM=${PYDK_PYTHON_HOST_PLATFORM}

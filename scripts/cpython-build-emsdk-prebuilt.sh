@@ -2,6 +2,17 @@
 
 . ${CONFIG:-config}
 
+CYTHON_REL=${CYTHON_REL:-3.0.0a11}
+CYTHON_WHL=${CYTHON:-Cython-${CYTHON_REL}-py2.py3-none-any.whl}
+
+$HPY -m pip install --upgrade pip
+
+pushd src
+    wget -q -c https://github.com/cython/cython/releases/download/${CYTHON_REL}/${CYTHON_WHL}
+    $HPY install --upgrade $CYTHON_WHL
+podp
+
+
 PIP="$(realpath python3-wasm) -m pip"
 
 echo "
@@ -10,6 +21,8 @@ echo "
 
 # make wheels
 # /opt/python-wasm-sdk/python3-wasm setup.py bdist_wheel
+
+$PIP install --upgrade pip
 
 for pkg in wheel installer
 do
@@ -27,11 +40,7 @@ done
 
 
 pushd src
-
-CYTHON=Cython-3.0.0a11-py2.py3-none-any.whl
-
-wget -q -c https://github.com/cython/cython/releases/download/3.0.0a11/${CYTHON}
-$PIP install $CYTHON
+    $PIP install $CYTHON
 
 
 

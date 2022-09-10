@@ -66,8 +66,14 @@ then
             echo "
             + $done
     "  1>&2
-            embuilder --pic build $one
             embuilder build $one
+            embuilder --pic build $one
+        done
+
+        for one in $ALL
+        do
+            embuilder build $one
+            embuilder --pic build $one
         done
 
         cat > emsdk/upstream/emscripten/emcc <<END

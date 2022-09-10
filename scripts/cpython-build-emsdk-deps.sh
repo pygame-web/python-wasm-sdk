@@ -64,8 +64,14 @@ cd $ROOT/src
 TIFF_VER="4.3.0"
 WEBP_VER="1.2.2"
 
+# AVIF : OFF
+# JXL : OFF
+# TIF : OFF
+
 # ================== tiff ===================
 
+
+# OFF
 if false
 then
     if [ -f ../devices/emsdk/usr/lib/libtiff.a ]
@@ -89,8 +95,11 @@ if [ -f ../devices/emsdk/usr/lib/libwebp.a ]
 then
     echo "
     * libwep $WEBP_VER already built
-"
+"  1>&2
 else
+    echo "
+            * build libwebp
+"  1>&2
     wget -q -c https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$WEBP_VER.tar.gz \
         && tar xfz libwebp-$WEBP_VER.tar.gz
     pushd libwebp-$WEBP_VER
@@ -107,14 +116,14 @@ if [ -f ../devices/emsdk/usr/lib/libSDL2_image.a ]
 then
     echo "
     * SDL2_image already built
-"
+"  1>&2
 else
     #[ -d SDL_image ] || git clone https://github.com/libsdl-org/SDL_image
     if [ -d SDL2_image-2.6.1 ]
     then
         echo "
-            * build SDL2_image pre release
-        "  1>&2
+            * build SDL2_image from release
+"  1>&2
     else
         #bad png+grayscale https://github.com/libsdl-org/SDL_image/releases/download/candidate-2.5.1/SDL2_image-2.5.1.tar.gz
         wget -c -q https://github.com/libsdl-org/SDL_image/releases/download/release-2.6.1/SDL2_image-2.6.1.tar.gz

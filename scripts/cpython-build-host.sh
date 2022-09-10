@@ -33,7 +33,8 @@ then
     TESTSUITE="--enable-test-modules"
     #TESTSUITE=""
 else
-    TESTSUITE=""
+    TESTSUITE="--enable-test-modules"
+    #TESTSUITE=""
 fi
 
 echo "
