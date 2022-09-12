@@ -7,13 +7,13 @@ CYTHON_WHL=${CYTHON:-Cython-${CYTHON_REL}-py2.py3-none-any.whl}
 
 $HPY -m pip install --upgrade pip
 
-pushd src
+pushd build
     wget -q -c https://github.com/cython/cython/releases/download/${CYTHON_REL}/${CYTHON_WHL}
     $HPY install --upgrade $CYTHON_WHL
-podp
+popd
 
 
-PIP="$(realpath python3-wasm) -m pip"
+PIP="${SDKROOT}/python3-wasm -m pip"
 
 echo "
     *   cpython-build-emsdk-prebuilt pip==$PIP   *
@@ -39,21 +39,14 @@ do
 done
 
 
+$PIP install build/$CYTHON_WHL
+
+
+
 pushd src
-    $PIP install $CYTHON
 
 
-
-
-
-
-
-
-
-
-
-
-
+# TODO
 
 
 

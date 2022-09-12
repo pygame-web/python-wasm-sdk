@@ -64,6 +64,7 @@ do
         ./scripts/emsdk-fetch.sh
 
         echo " ------------ building cpython wasm ${PYBUILD} ${CIVER} ----------------" 1>&2
+
         if ./scripts/cpython-build-emsdk.sh > /dev/null
         then
             echo " ---------- building cpython wasm plus ${PYBUILD} ${CIVER} -----------" 1>&2

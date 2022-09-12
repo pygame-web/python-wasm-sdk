@@ -61,10 +61,8 @@ else
 #TODO: check if export PATH=${HOST_PREFIX}/bin:$PATH is really set to avoid system python with different bytecode
 #and no loder lib-dynload in the way.
 
-    export EMCC_CFLAGS="-O0 -g0 -fPIC"
-
-    CFLAGS="-O0 -g0 -fPIC" \
-     emconfigure $ROOT/src/libffi/configure --host=wasm32-tot-linux\
+    EMCC_CFLAGS="-O0 -g0 -fPIC" CFLAGS="-O0 -g0 -fPIC" CC=${SDKROOT}/emsdk/upstream/emscripten/emcc \
+     emconfigure $ROOT/src/libffi/configure --host=wasm32-mvp-emscripten\
       --prefix=$PREFIX --enable-static --disable-shared --disable-dependency-tracking\
       --disable-builddir --disable-multi-os-directory --disable-raw-api --disable-docs
 
@@ -280,6 +278,18 @@ IS_SHARED=false
 
 for arg do
     shift
+
+    if [ "\$arg" = "-v" ]
+    then
+        \$SYS_PYTHON -E \$0.py -v
+        exit 0
+    fi
+
+    if [ "\$arg" = "--version" ]
+    then
+        \$SYS_PYTHON -E \$0.py --version
+        exit 0
+    fi
 
     # that is for some very bad setup.py behaviour regarding cross compiling. should not be needed ..
     [ "\$arg" = "-I/usr/include" ] && continue
