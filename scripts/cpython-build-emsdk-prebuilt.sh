@@ -24,6 +24,8 @@ echo "
 
 $PIP install --upgrade pip
 
+$PIP install build/$CYTHON_WHL
+
 for pkg in wheel installer
 do
     if [ -d prebuilt/emsdk/${PYBUILD}/site-packages/$pkg ]
@@ -37,9 +39,6 @@ do
         mv $PREFIX/lib/python${PYBUILD}/site-packages/${pkg}-* prebuilt/emsdk/${PYBUILD}/site-packages/
     fi
 done
-
-
-$PIP install build/$CYTHON_WHL
 
 
 
