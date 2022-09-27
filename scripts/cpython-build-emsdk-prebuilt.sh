@@ -19,14 +19,22 @@ echo "
     *   cpython-build-emsdk-prebuilt pip==$PIP   *
 " 1>&2
 
-# make wheels
-# /opt/python-wasm-sdk/python3-wasm setup.py bdist_wheel
 
 $PIP install --upgrade pip
 
+
+# make wheels
+# /opt/python-wasm-sdk/python3-wasm setup.py bdist_wheel
+$PIP install wheel
+# cython
 $PIP install build/$CYTHON_WHL
 
-for pkg in wheel installer
+
+# install them
+$PIP install installer
+
+# some we want in rootfs
+for pkg in installer
 do
     if [ -d prebuilt/emsdk/${PYBUILD}/site-packages/$pkg ]
     then
@@ -35,11 +43,10 @@ do
             "
     else
         $PIP install $pkg
-        mv $PREFIX/lib/python${PYBUILD}/site-packages/${pkg} prebuilt/emsdk/${PYBUILD}/site-packages/
-        mv $PREFIX/lib/python${PYBUILD}/site-packages/${pkg}-* prebuilt/emsdk/${PYBUILD}/site-packages/
+        cp -rf $PREFIX/lib/python${PYBUILD}/site-packages/${pkg} prebuilt/emsdk/${PYBUILD}/site-packages/
+        cp -rf $PREFIX/lib/python${PYBUILD}/site-packages/${pkg}-* prebuilt/emsdk/${PYBUILD}/site-packages/
     fi
 done
-
 
 
 pushd src
