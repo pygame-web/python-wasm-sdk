@@ -33,7 +33,9 @@ $PIP install build/$CYTHON_WHL
 # install them
 $PIP install installer
 
-# some we want in rootfs
+
+# some we want in all minimal rootfs
+mkdir -p prebuilt/emsdk/common/site-packages/
 for pkg in installer
 do
     if [ -d prebuilt/emsdk/${PYBUILD}/site-packages/$pkg ]
@@ -43,8 +45,8 @@ do
             "
     else
         $PIP install $pkg
-        cp -rf $PREFIX/lib/python${PYBUILD}/site-packages/${pkg} prebuilt/emsdk/${PYBUILD}/site-packages/
-        cp -rf $PREFIX/lib/python${PYBUILD}/site-packages/${pkg}-* prebuilt/emsdk/${PYBUILD}/site-packages/
+        cp -rf $PREFIX/lib/python${PYBUILD}/site-packages/${pkg} prebuilt/emsdk/common/site-packages/
+        cp -rf $PREFIX/lib/python${PYBUILD}/site-packages/${pkg}-* prebuilt/emsdk/common/site-packages/
     fi
 done
 

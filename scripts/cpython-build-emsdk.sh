@@ -264,66 +264,7 @@ sed -i 's|-g0|-g3|g' ${SDKROOT}/prebuilt/emsdk/${PYBUILD}/_sysconfigdata__emscri
 # python setup.py install --single-version-externally-managed --root=/
 # pip3 install .
 
-cat > $HOST_PREFIX/bin/cc <<END
-#!/bin/bash
-if [ -z "\$_EMCC_CCACHE" ]
-then
-unset _PYTHON_SYSCONFIGDATA_NAME
-unset PYTHONHOME
-unset PYTHONPATH
-
-COMMON="-Wno-unused-command-line-argument -Wno-unreachable-code-fallthrough"
-SHARED=""
-IS_SHARED=false
-
-for arg do
-    shift
-
-    if [ "\$arg" = "-v" ]
-    then
-        \$SYS_PYTHON -E \$0.py -v
-        exit 0
-    fi
-
-    if [ "\$arg" = "--version" ]
-    then
-        \$SYS_PYTHON -E \$0.py --version
-        exit 0
-    fi
-
-    # that is for some very bad setup.py behaviour regarding cross compiling. should not be needed ..
-    [ "\$arg" = "-I/usr/include" ] && continue
-    [ "\$arg" = "-I/usr/include/SDL2" ] && continue
-    [ "\$arg" = "-L/usr/lib64" ]	&& continue
-    [ "\$arg" = "-L/usr/lib" ]   && continue
-
-    if [ "\$arg" = "-shared" ]
-    then
-        IS_SHARED=true
-        SHARED="$SHARED -sSIDE_MODULE"
-    fi
-
-    if echo "\$arg"|grep -q wasm32-emscripten.so\$
-    then
-        IS_SHARED=true
-        SHARED="$SHARED -shared -sSIDE_MODULE"
-    fi
-    set -- "\$@" "\$arg"
-done
-
-if \$IS_SHARED
-then
-    $SYS_PYTHON -E $EMSDK/upstream/emscripten/emcc.py \
-     \$SHARED $COPTS $LDFLAGS -sSIDE_MODULE -gsource-map --source-map-base / "\$@" \$COMMON
-else
-    $SYS_PYTHON -E $EMSDK/upstream/emscripten/emcc.py \
-     $COPTS $CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
-fi
-else
-    unset _EMCC_CCACHE
-    exec ccache "\$0" "\$@"
-fi
-END
+ln -sf ${SDKROOT}/emsdk/upstream/emscripten/emcc $HOST_PREFIX/bin/cc
 
 chmod +x $HOST_PREFIX/bin/cc
 

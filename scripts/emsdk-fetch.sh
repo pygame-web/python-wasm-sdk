@@ -89,7 +89,7 @@ unset PYTHONPATH
 # -Wwarn-absolute-paths
 # --valid-abspath ${SDKROOT}
 
-COMMON="-Wno-limited-postlink-optimizations"
+COMMON="-Wno-unused-command-line-argument -Wno-unreachable-code-fallthrough -Wno-limited-postlink-optimizations"
 SHARED=""
 IS_SHARED=false
 
@@ -120,12 +120,13 @@ for arg do
         SHARED="\$SHARED -sSIDE_MODULE"
     fi
 
-    if \$IS_SHARED
+    if echo "\$arg"|grep -q wasm32-emscripten.so\$
     then
-        true
-    else
-        if echo "\$arg"|grep -q wasm32-emscripten.so\$
+        SHARED_TARGET=\$arg
+        if \$IS_SHARED
         then
+            true
+        else
             IS_SHARED=true
             SHARED="\$SHARED -shared -sSIDE_MODULE"
         fi
@@ -136,9 +137,13 @@ done
 
 if \$IS_SHARED
 then
-    $EMSDK_PYTHON -E \$0.py \$SHARED $LDFLAGS "\$@" \$COMMON
+    $EMSDK_PYTHON -E \$0.py \$SHARED $COPTS $LDFLAGS -sSIDE_MODULE -gsource-map --source-map-base / "\$@" \$COMMON
+    SOTMP=\$(mktemp).so
+    mv \$SHARED_TARGET \$SOTMP
+    $SDKROOT/emsdk/upstream/bin/wasm-emscripten-finalize -mvp \$SOTMP -o \$SHARED_TARGET
+    rm \$SOTMP
 else
-    $EMSDK_PYTHON -E \$0.py \$CPPFLAGS "\$@" \$COMMON
+    $EMSDK_PYTHON -E \$0.py \$COPTS \$CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
 fi
 else
   unset _EMCC_CCACHE
