@@ -146,6 +146,7 @@ then
     SOTMP=\$(mktemp).so
     mv \$SHARED_TARGET \$SOTMP
     $SDKROOT/emsdk/upstream/bin/wasm-emscripten-finalize -mvp \$SOTMP -o \$SHARED_TARGET
+    [ -f \$SHARED_TARGET.map ] && rm \$SHARED_TARGET.map
     rm \$SOTMP
 else
     $EMSDK_PYTHON -E \$0.py \$COPTS \$CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
