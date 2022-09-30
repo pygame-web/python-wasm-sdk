@@ -18,8 +18,13 @@ then
         if git clone --no-tags --depth 1 --single-branch --branch main https://github.com/emscripten-core/emsdk.git
         then
             pushd emsdk
-            ./emsdk install ${EMFLAVOUR:-latest}
-            ./emsdk activate ${EMFLAVOUR:-latest}
+                ./emsdk install ${EMFLAVOUR:-latest}
+                ./emsdk activate ${EMFLAVOUR:-latest}
+                pushd upstream/emscripten
+                    echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/17956"
+                    wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/17956.diff
+                    patch -p1 < 17956.diff
+                popd
             popd
         fi
     fi
