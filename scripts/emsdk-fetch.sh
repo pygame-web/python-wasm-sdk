@@ -97,7 +97,7 @@ unset PYTHONPATH
 COMMON="-Wno-unused-command-line-argument -Wno-unreachable-code-fallthrough -Wno-limited-postlink-optimizations"
 SHARED=""
 IS_SHARED=false
-
+PY_MODULE=false
 for arg do
     shift
 
@@ -126,6 +126,16 @@ for arg do
     fi
 
     if echo "\$arg"|grep -q wasm32-emscripten.so\$
+    then
+        PY_MODULE=true
+    fi
+
+    if echo "\$arg"|grep -q abi3.so\$
+    then
+        PY_MODULE=true
+    fi
+
+    if \$PY_MODULE
     then
         SHARED_TARGET=\$arg
         if \$IS_SHARED

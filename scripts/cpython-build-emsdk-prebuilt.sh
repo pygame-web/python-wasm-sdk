@@ -25,8 +25,12 @@ $PIP install --upgrade pip
 
 # make wheels
 # /opt/python-wasm-sdk/python3-wasm setup.py bdist_wheel
+
 $PIP install wheel
+
+
 # cython
+$HPY -m pip install build/$CYTHON_WHL
 $PIP install build/$CYTHON_WHL
 
 
