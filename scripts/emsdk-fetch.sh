@@ -13,7 +13,7 @@ then
 " 1>&2
     else
         # emsdk could have been deleted for full rebuild
-        rm embuild.done
+        rm emsdk/.completed
 
         if git clone --no-tags --depth 1 --single-branch --branch main https://github.com/emscripten-core/emsdk.git
         then
@@ -48,7 +48,7 @@ then
 
     export EMSDK_PYTHON=$SYS_PYTHON
 
-    if [ -f embuild.done ]
+    if [ -f emsdk/.completed ]
     then
         echo "
         * emsdk prereq ok
@@ -84,8 +84,10 @@ then
         cat > emsdk/upstream/emscripten/emcc <<END
 #!/bin/bash
 
-if [ -z "\$_EMCC_CCACHE" ]
-then
+unset _EMCC_CCACHE
+
+#if [ -z "\$_EMCC_CCACHE" ]
+#then
 
 unset _PYTHON_SYSCONFIGDATA_NAME
 unset PYTHONHOME
@@ -103,13 +105,13 @@ for arg do
 
     if [ "\$arg" = "-v" ]
     then
-        \$EMSDK_PYTHON -E \$0.py -v
+        $EMSDK_PYTHON -E \$0.py -v
         exit 0
     fi
 
     if [ "\$arg" = "--version" ]
     then
-        \$EMSDK_PYTHON -E \$0.py --version
+        $EMSDK_PYTHON -E \$0.py --version
         exit 0
     fi
 
@@ -128,22 +130,32 @@ for arg do
     if echo "\$arg"|grep -q wasm32-emscripten.so\$
     then
         PY_MODULE=true
-    fi
-
-    if echo "\$arg"|grep -q abi3.so\$
-    then
-        PY_MODULE=true
+        SHARED_TARGET=\$arg
+    else
+        if echo "\$arg"|grep -q abi3.so\$
+        then
+            PY_MODULE=true
+            SHARED_TARGET=\$arg
+        fi
     fi
 
     if \$PY_MODULE
     then
-        SHARED_TARGET=\$arg
         if \$IS_SHARED
         then
             true
         else
             IS_SHARED=true
             SHARED="\$SHARED -shared -sSIDE_MODULE"
+        fi
+    else
+        if \$IS_SHARED
+        then
+            if echo "$arg"|grep -q -F .so\$
+            then
+                PY_MODULE=true
+                SHARED_TARGET=$arg
+            fi
         fi
     fi
 
@@ -161,10 +173,10 @@ then
 else
     $EMSDK_PYTHON -E \$0.py \$COPTS \$CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
 fi
-else
-  unset _EMCC_CCACHE
-  exec ccache "\$0" "\$@"
-fi
+#else
+#  unset _EMCC_CCACHE
+#  exec ccache "\$0" "\$@"
+#fi
 
 END
 
@@ -188,7 +200,7 @@ $EMSDK_PYTHON -E \$0.py "\$@"
 END
 
         chmod +x emsdk/upstream/emscripten/em*
-        touch embuild.done
+        touch emsdk/.completed
         sync
     fi
 

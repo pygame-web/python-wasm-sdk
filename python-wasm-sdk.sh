@@ -29,7 +29,7 @@ do
 
     if [ -f ${SDKROOT}/dev ]
     then
-        rm ${SDKROOT}/embuild.done
+        rm ${SDKROOT}/emsdk/.completed
     else
         rm -rf ${SDKROOT}/*
     fi
