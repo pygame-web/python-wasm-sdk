@@ -115,6 +115,11 @@ for arg do
         exit 0
     fi
 
+    if [ "\$arg" = "-fallow-argument-mismatch" ]
+    then
+        continue
+    fi
+
     # that is for some very bad setup.py behaviour regarding cross compiling. should not be needed ..
     [ "\$arg" = "-I/usr/include" ] && continue
     [ "\$arg" = "-I/usr/include/SDL2" ] && continue
@@ -151,7 +156,7 @@ for arg do
     else
         if \$IS_SHARED
         then
-            if echo "\$arg"|grep -q -F .so
+            if echo "\$arg"|grep \\\\.so\$
             then
                 PY_MODULE=true
                 SHARED_TARGET=\$arg
