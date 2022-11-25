@@ -13,7 +13,7 @@ then
 " 1>&2
     else
         # emsdk could have been deleted for full rebuild
-        rm emsdk/.completed
+        rm emsdk/.complete
 
         if git clone --no-tags --depth 1 --single-branch --branch main https://github.com/emscripten-core/emsdk.git
         then
@@ -48,7 +48,7 @@ then
 
     export EMSDK_PYTHON=$SYS_PYTHON
 
-    if [ -f emsdk/.completed ]
+    if [ -f emsdk/.complete ]
     then
         echo "
         * emsdk prereq ok
@@ -151,10 +151,11 @@ for arg do
     else
         if \$IS_SHARED
         then
-            if echo "$arg"|grep -q -F .so\$
+            if echo "\$arg"|grep -q -F .so
             then
                 PY_MODULE=true
-                SHARED_TARGET=$arg
+                SHARED_TARGET=\$arg
+                SHARED="-sSIDE_MODULE"
             fi
         fi
     fi
@@ -200,9 +201,12 @@ $EMSDK_PYTHON -E \$0.py "\$@"
 END
 
         chmod +x emsdk/upstream/emscripten/em*
-        touch emsdk/.completed
+        touch emsdk/.complete
         sync
     fi
+
+    # EM_PKG_CONFIG_PATH ?
+    # https://emscripten.org/docs/compiling/Building-Projects.html#pkg-config
 
     export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig"
 

@@ -29,11 +29,10 @@ do
 
     if [ -f ${SDKROOT}/dev ]
     then
-        rm ${SDKROOT}/emsdk/.completed
+        rm ${SDKROOT}/emsdk/.complete
     else
         rm -rf ${SDKROOT}/*
     fi
-
 
     cp -Rf * ${SDKROOT}/
 

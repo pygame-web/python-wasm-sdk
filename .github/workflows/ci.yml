@@ -46,13 +46,13 @@ jobs:
         bash -c "./python-wasm-sdk.sh"
 
     - name: Upload sdk to Github artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3.1.1
       with:
         path: /tmp/sdk
 
     - name: Upload sdk to Github Releases
       if: github.event_name == 'release'
-      uses: svenstaro/upload-release-action@2.2.1
+      uses: svenstaro/upload-release-action@2.3.0
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: /tmp/sdk/*
