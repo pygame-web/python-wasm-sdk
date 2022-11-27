@@ -178,7 +178,7 @@ done
 
 if \$IS_SHARED
 then
-    $EMSDK_PYTHON -E \$0.py \$SHARED $COPTS $LDFLAGS -sSIDE_MODULE -gsource-map --source-map-base / "\$@" \$COMMON
+    $EMSDK_PYTHON -E \$0.py \$SHARED -m32 $COPTS $LDFLAGS -sSIDE_MODULE -gsource-map --source-map-base / "\$@" \$COMMON
     if \$MVP
     then
         SOTMP=\$(mktemp).so
@@ -188,7 +188,7 @@ then
         rm \$SOTMP
     fi
 else
-    $EMSDK_PYTHON -E \$0.py \$COPTS \$CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
+    $EMSDK_PYTHON -E \$0.py -m32 \$COPTS \$CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
 fi
 #else
 #  unset _EMCC_CCACHE
