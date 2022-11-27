@@ -100,6 +100,8 @@ COMMON="-Wno-unused-command-line-argument -Wno-unreachable-code-fallthrough -Wno
 SHARED=""
 IS_SHARED=false
 PY_MODULE=false
+MVP=true
+
 for arg do
     shift
 
@@ -117,6 +119,12 @@ for arg do
 
     if [ "\$arg" = "-fallow-argument-mismatch" ]
     then
+        continue
+    fi
+
+    if [ "\$arg" = "-nomvp" ]
+    then
+        MVP=false
         continue
     fi
 
@@ -171,11 +179,14 @@ done
 if \$IS_SHARED
 then
     $EMSDK_PYTHON -E \$0.py \$SHARED $COPTS $LDFLAGS -sSIDE_MODULE -gsource-map --source-map-base / "\$@" \$COMMON
-    SOTMP=\$(mktemp).so
-    mv \$SHARED_TARGET \$SOTMP
-    $SDKROOT/emsdk/upstream/bin/wasm-emscripten-finalize -mvp \$SOTMP -o \$SHARED_TARGET
-    [ -f \$SHARED_TARGET.map ] && rm \$SHARED_TARGET.map
-    rm \$SOTMP
+    if \$MVP
+    then
+        SOTMP=\$(mktemp).so
+        mv \$SHARED_TARGET \$SOTMP
+        $SDKROOT/emsdk/upstream/bin/wasm-emscripten-finalize -mvp \$SOTMP -o \$SHARED_TARGET
+        [ -f \$SHARED_TARGET.map ] && rm \$SHARED_TARGET.map
+        rm \$SOTMP
+    fi
 else
     $EMSDK_PYTHON -E \$0.py \$COPTS \$CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
 fi
