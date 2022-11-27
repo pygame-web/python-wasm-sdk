@@ -96,7 +96,7 @@ unset PYTHONPATH
 # -Wwarn-absolute-paths
 # --valid-abspath ${SDKROOT}
 
-COMMON="-Wno-unused-command-line-argument -Wno-unreachable-code-fallthrough -Wno-limited-postlink-optimizations"
+COMMON="-Wno-unsupported-floating-point-opt -Wno-unused-command-line-argument -Wno-unreachable-code-fallthrough -Wno-limited-postlink-optimizations"
 SHARED=""
 IS_SHARED=false
 PY_MODULE=false
