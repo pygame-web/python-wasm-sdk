@@ -122,6 +122,11 @@ for arg do
         continue
     fi
 
+    if [ "\$arg" = "-lgcc" ]
+    then
+        continue
+    fi
+
     if [ "\$arg" = "-nomvp" ]
     then
         MVP=false
