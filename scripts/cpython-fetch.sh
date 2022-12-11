@@ -44,11 +44,11 @@ fi
 
 if echo $PYBUILD | grep -q 11$
 then
-    if false
+    if true
     then
-        wget -q -c https://www.python.org/ftp/python/3.11.0/Python-3.11.0b4.tar.xz
-        tar xf Python-3.11.0b4.tar.xz
-        ln -s Python-3.11.0b4 cpython${PYBUILD}
+        wget -q -c https://www.python.org/ftp/python/3.11.1/Python-3.11.1.tar.xz
+        tar xf Python-3.11.1.tar.xz
+        ln -s Python-3.11.1 cpython${PYBUILD}
     else
         if [ -d cpython${PYBUILD} ]
         then
