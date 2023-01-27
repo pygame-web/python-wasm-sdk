@@ -25,6 +25,59 @@ then
                     wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/17956.diff
                     patch -p1 < 17956.diff
                 popd
+
+                wget https://raw.githubusercontent.com/paradust7/minetest-wasm/main/emsdk_emcc.patch
+                patch -p1 < emsdk_emcc.patch
+
+                # https://github.com/paradust7/minetest-wasm/blob/main/emsdk_dirperms.patch
+                patch -p1 <<END
+--- emsdk-orig/upstream/emscripten/system/lib/wasmfs/wasmfs.cpp	2022-07-29 17:22:28.000000000 +0000
++++ emsdk/upstream/emscripten/system/lib/wasmfs/wasmfs.cpp	2022-08-06 02:07:24.098196400 +0000
+@@ -141,7 +141,7 @@
+     }
+
+     auto inserted =
+-      lockedParentDir.insertDirectory(childName, S_IRUGO | S_IXUGO);
++      lockedParentDir.insertDirectory(childName, S_IRUGO | S_IWUGO | S_IXUGO);
+     assert(inserted && "TODO: handle preload insertion errors");
+   }
+END
+                # https://raw.githubusercontent.com/paradust7/minetest-wasm/main/emsdk_file_packager.patch
+                patch -p1 << END
+--- emsdk1/upstream/emscripten/tools/file_packager.py	2022-03-24 19:45:39.000000000 +0000
++++ emsdk2/upstream/emscripten/tools/file_packager.py	2022-03-22 10:13:11.332849695 +0000
+@@ -686,8 +686,12 @@
+       use_data = '''// Reuse the bytearray from the XHR as the source for file reads.
+           DataRequest.prototype.byteArray = byteArray;
+           var files = metadata['files'];
++          function make_callback(i) {
++            var req = DataRequest.prototype.requests[files[i].filename];
++            return () => {req.onload()};
++          }
+           for (var i = 0; i < files.length; ++i) {
+-            DataRequest.prototype.requests[files[i].filename].onload();
++            setTimeout(make_callback(i));
+           }'''
+       use_data += ("          Module['removeRunDependency']('datafile_%s');\n"
+                    % js_manipulation.escape_for_js_string(data_target))
+END
+                # https://raw.githubusercontent.com/paradust7/minetest-wasm/main/emsdk_setlk.patch
+                patch -p1 << END
+--- emsdk-orig/upstream/emscripten/system/lib/wasmfs/syscalls.cpp	2022-07-29 17:22:28.000000000 +0000
++++ emsdk/upstream/emscripten/system/lib/wasmfs/syscalls.cpp	2022-08-06 05:05:17.014502697 +0000
+@@ -1419,7 +1419,7 @@
+       static_assert(F_SETLK == F_SETLK64);
+       static_assert(F_SETLKW == F_SETLKW64);
+       // Always error for now, until we implement byte-range locks.
+-      return -EACCES;
++      return 0; //-EACCES;
+     }
+     case F_GETOWN_EX:
+     case F_SETOWN:
+END
+
+
+
             popd
         fi
     fi
@@ -84,6 +137,14 @@ then
         cat > emsdk/upstream/emscripten/emcc <<END
 #!/bin/bash
 
+EMCC_TRACE=\${EMCC_TRACE:-false}
+if \$EMCC_TRACE
+then
+echo "
+$@" >> $SDKROOT/emcc.log
+
+fi
+
 unset _EMCC_CCACHE
 
 #if [ -z "\$_EMCC_CCACHE" ]
@@ -100,7 +161,16 @@ COMMON="-Wno-unsupported-floating-point-opt -Wno-unused-command-line-argument -W
 SHARED=""
 IS_SHARED=false
 PY_MODULE=false
-MVP=true
+MVP=\${MVP:true}
+LINKING=\${LINKING:-false}
+
+if echo "\$@ "|grep -q "\\.so "
+then
+    LINKING=true
+fi
+
+
+declare -A seen=( )
 
 for arg do
     shift
@@ -117,12 +187,56 @@ for arg do
         exit 0
     fi
 
+    if \$LINKING
+    then
+        # prevent duplicates objects/archives files on cmdline when linking shared
+        if echo \$arg|grep -q \\\\.o\$
+        then
+            [[ \${seen[\$arg]} ]] && continue
+        fi
+        if echo \$arg|grep -q \\\\.a\$
+        then
+            [[ \${seen[\$arg]} ]] && continue
+        fi
+        if echo \$arg|grep -q ^-l
+        then
+            [[ \${seen[\$arg]} ]] && continue
+        fi
+        seen[\$arg]=1
+    fi
+
+    arg_is_bad=false
+
+    for badarg in "-Wl,--as-needed" "-Wl,--eh-frame-hdr" "-Wl,-znoexecstack" "-Wl,-znow" "-Wl,-zrelro" "-Wl,-zrelro,-znow"
+    do
+        if [ "\$arg" = "\$badarg" ]
+        then
+            arg_is_bad=true
+            break
+        fi
+    done
+
+    if \$arg_is_bad
+    then
+        continue
+    fi
+
     if [ "\$arg" = "-fallow-argument-mismatch" ]
     then
         continue
     fi
 
+    if [ "\$arg" = "-lutil" ]
+    then
+        continue
+    fi
+
     if [ "\$arg" = "-lgcc" ]
+    then
+        continue
+    fi
+
+    if [ "\$arg" = "-lgcc_s" ]
     then
         continue
     fi
@@ -133,7 +247,8 @@ for arg do
         continue
     fi
 
-    # that is for some very bad setup.py behaviour regarding cross compiling. should not be needed ..
+    # that is for some very bad setup.py behaviour regarding cross compiling.
+    # should not be needed ..
     [ "\$arg" = "-I/usr/include" ] && continue
     [ "\$arg" = "-I/usr/include/SDL2" ] && continue
     [ "\$arg" = "-L/usr/lib64" ]	&& continue

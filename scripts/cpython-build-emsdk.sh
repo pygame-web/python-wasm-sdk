@@ -290,8 +290,9 @@ export PYMINOR=\$(echo -n \$PYBUILD|cut -d. -f2)
 
 export CARGO_HOME=\${CARGO_HOME:-/opt/python-rust-sdk}
 export RUSTUP_HOME=\${RUSTUP_HOME:-/opt/python-rust-sdk}
-export PATH=\${CARGO_HOME}/bin:$PATH
+export PATH=\${CARGO_HOME}/bin:\$PATH
 
+export EMSDK_QUIET=1
 
 if [[ ! -z \${EMSDK+z} ]]
 then
@@ -300,16 +301,17 @@ then
 else
     . ${SDKROOT}/config
     . ${SDKROOT}/emsdk/emsdk_env.sh
-    export PATH=$SDKROOT/emsdk/upstream/emscripten/system/bin:\$PATH
+    export PATH=$SDKROOT/emsdk/upstream/emscripten:$SDKROOT/emsdk/upstream/emscripten/system/bin:\$PATH
     export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig"
+    export NODE=\$(find \$EMSDK|grep /bin/node\$)
 fi
 
 export SYS_PYTHON=${SYS_PYTHON}
 export EMSDK_PYTHON=${SYS_PYTHON}
 
-export PATH=${HOST_PREFIX}/bin:\$PATH:${SDKROOT}/devices/emsdk/usr/bin
+export PATH=${HOST_PREFIX}/bin:\$PATH:\${SDKROOT}/devices/emsdk/usr/bin
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}
-export HOME=${SDKROOT}
+
 export PLATFORM_TRIPLET=${PYDK_PYTHON_HOST_PLATFORM}
 export PREFIX=$PREFIX
 export PYTHONPYCACHEPREFIX=${PYTHONPYCACHEPREFIX:-$PYTHONPYCACHEPREFIX}
