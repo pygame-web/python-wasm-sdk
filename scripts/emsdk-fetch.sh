@@ -18,6 +18,7 @@ then
         if git clone --no-tags --depth 1 --single-branch --branch main https://github.com/emscripten-core/emsdk.git
         then
             pushd emsdk
+                git checkout 91f8563a9d1a4a0ec03bbb2be23485367d85a091
                 ./emsdk install ${EMFLAVOUR:-latest}
                 ./emsdk activate ${EMFLAVOUR:-latest}
                 pushd upstream/emscripten
@@ -162,6 +163,17 @@ SHARED=""
 IS_SHARED=false
 PY_MODULE=false
 MVP=\${MVP:true}
+
+if \$MVP
+then
+    # -mcpu=generic would activate those https://reviews.llvm.org/D125728
+    # https://github.com/emscripten-core/emscripten/pull/17689
+    CPU="-mno-sign-ext -mno-mutable-globals -m32"
+else
+    CPU="-mcpu=bleeding-edge -m32"
+fi
+
+
 LINKING=\${LINKING:-false}
 
 if echo "\$@ "|grep -q "\\.so "
@@ -298,7 +310,7 @@ done
 
 if \$IS_SHARED
 then
-    $EMSDK_PYTHON -E \$0.py \$SHARED -m32 $COPTS $LDFLAGS -sSIDE_MODULE -gsource-map --source-map-base / "\$@" \$COMMON
+    $EMSDK_PYTHON -E \$0.py \$SHARED $CPU  $COPTS $LDFLAGS -sSIDE_MODULE -gsource-map --source-map-base / "\$@" \$COMMON
     if \$MVP
     then
         SOTMP=\$(mktemp).so
@@ -308,7 +320,7 @@ then
         rm \$SOTMP
     fi
 else
-    $EMSDK_PYTHON -E \$0.py -m32 \$COPTS \$CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
+    $EMSDK_PYTHON -E \$0.py $CPU \$COPTS \$CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
 fi
 #else
 #  unset _EMCC_CCACHE
