@@ -1,8 +1,7 @@
-"""Selector event loop for Em with signal handling."""
+"""Selector event loop for emsdk."""
 import sys
 
 __EMSCRIPTEN__ = (sys.platform=='emscripten')
-
 
 import errno
 import os
@@ -598,13 +597,15 @@ class BaseSelectorEventLoop(base_events.BaseEventLoop, EmPipe):
         if self._debug and sock.gettimeout() != 0:
             raise ValueError("the socket must be non-blocking")
 
-        if not hasattr(socket, "AF_UNIX") or sock.family != socket.AF_UNIX:
-            resolved = base_events._ensure_resolved(
-                address, family=sock.family, proto=sock.proto, loop=self
-            )
-            if not resolved.done():
-                yield from resolved
-            _, _, _, _, address = resolved.result()[0]
+        # https://github.com/emscripten-core/emscripten/issues/7417
+        if not __EMSCRIPTEN__:
+            if not hasattr(socket, "AF_UNIX") or sock.family != socket.AF_UNIX:
+                resolved = base_events._ensure_resolved(
+                    address, family=sock.family, proto=sock.proto, loop=self
+                )
+                if not resolved.done():
+                    yield from resolved
+                _, _, _, _, address = resolved.result()[0]
 
         fut = self.create_future()
         self._sock_connect(fut, sock, address)
