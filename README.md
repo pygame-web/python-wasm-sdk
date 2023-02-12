@@ -3,7 +3,7 @@ Tooling for building CPython and various packages (either third parties support 
 n WebAssembly
 
 
-example building from within own pygame git clone tree on ubuntu 20.04 or linux mint :
+example building from within own pygame git clone tree on ubuntu 22.04 or linux mint :
 ```bash
 #!/bin/bash
 # update system
