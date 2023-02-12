@@ -1,5 +1,6 @@
 # python-wasm-sdk
-Tooling for building CPython+Pygame on WebAssembly
+Tooling for building CPython and various packages (either third parties support or Python modules)
+n WebAssembly
 
 
 example building from within own pygame git clone tree on ubuntu 20.04 or linux mint :
