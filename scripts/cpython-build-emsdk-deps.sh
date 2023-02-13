@@ -7,6 +7,7 @@
 for pkg in $ROOT/sources.wasm/*.sh
 do
     pushd $ROOT/src
+    chmod +x $pkg
     $pkg
     popd
 done
@@ -95,12 +96,12 @@ else
 "  1>&2
     else
         #bad png+grayscale https://github.com/libsdl-org/SDL_image/releases/download/candidate-2.5.1/SDL2_image-2.5.1.tar.gz
-        wget -c -q https://github.com/libsdl-org/SDL_image/releases/download/release-2.6.1/SDL2_image-2.6.1.tar.gz
+        wget -c -q https://github.com/libsdl-org/SDL_image/releases/download/release-2.6.3/SDL2_image-2.6.3.tar.gz
 
-        tar xfz SDL2_image-2.6.1.tar.gz
+        tar xfz SDL2_image-2.6.3.tar.gz
     fi
 
-    pushd SDL2_image-2.6.1
+    pushd SDL2_image-2.6.3
     CFLAGS=$CPOPTS EMCC_CFLAGS="$ALL" CC=emcc  $CNF \
      --disable-sdltest --disable-jpg-shared --disable-png-shared
     #--disable-tif-shared

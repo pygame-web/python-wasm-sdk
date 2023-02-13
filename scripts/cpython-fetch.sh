@@ -44,31 +44,9 @@ fi
 
 if echo $PYBUILD | grep -q 11$
 then
-    if true
-    then
-        wget -q -c https://www.python.org/ftp/python/3.11.1/Python-3.11.1.tar.xz
-        tar xf Python-3.11.1.tar.xz
-        ln -s Python-3.11.1 cpython${PYBUILD}
-    else
-        if [ -d cpython${PYBUILD} ]
-        then
-            pushd cpython${PYBUILD} 2>&1 >/dev/null
-            git restore .
-
-            if git pull|grep -q 'Already up to date'
-            then
-                export REBUILD=${REBUILD:-false}
-            else
-                export REBUILD=true
-            fi
-            #not here or pip won't install properly anymore its wheels
-            #cat $ROOT/support/compilenone.py > ./Lib/compileall.py
-            popd
-        else
-            git clone --no-tags --depth 1 --single-branch --branch ${PYBUILD} https://github.com/python/cpython.git cpython${PYBUILD}
-            export REBUILD=true
-        fi
-    fi
+    wget -q -c https://www.python.org/ftp/python/3.11.2/Python-3.11.2.tar.xz
+    tar xf Python-3.11.2.tar.xz
+    ln -s Python-3.11.2 cpython${PYBUILD}
     export REBUILD=true
 fi
 
@@ -84,7 +62,6 @@ then
 fi
 
 popd
-
 
 
 # 3.10 is not wasm stable
