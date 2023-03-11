@@ -25,10 +25,13 @@ then
                     echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/17956"
                     wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/17956.diff
                     patch -p1 < 17956.diff
+                    echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/18941"
+                    wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/18941.diff
+                    patch -p1 < 18941.diff
                 popd
 
-                wget https://raw.githubusercontent.com/paradust7/minetest-wasm/main/emsdk_emcc.patch
-                patch -p1 < emsdk_emcc.patch
+#                wget https://raw.githubusercontent.com/paradust7/minetest-wasm/main/emsdk_emcc.patch
+#                patch -p1 < emsdk_emcc.patch
 
                 # https://github.com/paradust7/minetest-wasm/blob/main/emsdk_dirperms.patch
                 patch -p1 <<END

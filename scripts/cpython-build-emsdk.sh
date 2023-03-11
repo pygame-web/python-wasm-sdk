@@ -13,9 +13,6 @@
 
 export PYTHON_FOR_BUILD=${PYTHON_FOR_BUILD:-${HPY}}
 
-# remove old compiler wrapper to avoid conflicts
-[ -f $HOST_PREFIX/bin/cc ] && rm $HOST_PREFIX/bin/cc
-
 . ./scripts/emsdk-fetch.sh
 
 REBUILD_WASM=${REBUILD_WASMPY:-false}
@@ -264,9 +261,10 @@ sed -i 's|-g0|-g3|g' ${SDKROOT}/prebuilt/emsdk/${PYBUILD}/_sysconfigdata__emscri
 # python setup.py install --single-version-externally-managed --root=/
 # pip3 install .
 
-ln -sf ${SDKROOT}/emsdk/upstream/emscripten/emcc $HOST_PREFIX/bin/cc
 
-chmod +x $HOST_PREFIX/bin/cc
+# cmake usually wants cc
+ln ${SDKROOT}/emsdk/upstream/emscripten/emcc ${SDKROOT}/emsdk/upstream/emscripten/cc
+ln ${SDKROOT}/emsdk/upstream/emscripten/emcc.py ${SDKROOT}/emsdk/upstream/emscripten/cc.py
 
 cat > ${PYTHONPYCACHEPREFIX}/.nanorc <<END
 set tabsize 4
@@ -288,9 +286,11 @@ export PYBUILD=\${PYBUILD:-$PYBUILD}
 export PYMAJOR=\$(echo -n \$PYBUILD|cut -d. -f1)
 export PYMINOR=\$(echo -n \$PYBUILD|cut -d. -f2)
 
-export CARGO_HOME=\${CARGO_HOME:-/opt/python-rust-sdk}
-export RUSTUP_HOME=\${RUSTUP_HOME:-/opt/python-rust-sdk}
+export CARGO_HOME=\${CARGO_HOME:-${SDKROOT}}
+export RUSTUP_HOME=\${RUSTUP_HOME:-${SDKROOT}}
 export PATH=\${CARGO_HOME}/bin:\$PATH
+
+export PANDA_PRC_DIR=${SDKROOT}/support
 
 export EMSDK_QUIET=1
 
@@ -360,12 +360,11 @@ END
 
 chmod +x $HOST_PREFIX/bin/python3-wasm
 
+cp -f $HOST_PREFIX/bin/python3-wasm ${SDKROOT}/
+
 # TODO: FIXME:
-echo "368 cannot use python3-wasm as python3 for setup.py in pygame build" 1>&2
+echo "366: cannot use python3-wasm as python3 for setup.py in pygame build" 1>&2
 ln -sf $HOST_PREFIX/bin/python${PYBUILD} $HOST_PREFIX/bin/python3
-
-cp -f $HOST_PREFIX/bin/python3-wasm ${ROOT}/
-
 
 HPFX=./devices/$(arch)/usr/lib/python${PYBUILD}
 TPFX=./devices/emsdk/usr/lib/python${PYBUILD}

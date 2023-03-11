@@ -19,11 +19,9 @@ else
         echo 3.12 does not need patching for interactive FD
     else
         [ -f "Parser/pegen_errors.c" ] && patch -p1 <<END
-diff --git a/Parser/pegen_errors.c b/Parser/pegen_errors.c
-index 489699679633e..78266f712c05c 100644
---- a/Parser/pegen_errors.c
-+++ b/Parser/pegen_errors.c
-@@ -245,7 +245,7 @@ get_error_line_from_tokenizer_buffers(Parser *p, Py_ssize_t lineno)
+--- Python-3.11.2/Parser/pegen_errors.c	2023-02-07 14:37:51.000000000 +0100
++++ Python-3.11.2-wasm/Parser/pegen_errors.c	2023-03-03 16:18:08.672666445 +0100
+@@ -249,7 +249,7 @@
       * (multi-line) statement are stored in p->tok->interactive_src_start.
       * If not, we're parsing from a string, which means that the whole source
       * is stored in p->tok->str. */
