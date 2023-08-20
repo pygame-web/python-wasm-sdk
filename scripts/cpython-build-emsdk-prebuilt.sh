@@ -2,7 +2,7 @@
 
 . ${CONFIG:-config}
 
-CYTHON_REL=${CYTHON_REL:-3.0.0a11}
+CYTHON_REL=${CYTHON_REL:-3.0.0}
 CYTHON_WHL=${CYTHON:-Cython-${CYTHON_REL}-py2.py3-none-any.whl}
 
 $HPY -m pip install --upgrade pip
