@@ -7,4 +7,8 @@ echo "
 " 1>&2
 
 
-# use system packages.
+# install critical packages.
+
+
+# 3.12 and git deprecated setuptools bundling.
+$PIP install --upgrade setuptools

@@ -179,6 +179,7 @@ END
     touch ${PYTHONPYCACHEPREFIX}/empty/$($HPY -V|cut -f2 -d' ')
 
     #echo "#define HAVE_NCURSES_H" >> pyconfig.h
+
     if echo $PYBUILD|grep -q 3.10
     then
         cat > Modules/Setup.local <<END
@@ -203,9 +204,7 @@ _crypt
 _ctypes _ctypes/_ctypes.c _ctypes/callbacks.c _ctypes/callproc.c _ctypes/stgdict.c _ctypes/cfield.c ${SDKROOT}/emsdk/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/pic/libffi.a
 
 END
-
-
-fi
+    fi
 
     if emmake make -j$NPROC WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/
     then

@@ -1,0 +1,38 @@
+--- cpython/Python/sysmodule.c	2023-08-20 14:05:54.398071771 +0200
++++ cpython3.12/Python/sysmodule.c	2023-08-20 14:04:34.785129849 +0200
+@@ -50,7 +50,7 @@
+ extern const char *PyWin_DLLVersionString;
+ #endif
+ 
+-#ifdef __EMSCRIPTEN__
++#if 0
+ #include <emscripten.h>
+ #endif
+ 
+@@ -3136,7 +3136,7 @@
+     return NULL;
+ }
+ 
+-#ifdef __EMSCRIPTEN__
++#if 0
+ 
+ PyDoc_STRVAR(emscripten_info__doc__,
+ "sys._emscripten_info\n\
+@@ -3368,7 +3368,7 @@
+         goto type_init_failed;
+     }
+ 
+-#ifdef __EMSCRIPTEN__
++#if 0
+     if (EmscriptenInfoType == NULL) {
+         EmscriptenInfoType = PyStructSequence_NewType(&emscripten_info_desc);
+         if (EmscriptenInfoType == NULL) {
+@@ -3641,7 +3641,7 @@
+ #endif
+     _PyStructSequence_FiniBuiltin(interp, &Hash_InfoType);
+     _PyStructSequence_FiniBuiltin(interp, &AsyncGenHooksType);
+-#ifdef __EMSCRIPTEN__
++#if 0
+     if (_Py_IsMainInterpreter(interp)) {
+         Py_CLEAR(EmscriptenInfoType);
+     }
