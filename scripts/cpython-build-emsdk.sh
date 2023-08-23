@@ -248,18 +248,17 @@ mkdir -p $PYTHONPYCACHEPREFIX/sysconfig
 
 
 # FIXME: seems CI cannot locate that one with python3-wasm
+
+MODSYSCONFIG="${SDKROOT}/prebuilt/emsdk/${PYBUILD}/_sysconfigdata__emscripten_debug.py"
+
 cp $PREFIX/lib/python${PYBUILD}/_sysconfigdata__emscripten_wasm32-emscripten.py \
- ${SDKROOT}/prebuilt/emsdk/${PYBUILD}/_sysconfigdata__emscripten_debug.py
+ ${MODSYSCONFIG}
 
-sed -i 's|-Os|-O0|g' ${SDKROOT}/prebuilt/emsdk/${PYBUILD}/_sysconfigdata__emscripten_debug.py
-sed -i 's|-g0|-g3|g' ${SDKROOT}/prebuilt/emsdk/${PYBUILD}/_sysconfigdata__emscripten_debug.py
+sed -i 's|-Os|-O0|g' ${MODSYSCONFIG}
+sed -i 's|-g0|-g3|g' ${MODSYSCONFIG}
 
-#cp ${SDKROOT}/prebuilt/emsdk/${PYBUILD}/_sysconfigdata__emscripten_debug.py \
-# $PREFIX/lib/python${PYBUILD}/
-
-# python setup.py install --single-version-externally-managed --root=/
-# pip3 install .
-
+# this one is required for `python3-wasm -mbuild` venv
+ln ${MODSYSCONFIG} ${SDKROOT}/devices/$(arch)/usr/lib/python${PYBUILD}/
 
 # cmake usually wants cc
 ln ${SDKROOT}/emsdk/upstream/emscripten/emcc ${SDKROOT}/emsdk/upstream/emscripten/cc

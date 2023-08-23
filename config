@@ -7,7 +7,7 @@ export PYTHONDONTWRITEBYTECODE=1
 export REBUILD=${REBUILD:-false}
 export CI=${CI:-false}
 
-export PYBUILD=${PYBUILD:-3.11}
+export PYBUILD=${PYBUILD:-3.12}
 export PYMAJOR=$(echo -n $PYBUILD|cut -d. -f1)
 export PYMINOR=$(echo -n $PYBUILD|cut -d. -f2)
 
@@ -42,11 +42,12 @@ fi
 
 
 #stable
-# EMFLAVOUR=latest
-# EMFLAVOUR=${EMFLAVOUR:-latest}
 # embind broke after 3.1.34
+# export EMFLAVOUR=${EMFLAVOUR:-3.1.34}
+# export EMFLAVOUR=${EMFLAVOUR:latest}
 
-export EMFLAVOUR=${EMFLAVOUR:-3.1.34}
+
+EMFLAVOUR=${EMFLAVOUR:-tot}
 
 # no extra wasm features
 export WASMFLAVOUR=mvp

@@ -1,11 +1,13 @@
 #!/bin/bash
 
 
-
 . ${CONFIG:-config}
+. scripts/emsdk-fetch.sh
+
+
+cd ${ROOT}/src
 
 export ASSIMP="assimpjs-wasm"
-
 
 if [ -f assimp.patched ]
 then
@@ -38,4 +40,3 @@ else
     popd
 fi
 
-cd $SDKROOT

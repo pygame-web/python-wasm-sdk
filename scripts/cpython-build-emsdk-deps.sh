@@ -3,17 +3,19 @@
 . ${CONFIG:-config}
 
 
-
 for pkg in $ROOT/sources.wasm/*.sh
 do
-    pushd $ROOT/src
+    cd $ROOT
     chmod +x $pkg
+    echo "
+
+    Third party : $pkg
+
+
+"
     $pkg
-    popd
 done
 
-
-cd $ROOT/src
 
 cd $ROOT
 

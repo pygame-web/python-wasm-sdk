@@ -22,6 +22,7 @@ echo "
 
 $PIP install --upgrade pip
 
+$PIP install --upgrade build
 
 # make wheels
 # /opt/python-wasm-sdk/python3-wasm setup.py bdist_wheel

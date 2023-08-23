@@ -1,12 +1,14 @@
 #!/bin/bash
 
 . ${CONFIG:-config}
+. scripts/emsdk-fetch.sh
 
+cd ${ROOT}/src
 export OPENSSL="openssl-1.1.1s"
 export URL_OPENSSL=${URL_OPENSSL:-"URL https://ftp.openssl.org/source/$OPENSSL.tar.gz"}
 export HASH_OPENSSL="URL_HASH SHA256=c5ac01e760ee6ff0dab61d6b2bbd30146724d063eb322180c6f18a6f74e4b6aa"
 
-. scripts/emsdk-fetch.sh
+
 
 if [ -f openssl.patched ]
 then
@@ -72,3 +74,4 @@ else
     cp libcrypto.a libssl.a "$PREFIX/lib"
     popd
 fi
+

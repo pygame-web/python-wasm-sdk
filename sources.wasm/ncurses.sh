@@ -2,6 +2,11 @@
 
 . ${CONFIG:-config}
 
+. scripts/emsdk-fetch.sh
+
+
+cd ${ROOT}/src
+
 # --disable-database --enable-termcap
 
 NCOPTS="--enable-ext-colors --enable-ext-mouse --prefix=$PREFIX --disable-echo --without-pthread \
