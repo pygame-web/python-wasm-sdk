@@ -166,7 +166,7 @@ END
 #     --with-libs='-lz -lffi' \
 
 
-    CONFIG_SITE=$ROOT/src/cpython${PYBUILD}/Tools/wasm/config.site-wasm32-pydk \
+    PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig" CONFIG_SITE=$ROOT/src/cpython${PYBUILD}/Tools/wasm/config.site-wasm32-pydk \
     emconfigure $ROOT/src/cpython${PYBUILD}/configure -C --with-emscripten-target=browser \
      --cache-file=${PYTHONPYCACHEPREFIX}/config.cache \
      --enable-wasm-dynamic-linking $TESTSUITE\
@@ -192,32 +192,46 @@ curses
 *static*
 zlib zlibmodule.c
 END
-# _ctypes _ctypes/_ctypes.c _ctypes/callbacks.c _ctypes/callproc.c _ctypes/stgdict.c _ctypes/cfield.c
+
     else
         cat > Modules/Setup.local <<END
+*static*
+_ctypes _ctypes/_ctypes.c _ctypes/callbacks.c _ctypes/callproc.c _ctypes/stgdict.c _ctypes/cfield.c ${SDKROOT}/emsdk/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/pic/libffi.a
+
 *disabled*
 _decimal
 xxsubtype
 _crypt
 
-*static*
-_ctypes _ctypes/_ctypes.c _ctypes/callbacks.c _ctypes/callproc.c _ctypes/stgdict.c _ctypes/cfield.c ${SDKROOT}/emsdk/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/pic/libffi.a
-
 END
     fi
 
+    sed -i 's|   -lcrypto||g' Makefile
+
     if emmake make -j$NPROC WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/
     then
-        emmake make WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/ install
+        if emmake make WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/ install
+        then
+            echo ok
+        else
+            exit 1
+        fi
     else
-        echo " **** cpython wasm build failed ***
+        emmake make -j1 Modules/_ctypes/_ctypes.o
+        if emmake make WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/ install
+        then
+            echo ok
+        else
+            echo " **** cpython wasm build failed ***
 
-        emmake make WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/ install
+        emmake make WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/
 
         " 1>&2
 
-        exit 1
+            exit 1
+        fi
     fi
+
 
     rm -rf $(find $ROOT/devices/ -type d|grep /__pycache__$)
 

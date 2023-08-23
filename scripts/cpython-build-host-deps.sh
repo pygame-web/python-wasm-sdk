@@ -7,7 +7,8 @@ echo "
 " 1>&2
 
 
-# install critical packages.
+# install and update critical packages.
+$PIP install --upgrade pip
 
 
 # 3.12 and git deprecated setuptools bundling.
