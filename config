@@ -43,7 +43,7 @@ fi
 
 #stable
 # embind broke after 3.1.34
-# export EMFLAVOUR=${EMFLAVOUR:-3.1.34}
+# export EMFLAVOUR=3.1.34
 # export EMFLAVOUR=${EMFLAVOUR:latest}
 
 

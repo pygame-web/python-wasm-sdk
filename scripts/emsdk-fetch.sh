@@ -24,10 +24,18 @@ then
                 pushd upstream/emscripten
                     echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/17956"
                     wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/17956.diff
-                    patch -p1 < 17956.diff
-                    #echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/18941"
-                    #wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/18941.diff
-                    #patch -p1 < 18941.diff
+                    if patch -p1 < 17956.diff
+                    then
+                        echo applied https://github.com/emscripten-core/emscripten/pull/17956
+                        # 18941 has been merged
+                    else
+                        # deal with old version of emsdk for the above 3.1.45 patch
+                        sed -i 's|new Uint8Array(data.object.contents), true, true|FS.readFile(_file), true, true|g' src/library_browser.js
+                        # merged since 3.1.34 which quite the more stable atm
+                        #echo "MAYBE FIXME: Applying https://github.com/emscripten-core/emscripten/pull/18941"
+                        #wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/18941.diff
+                        #patch -p1 < 18941.diff
+                    fi
                 popd
 
 #                wget https://raw.githubusercontent.com/paradust7/minetest-wasm/main/emsdk_emcc.patch
@@ -170,7 +178,7 @@ if \$MVP
 then
     # -mcpu=generic would activate those https://reviews.llvm.org/D125728
     # https://github.com/emscripten-core/emscripten/pull/17689
-    CPU="-mno-sign-ext -mno-mutable-globals -m32"
+    CPU="-sWASM_BIGINT=0 -sMIN_SAFARI_VERSION=120000 -mnontrapping-fptoint -mno-reference-types -mno-sign-ext -mno-mutable-globals -m32"
 else
     CPU="-mcpu=bleeding-edge -m32"
 fi
@@ -322,7 +330,7 @@ then
         rm \$SOTMP
     fi
 else
-    $EMSDK_PYTHON -E \$0.py $CPU \$COPTS \$CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
+    $EMSDK_PYTHON -E \$0.py $CPU -fpic \$COPTS \$CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
 fi
 #else
 #  unset _EMCC_CCACHE

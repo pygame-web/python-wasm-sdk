@@ -96,11 +96,11 @@ echo "
 fi
 
 # in this special case build testsuite
-# main repo https://github.com/pmp-p/python-wasm-plus
+# main repo https://github.com/pmp-p/python-wasm-test
 
 # pygame-web won't build test modules
 
-if echo $GITHUB_WORKSPACE|grep -q /python-wasm-plus/
+if echo $GITHUB_WORKSPACE|grep -q /python-wasm-test/
 then
     TESTSUITE="--enable-test-modules"
     #TESTSUITE=""
@@ -166,6 +166,13 @@ END
 #     --with-libs='-lz -lffi' \
 
 
+    # MODULE__HASHLIB_LDFLAGS=-L/usr/lib   -lcrypto
+    pushd $ROOT/src/cpython${PYBUILD}
+    sed -i 's|   -lcrypto||g' Makefile.pre.in
+    sed -i 's|-sWASM_BIGINT||g' configure
+    sed -i 's|-sWASM_BIGINT||g' configure.ac
+    popd
+
     PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig" CONFIG_SITE=$ROOT/src/cpython${PYBUILD}/Tools/wasm/config.site-wasm32-pydk \
     emconfigure $ROOT/src/cpython${PYBUILD}/configure -C --with-emscripten-target=browser \
      --cache-file=${PYTHONPYCACHEPREFIX}/config.cache \
@@ -206,8 +213,6 @@ _crypt
 END
     fi
 
-    sed -i 's|   -lcrypto||g' Makefile
-
     if emmake make -j$NPROC WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/
     then
         if emmake make WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/ install
@@ -217,18 +222,21 @@ END
             exit 1
         fi
     else
+        sed -i 's|   -lcrypto||g' Makefile
         emmake make -j1 Modules/_ctypes/_ctypes.o
         if emmake make WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/ install
         then
             echo ok
         else
-            echo " **** cpython wasm build failed ***
+            echo "
 
-        emmake make WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/
+     **** cpython wasm build failed ***
+
+    emmake make WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/ install
 
         " 1>&2
 
-            exit 1
+            exit 2
         fi
     fi
 
@@ -375,7 +383,7 @@ chmod +x $HOST_PREFIX/bin/python3-wasm
 cp -f $HOST_PREFIX/bin/python3-wasm ${SDKROOT}/
 
 # TODO: FIXME:
-echo "366: cannot use python3-wasm as python3 for setup.py in pygame build" 1>&2
+echo "386: cannot use python3-wasm as python3 for setup.py in pygame build" 1>&2
 ln -sf $HOST_PREFIX/bin/python${PYBUILD} $HOST_PREFIX/bin/python3
 
 HPFX=./devices/$(arch)/usr/lib/python${PYBUILD}
