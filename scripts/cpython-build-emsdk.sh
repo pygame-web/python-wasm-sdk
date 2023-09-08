@@ -313,6 +313,8 @@ export PATH=\${CARGO_HOME}/bin:\$PATH
 export PANDA_PRC_DIR=${SDKROOT}/support
 
 export EMSDK_QUIET=1
+export EM_IGNORE_SANITY=1
+export EMCC_SKIP_SANITY_CHECK=1
 
 if [[ ! -z \${EMSDK+z} ]]
 then
