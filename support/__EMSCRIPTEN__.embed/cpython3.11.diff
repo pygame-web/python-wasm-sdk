@@ -1,5 +1,27 @@
---- Python-3.11.2/Modules/readline.c	2023-02-07 14:37:51.000000000 +0100
-+++ Python-3.11.2-wasm/Modules/readline.c	2023-03-03 16:18:08.616667021 +0100
+--- Python-3.11.5/configure.ac	2023-08-24 14:09:18.000000000 +0200
++++ Python-3.11.5-wasm/configure.ac	2023-09-09 22:41:25.454577300 +0200
+@@ -2109,7 +2109,7 @@
+     AS_VAR_APPEND([LDFLAGS_NODIST], [" -sALLOW_MEMORY_GROWTH -sTOTAL_MEMORY=20971520"])
+ 
+     dnl map int64_t and uint64_t to JS bigint
+-    AS_VAR_APPEND([LDFLAGS_NODIST], [" -sWASM_BIGINT"])
++    AS_VAR_APPEND([LDFLAGS_NODIST], [" "])
+ 
+     dnl Include file system support
+     AS_VAR_APPEND([LDFLAGS_NODIST], [" -sFORCE_FILESYSTEM -lidbfs.js -lnodefs.js -lproxyfs.js -lworkerfs.js"])
+--- Python-3.11.5/configure	2023-08-24 14:09:18.000000000 +0200
++++ Python-3.11.5-wasm/configure	2023-09-09 22:41:25.453577313 +0200
+@@ -8156,7 +8156,7 @@
+ 
+         as_fn_append LDFLAGS_NODIST " -sALLOW_MEMORY_GROWTH -sTOTAL_MEMORY=20971520"
+ 
+-        as_fn_append LDFLAGS_NODIST " -sWASM_BIGINT"
++        as_fn_append LDFLAGS_NODIST " "
+ 
+         as_fn_append LDFLAGS_NODIST " -sFORCE_FILESYSTEM -lidbfs.js -lnodefs.js -lproxyfs.js -lworkerfs.js"
+ 
+--- Python-3.11.5/Modules/readline.c	2023-08-24 14:09:18.000000000 +0200
++++ Python-3.11.5-wasm/Modules/readline.c	2023-09-09 22:33:10.196291366 +0200
 @@ -1326,7 +1326,9 @@
          int has_input = 0, err = 0;
  
@@ -11,8 +33,99 @@
  
              /* [Bug #1552726] Only limit the pause if an input hook has been
                 defined.  */
---- Python-3.11.2/Python/sysmodule.c	2023-02-07 14:37:51.000000000 +0100
-+++ Python-3.11.2-wasm/Python/sysmodule.c	2023-03-03 16:18:08.616667021 +0100
+--- Python-3.11.5/Parser/pegen_errors.c	2023-08-24 14:09:18.000000000 +0200
++++ Python-3.11.5-wasm/Parser/pegen_errors.c	2023-09-09 22:33:10.196291366 +0200
+@@ -249,7 +249,7 @@
+      * (multi-line) statement are stored in p->tok->interactive_src_start.
+      * If not, we're parsing from a string, which means that the whole source
+      * is stored in p->tok->str. */
+-    assert((p->tok->fp == NULL && p->tok->str != NULL) || p->tok->fp == stdin);
++    assert((p->tok->fp == NULL && p->tok->str != NULL) || p->tok->fp != NULL);
+ 
+     char *cur_line = p->tok->fp_interactive ? p->tok->interactive_src_start : p->tok->str;
+     if (cur_line == NULL) {
+--- Python-3.11.5/Programs/python.c	2023-08-24 14:09:18.000000000 +0200
++++ Python-3.11.5-wasm/Programs/python.c	2023-09-09 22:33:10.196291366 +0200
+@@ -2,16 +2,72 @@
+ 
+ #include "Python.h"
+ 
+-#ifdef MS_WINDOWS
+-int
+-wmain(int argc, wchar_t **argv)
++#if __PYDK__
++#include "pycore_call.h"          // _PyObject_CallNoArgs()
++#include "pycore_initconfig.h"    // _PyArgv
++#include "pycore_interp.h"        // _PyInterpreterState.sysdict
++#include "pycore_pathconfig.h"    // _PyPathConfig_ComputeSysPath0()
++#include "pycore_pylifecycle.h"   // _Py_PreInitializeFromPyArgv()
++#include "pycore_pystate.h"       // _PyInterpreterState_GET()
++
++static PyStatus
++pymain_init(const _PyArgv *args)
++{
++    PyStatus status;
++
++    status = _PyRuntime_Initialize();
++    if (_PyStatus_EXCEPTION(status)) {
++        return status;
++    }
++
++    PyPreConfig preconfig;
++    PyPreConfig_InitPythonConfig(&preconfig);
++
++    status = _Py_PreInitializeFromPyArgv(&preconfig, args);
++    if (_PyStatus_EXCEPTION(status)) {
++        return status;
++    }
++
++    PyConfig config;
++    PyConfig_InitPythonConfig(&config);
++
++    if (args->use_bytes_argv) {
++        status = PyConfig_SetBytesArgv(&config, args->argc, args->bytes_argv);
++    }
++    else {
++        status = PyConfig_SetArgv(&config, args->argc, args->wchar_argv);
++    }
++    if (_PyStatus_EXCEPTION(status)) {
++        goto done;
++    }
++
++    status = Py_InitializeFromConfig(&config);
++    if (_PyStatus_EXCEPTION(status)) {
++        goto done;
++    }
++    status = _PyStatus_OK();
++
++done:
++    PyConfig_Clear(&config);
++    return status;
++}
++
++static void
++pymain_free(void)
+ {
+-    return Py_Main(argc, argv);
++    _PyImport_Fini2();
++    _PyPathConfig_ClearGlobal();
++    _Py_ClearStandardStreamEncoding();
++    _Py_ClearArgcArgv();
++    _PyRuntime_Finalize();
+ }
++
++#include "/opt/python-wasm-sdk/support/__EMSCRIPTEN__.c"
+ #else
+ int
+ main(int argc, char **argv)
+ {
++
+     return Py_BytesMain(argc, argv);
+ }
+-#endif
++#endif //#if __PYDK__
+--- Python-3.11.5/Python/sysmodule.c	2023-08-24 14:09:18.000000000 +0200
++++ Python-3.11.5-wasm/Python/sysmodule.c	2023-09-09 22:33:10.196291366 +0200
 @@ -49,7 +49,7 @@
  extern const char *PyWin_DLLVersionString;
  #endif
@@ -22,7 +135,7 @@
  #include <emscripten.h>
  #endif
  
-@@ -2748,7 +2748,7 @@
+@@ -2750,7 +2750,7 @@
      return NULL;
  }
  
@@ -31,7 +144,7 @@
  
  PyDoc_STRVAR(emscripten_info__doc__,
  "sys._emscripten_info\n\
-@@ -2988,7 +2988,7 @@
+@@ -2990,7 +2990,7 @@
          }
      }
  
@@ -40,7 +153,7 @@
      if (EmscriptenInfoType == NULL) {
          EmscriptenInfoType = PyStructSequence_NewType(&emscripten_info_desc);
          if (EmscriptenInfoType == NULL) {
-@@ -3243,7 +3243,7 @@
+@@ -3251,7 +3251,7 @@
  #endif
          _PyStructSequence_FiniType(&Hash_InfoType);
          _PyStructSequence_FiniType(&AsyncGenHooksType);

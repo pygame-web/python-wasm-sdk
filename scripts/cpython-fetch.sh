@@ -17,6 +17,7 @@ PYPATCH=true
 
 [ -f $HPY ] || REBUILD=true
 
+
 if echo $PYBUILD |grep -q 13$
 then
     if [ -d cpython${PYBUILD} ]
@@ -40,6 +41,7 @@ then
         export REBUILD=true
     fi
 fi
+
 
 if echo $PYBUILD |grep -q 12$
 then
@@ -73,17 +75,6 @@ then
     export REBUILD=true
 fi
 
-if echo $PYBUILD | grep -q 10$
-then
-    wget -q -c https://www.python.org/ftp/python/3.10.6/Python-3.10.6.tar.xz
-    tar xf Python-3.10.6.tar.xz
-
-    ln -s Python-3.10.6 cpython${PYBUILD}
-
-    NOPATCH=true
-    export REBUILD=true
-fi
-
 popd
 
 
@@ -102,7 +93,7 @@ fi
 
 if $NOPATCH
 then
-    echo -n
+    echo "finally there"
 else
     # do some patching for 3.11+ to allow more shared libs
     pushd src/cpython${PYBUILD} 2>&1 >/dev/null

@@ -20,7 +20,7 @@ export PYTHONPYCACHEPREFIX=${PYTHONPYCACHEPREFIX:-$(realpath ${SDKROOT}/build/py
 export HOME=${SDKROOT}
 
 export HPY=${HOST_PREFIX}/bin/python${PYBUILD}
-export PIP=${HOST_PREFIX}/bin/pip${PYBUILD}
+export HPIP=${HOST_PREFIX}/bin/pip${PYBUILD}
 
 # cpython build opts
 export CPOPTS="-Os -g0 -fPIC"
@@ -49,14 +49,20 @@ fi
 
 EMFLAVOUR=${EMFLAVOUR:-tot}
 
-# no extra wasm features
-export WASMFLAVOUR=mvp
+# base wasm features  pure is "mvp" 
+export WASM_FLAVOUR=bi
+
+# extra features. Safari 14 is expected to have BIGINT, ignore the emsdk warnings.
+export WASM_EXTRA="-sWASM_BIGINT -sPOLYFILL -sMIN_SAFARI_VERSION=140000"
+
+# tell to not normalize modules.
+export WASM_PURE=false
 
 #temp fix for oom on CI (Error: Process completed with exit code 143.)
 export EMSDK_NUM_CORES=1
 
 
-export PYDK_PYTHON_HOST_PLATFORM=wasm32-$WASMFLAVOUR-emscripten
+export PYDK_PYTHON_HOST_PLATFORM=wasm32-${WASM_FLAVOUR}-emscripten
 
 if echo $LD_LIBRARY_PATH |grep -q ${HOST_PREFIX}/lib
 then

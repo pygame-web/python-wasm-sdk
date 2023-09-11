@@ -173,15 +173,21 @@ SHARED=""
 IS_SHARED=false
 PY_MODULE=false
 MVP=\${MVP:true}
+WASM_PURE=\${WASM_PURE:true}
 
 if \$MVP
 then
     # -mcpu=generic would activate those https://reviews.llvm.org/D125728
     # https://github.com/emscripten-core/emscripten/pull/17689
-    CPU="-sWASM_BIGINT=0 -sMIN_SAFARI_VERSION=120000 -mnontrapping-fptoint -mno-reference-types -mno-sign-ext -mno-mutable-globals -m32"
+    # CPU="-sWASM_BIGINT=0 -sMIN_SAFARI_VERSION=140000 -mnontrapping-fptoint -mno-reference-types -mno-sign-ext -mno-mutable-globals -m32"
+    # go hybrid
+    CPU="-sMIN_SAFARI_VERSION=140000 -mnontrapping-fptoint -mno-reference-types -mno-sign-ext -mno-mutable-globals -m32"
 else
     CPU="-mcpu=bleeding-edge -m32"
 fi
+
+# quick hack until 3.1.47
+CPU="$WASM_EXTRA \$CPU"
 
 
 LINKING=\${LINKING:-false}
@@ -241,6 +247,16 @@ for arg do
     if \$arg_is_bad
     then
         continue
+    fi
+
+    if [ "\$arg" = "-c" ]
+    then
+        CPU_EXTRA=\$WASM_EXTRA
+    fi
+
+    if [ "\$arg" = "-o" ]
+    then
+        CPU_EXTRA=\$WASM_EXTRA
     fi
 
     if [ "\$arg" = "-fallow-argument-mismatch" ]
@@ -320,17 +336,22 @@ done
 
 if \$IS_SHARED
 then
-    $EMSDK_PYTHON -E \$0.py \$SHARED $CPU  $COPTS $LDFLAGS -sSIDE_MODULE -gsource-map --source-map-base / "\$@" \$COMMON
+    # always pass CPU opts when linking
+    $EMSDK_PYTHON -E \$0.py \$SHARED \$CPU $COPTS $LDFLAGS -sSIDE_MODULE -gsource-map --source-map-base / "\$@" \$COMMON
     if \$MVP
     then
-        SOTMP=\$(mktemp).so
-        mv \$SHARED_TARGET \$SOTMP
-        $SDKROOT/emsdk/upstream/bin/wasm-emscripten-finalize -mvp \$SOTMP -o \$SHARED_TARGET
-        [ -f \$SHARED_TARGET.map ] && rm \$SHARED_TARGET.map
-        rm \$SOTMP
+        if \$WASM_PURE
+        then
+            SOTMP=\$(mktemp).so
+            mv \$SHARED_TARGET \$SOTMP
+            $SDKROOT/emsdk/upstream/bin/wasm-emscripten-finalize -mvp \$SOTMP -o \$SHARED_TARGET
+            [ -f \$SHARED_TARGET.map ] && rm \$SHARED_TARGET.map
+            rm \$SOTMP
+        fi
     fi
 else
-    $EMSDK_PYTHON -E \$0.py $CPU -fpic \$COPTS \$CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
+    # pass CPU opts only when -c/-o but always PIC
+    $EMSDK_PYTHON -E \$0.py \$CPU_EXTRA -fpic \$COPTS \$CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
 fi
 #else
 #  unset _EMCC_CCACHE
@@ -339,7 +360,23 @@ fi
 
 END
 
-        cat emsdk/upstream/emscripten/emcc > emsdk/upstream/emscripten/em++
+        rm emsdk/upstream/emscripten/em++
+        if ln emsdk/upstream/emscripten/emcc emsdk/upstream/emscripten/em++
+        then
+            # cmake usually wants cc
+            ln emsdk/upstream/emscripten/emcc emsdk/upstream/emscripten/cc
+            ln emsdk/upstream/emscripten/emcc.py emsdk/upstream/emscripten/cc.py
+        else
+            echo "
+
+             ============ hard link not supported ==============
+
+
+            "
+            cat emsdk/upstream/emscripten/emcc > emsdk/upstream/emscripten/em++
+            cat emsdk/upstream/emscripten/emcc > emsdk/upstream/emscripten/cc
+            cat emsdk/upstream/emscripten/emcc.py > emsdk/upstream/emscripten/cc.py
+        fi
 
         cat > emsdk/upstream/emscripten/emar <<END
 #!/bin/bash

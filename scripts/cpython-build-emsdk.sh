@@ -165,13 +165,14 @@ END
 
 #     --with-libs='-lz -lffi' \
 
-
-    # MODULE__HASHLIB_LDFLAGS=-L/usr/lib   -lcrypto
     pushd $ROOT/src/cpython${PYBUILD}
+    # fix double linking
     sed -i 's|   -lcrypto||g' Makefile.pre.in
+    # please let compiler/user decide what to do with wasm CPU.
     sed -i 's|-sWASM_BIGINT||g' configure
     sed -i 's|-sWASM_BIGINT||g' configure.ac
     popd
+
 
     PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig" CONFIG_SITE=$ROOT/src/cpython${PYBUILD}/Tools/wasm/config.site-wasm32-pydk \
     emconfigure $ROOT/src/cpython${PYBUILD}/configure -C --with-emscripten-target=browser \
@@ -187,31 +188,6 @@ END
 
     #echo "#define HAVE_NCURSES_H" >> pyconfig.h
 
-    if echo $PYBUILD|grep -q 3.10
-    then
-        cat > Modules/Setup.local <<END
-*disabled*
-_decimal
-xxsubtype
-_crypt
-curses
-
-*static*
-zlib zlibmodule.c
-END
-
-    else
-        cat > Modules/Setup.local <<END
-*static*
-_ctypes _ctypes/_ctypes.c _ctypes/callbacks.c _ctypes/callproc.c _ctypes/stgdict.c _ctypes/cfield.c ${SDKROOT}/emsdk/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/pic/libffi.a
-
-*disabled*
-_decimal
-xxsubtype
-_crypt
-
-END
-    fi
 
     if emmake make -j$NPROC WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/
     then
@@ -282,9 +258,6 @@ sed -i 's|-g0|-g3|g' ${MODSYSCONFIG}
 # this one is required for `python3-wasm -mbuild` venv
 ln ${MODSYSCONFIG} ${SDKROOT}/devices/$(arch)/usr/lib/python${PYBUILD}/
 
-# cmake usually wants cc
-ln ${SDKROOT}/emsdk/upstream/emscripten/emcc ${SDKROOT}/emsdk/upstream/emscripten/cc
-ln ${SDKROOT}/emsdk/upstream/emscripten/emcc.py ${SDKROOT}/emsdk/upstream/emscripten/cc.py
 
 cat > ${PYTHONPYCACHEPREFIX}/.nanorc <<END
 set tabsize 4

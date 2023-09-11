@@ -3,13 +3,13 @@
 . ${CONFIG:-config}
 
 echo "
-    *   cpython-build-host-prebuilt pip==$PIP   *
+    *   cpython-build-host-prebuilt pip==$HPIP   *
 " 1>&2
 
 
 # install and update critical packages.
-$PIP install --upgrade pip
+$HPIP install --upgrade pip
 
 
 # 3.12 and git deprecated setuptools bundling.
-$PIP install --upgrade setuptools
+$HPIP install --upgrade setuptools
