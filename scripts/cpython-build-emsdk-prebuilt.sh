@@ -16,6 +16,8 @@ $HPIP install --upgrade setuptools
 # aioconsole only for the simulator
 $HPIP install --upgrade aioconsole
 
+# support package build/install
+$HPY -m pip install --upgrade $PACKAGING
 
 
 PIP="${SDKROOT}/python3-wasm -m pip"
@@ -25,8 +27,6 @@ echo "
 " 1>&2
 
 
-# support package build/install
-$HPY -m pip install --upgrade $PACKAGING
 
 $PIP install --upgrade $PACKAGING
 

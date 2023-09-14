@@ -48,7 +48,11 @@ else
         echo -n
     else
         pushd src 2>&1 >/dev/null
-        git clone https://github.com/pmp-p/libffi-emscripten.git libffi
+        #git clone https://github.com/pmp-p/libffi-emscripten.git libffi
+        git clone --no-tags --depth 1 --single-branch --branch master https://github.com/libffi/libffi
+        pushd libffi
+            ./autogen.sh
+        popd
         popd
     fi
 
@@ -59,7 +63,7 @@ else
 #and no loder lib-dynload in the way.
 
     EMCC_CFLAGS="-O0 -g0 -fPIC" CFLAGS="-O0 -g0 -fPIC" CC=${SDKROOT}/emsdk/upstream/emscripten/emcc \
-     emconfigure $ROOT/src/libffi/configure --host=wasm32-mvp-emscripten\
+     emconfigure $ROOT/src/libffi/configure --host=wasm32-bi-emscripten\
       --prefix=$PREFIX --enable-static --disable-shared --disable-dependency-tracking\
       --disable-builddir --disable-multi-os-directory --disable-raw-api --disable-docs
 
@@ -160,6 +164,18 @@ END
 
 
 
+#_ctypes _ctypes/_ctypes.c _ctypes/callbacks.c _ctypes/callproc.c _ctypes/stgdict.c _ctypes/cfield.c -ldl -lffi -DHAVE_FFI_PREP_CIF_VAR -DHAVE_FFI_PREP_CLOSURE_LOC -DHAVE_FFI_CLOSURE_ALLOC
+
+
+#*shared*
+#_ctypes_test _ctypes/_ctypes_test.c
+#_testcapi _testcapimodule.c
+#_testimportmultiple _testimportmultiple.c
+#_testmultiphase _testmultiphase.c
+
+
+
+
 # OPT="$CPOPTS -DNDEBUG -fwrapv" \
 #      --with-c-locale-coercion --without-pydebug --without-pymalloc --disable-ipv6  \
 
@@ -188,6 +204,8 @@ END
 
     #echo "#define HAVE_NCURSES_H" >> pyconfig.h
 
+    # prevent an error in install when byte compiling is disabled.
+    mkdir -p ${ROOT}/devices/emsdk/usr/lib/python${PYMAJOR}.${PYMINOR}/lib-dynload/__pycache__
 
     if emmake make -j$NPROC WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/
     then
@@ -217,6 +235,20 @@ END
     fi
 
 
+    if pushd ${SDKROOT}/build/cpython-wasm
+    then
+        mkdir -p ${SDKROOT}/prebuilt/emsdk
+        OBJS="build/temp.emscripten-wasm32-${PYBUILD}/opt/python-wasm-sdk/src/Python-3.11.5/Modules/_ctypes/_ctypes.o \
+     build/temp.emscripten-wasm32-${PYBUILD}/opt/python-wasm-sdk/src/Python-3.11.5/Modules/_ctypes/callbacks.o \
+     build/temp.emscripten-wasm32-${PYBUILD}/opt/python-wasm-sdk/src/Python-3.11.5/Modules/_ctypes/callproc.o \
+     build/temp.emscripten-wasm32-${PYBUILD}/opt/python-wasm-sdk/src/Python-3.11.5/Modules/_ctypes/cfield.o \
+     build/temp.emscripten-wasm32-${PYBUILD}/opt/python-wasm-sdk/src/Python-3.11.5/Modules/_ctypes/stgdict.o"
+
+        $SDKROOT/emsdk/upstream/emscripten/emar rcs ${SDKROOT}/prebuilt/emsdk/lib_ctypes${PYBUILD}.a $OBJS
+        popd
+    fi
+
+
     rm -rf $(find $ROOT/devices/ -type d|grep /__pycache__$)
 
     popd
@@ -229,11 +261,15 @@ END
         # move them to MEMFS
         mv $PREFIX/lib/python${PYBUILD}/lib-dynload/* ${SDKROOT}/prebuilt/emsdk/${PYBUILD}/lib-dynload/
 
+        echo "         =============== FIXME: _ctype dynamic build ==============="
+        rm ${SDKROOT}/prebuilt/emsdk/${PYBUILD}/lib-dynload/_ctypes.*
+        rm ${SDKROOT}/prebuilt/emsdk/${PYBUILD}/lib-dynload/xxlimited*
+
         # specific platform support
         cp -Rfv $ROOT/support/__EMSCRIPTEN__.patches/${PYBUILD}/. $PREFIX/lib/python${PYBUILD}/
 
         cp -vf build/cpython-wasm/libpython${PYBUILD}.a prebuilt/emsdk/
-        for lib in $(find build/cpython-wasm/|grep lib.*.a$)
+        for lib in $(find build/cpython-wasm/|grep -v /libpython3|grep lib.*.a$)
         do
             name=$(basename $lib .a)
             cp $lib prebuilt/emsdk/${name}${PYBUILD}.a
@@ -373,6 +409,8 @@ do
 " 1>&2
     cp -rf $HPFX/${moveit}   $TPFX/
     cp -rf $HPFX/${moveit}-* $TPFX/
+    cp -rf $HPFX/site-package/${moveit}   $TPFX/site-package/
+    cp -rf $HPFX/site-package/${moveit}-* $TPFX/site-package/
 done
 
 

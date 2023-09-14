@@ -3,6 +3,10 @@
 . ${CONFIG:-config}
 
 
+# cmake for assimp build
+$HPIP install --upgrade cmake
+
+
 for pkg in $ROOT/sources.wasm/*.sh
 do
     cd $ROOT
