@@ -22,8 +22,13 @@ then
                 ./emsdk install ${EMFLAVOUR:-latest}
                 ./emsdk activate ${EMFLAVOUR:-latest}
                 pushd upstream/emscripten
+                    echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/20281"
+                    wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/20281.diff
+                    patch -p1 < 20281.diff
+
                     echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/17956"
                     wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/17956.diff
+
                     if patch -p1 < 17956.diff
                     then
                         echo applied https://github.com/emscripten-core/emscripten/pull/17956
@@ -179,9 +184,8 @@ if \$MVP
 then
     # -mcpu=generic would activate those https://reviews.llvm.org/D125728
     # https://github.com/emscripten-core/emscripten/pull/17689
-    # CPU="-sWASM_BIGINT=0 -sMIN_SAFARI_VERSION=140000 -mnontrapping-fptoint -mno-reference-types -mno-sign-ext -mno-mutable-globals -m32"
-    # go hybrid
-    CPU="-sMIN_SAFARI_VERSION=140000 -mnontrapping-fptoint -mno-reference-types -mno-sign-ext -mno-mutable-globals -m32"
+
+    CPU="-mnontrapping-fptoint -mno-reference-types -mno-sign-ext -mno-mutable-globals -m32"
 else
     CPU="-mcpu=bleeding-edge -m32"
 fi
@@ -344,6 +348,7 @@ then
         then
             SOTMP=\$(mktemp).so
             mv \$SHARED_TARGET \$SOTMP
+            # --memory64-lowering --signext-lowering
             $SDKROOT/emsdk/upstream/bin/wasm-emscripten-finalize -mvp \$SOTMP -o \$SHARED_TARGET
             [ -f \$SHARED_TARGET.map ] && rm \$SHARED_TARGET.map
             rm \$SOTMP

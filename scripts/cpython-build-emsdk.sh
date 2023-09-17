@@ -48,7 +48,10 @@ else
         echo -n
     else
         pushd src 2>&1 >/dev/null
+        # breaks with 3.1.46
         #git clone https://github.com/pmp-p/libffi-emscripten.git libffi
+
+        # breaks with 3.1.46
         git clone --no-tags --depth 1 --single-branch --branch master https://github.com/libffi/libffi
         pushd libffi
             ./autogen.sh
@@ -315,8 +318,9 @@ export PYBUILD=\${PYBUILD:-$PYBUILD}
 export PYMAJOR=\$(echo -n \$PYBUILD|cut -d. -f1)
 export PYMINOR=\$(echo -n \$PYBUILD|cut -d. -f2)
 
-export CARGO_HOME=\${CARGO_HOME:-${SDKROOT}}
-export RUSTUP_HOME=\${RUSTUP_HOME:-${SDKROOT}}
+export CARGO_HOME=\${CARGO_HOME:-${SDKROOT}}/rust
+export RUSTUP_HOME=\${RUSTUP_HOME:-${SDKROOT}}/rust
+mkdir -p \${CARGO_HOME}/bin
 export PATH=\${CARGO_HOME}/bin:\$PATH
 
 export PANDA_PRC_DIR=${SDKROOT}/support

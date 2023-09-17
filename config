@@ -49,18 +49,26 @@ fi
 
 EMFLAVOUR=${EMFLAVOUR:-tot}
 
-# base wasm features  pure is "mvp" 
-export WASM_FLAVOUR=bi
 
-# extra features. Safari 14 is expected to have BIGINT, ignore the emsdk warnings.
-export WASM_EXTRA="-sWASM_BIGINT -sPOLYFILL -sMIN_SAFARI_VERSION=140000"
+# base wasm features pure is "mvp" , "bi" is bigint
 
-# tell to not normalize modules.
-export WASM_PURE=false
+if [ -f /mvp ]
+then
+    export WASM_FLAVOUR=mvp
+    export WASM_EXTRA="-sMIN_SAFARI_VERSION=120000"
+    export WASM_PURE=true
+else
+    export WASM_FLAVOUR=bi
+
+    # extra features. Safari 14 is expected to have BIGINT, ignore the emsdk warnings.
+    export WASM_EXTRA="-sWASM_BIGINT -sMIN_SAFARI_VERSION=140100"
+
+    # tell to not normalize modules.
+    export WASM_PURE=false
+fi
 
 #temp fix for oom on CI (Error: Process completed with exit code 143.)
 export EMSDK_NUM_CORES=1
-
 
 export PYDK_PYTHON_HOST_PLATFORM=wasm32-${WASM_FLAVOUR}-emscripten
 
