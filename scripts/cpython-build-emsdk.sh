@@ -241,11 +241,12 @@ END
     if pushd ${SDKROOT}/build/cpython-wasm
     then
         mkdir -p ${SDKROOT}/prebuilt/emsdk
-        OBJS="build/temp.emscripten-wasm32-${PYBUILD}/opt/python-wasm-sdk/src/Python-3.11.5/Modules/_ctypes/_ctypes.o \
-     build/temp.emscripten-wasm32-${PYBUILD}/opt/python-wasm-sdk/src/Python-3.11.5/Modules/_ctypes/callbacks.o \
-     build/temp.emscripten-wasm32-${PYBUILD}/opt/python-wasm-sdk/src/Python-3.11.5/Modules/_ctypes/callproc.o \
-     build/temp.emscripten-wasm32-${PYBUILD}/opt/python-wasm-sdk/src/Python-3.11.5/Modules/_ctypes/cfield.o \
-     build/temp.emscripten-wasm32-${PYBUILD}/opt/python-wasm-sdk/src/Python-3.11.5/Modules/_ctypes/stgdict.o"
+        OBJDIR=$(echo -n build/temp.emscripten-wasm32-${PYBUILD}/opt/python-wasm-sdk/src/Python-3.*)
+        OBJS="${OBJDIR}/Modules/_ctypes/_ctypes.o \
+     ${OBJDIR}/Modules/_ctypes/callbacks.o \
+     ${OBJDIR}/Modules/_ctypes/callproc.o \
+     ${OBJDIR}/Modules/_ctypes/cfield.o \
+     ${OBJDIR}/Modules/_ctypes/stgdict.o"
 
         $SDKROOT/emsdk/upstream/emscripten/emar rcs ${SDKROOT}/prebuilt/emsdk/lib_ctypes${PYBUILD}.a $OBJS
         popd
