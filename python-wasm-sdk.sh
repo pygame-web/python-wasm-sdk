@@ -52,10 +52,9 @@ do
         cd ${SDKROOT}
         . support/__EMSCRIPTEN__.sh
 
-        . scripts/cpython-build-host.sh #2>&1 >/dev/null
+        . scripts/cpython-build-host.sh 2>&1 >/dev/null
 
-        . scripts/cpython-build-host-deps.sh
-# >/dev/null
+        . scripts/cpython-build-host-deps.sh >/dev/null
 
         # cool down machine a bit
         [ -f /lowend ] && sleep 45
