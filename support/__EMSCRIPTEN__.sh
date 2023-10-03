@@ -14,10 +14,8 @@ then
     " 1>&2
 else
     pushd src/cpython${PYBUILD}
-    if echo $PYBUILD |grep -q 3.12$
+    if echo $PYBUILD |grep -q 3.11$
     then
-        echo 3.12 does not need patching for interactive FD
-    else
         [ -f "Parser/pegen_errors.c" ] && patch -p1 <<END
 --- Python-3.11.2/Parser/pegen_errors.c	2023-02-07 14:37:51.000000000 +0100
 +++ Python-3.11.2-wasm/Parser/pegen_errors.c	2023-03-03 16:18:08.672666445 +0100
@@ -31,9 +29,12 @@ else
      char *cur_line = p->tok->fp_interactive ? p->tok->interactive_src_start : p->tok->str;
      if (cur_line == NULL) {
 END
+    else
+        echo 3.12+ does not need patching for interactive FD
     fi
 
-    # fix the main startup to it gets a minimal kernel for wasm
+    # fix the main so it gets along with minimal wasm startup
+
     cat > Programs/python.c <<END
 /* Minimal main program -- everything is loaded from the library */
 

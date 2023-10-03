@@ -129,7 +129,7 @@ END
         ALL="$ALL libc libdlmalloc libcompiler_rt libc++-noexcept libc++abi-noexcept"
         ALL="$ALL libfetch zlib bzip2 libpng libjpeg freetype harfbuzz"
         ALL="$ALL sdl2 sdl2_mixer sdl2_gfx sdl2_ttf"
-        ALL="$ALL sqlite3"
+        ALL="$ALL sqlite3 vorbis ogg"
 
         echo "
         * building third parties libraries for emsdk ( can take time ... )

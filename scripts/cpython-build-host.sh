@@ -107,22 +107,28 @@ END
         fi
     fi
 
-# OPT="$OPT"
-# CFLAGS="-DHAVE_FFI_PREP_CIF_VAR=1 -DHAVE_FFI_PREP_CLOSURE_LOC=1 -DHAVE_FFI_CLOSURE_ALLOC=1"
-    if \
-    CC=clang CXX=clang++ CFLAGS="-fPIC" CPPFLAGS="-fPIC" \
-    ${ROOT}/src/cpython${PYBUILD}/configure \
+    if CC=clang CXX=clang++ CFLAGS="-fPIC" CPPFLAGS="-fPIC" \
+     ${ROOT}/src/cpython${PYBUILD}/configure \
      --prefix=$HOST_PREFIX $PYOPTS
     then
-        make -j$(nproc) install
-        rm -rf $(find $ROOT/devices/ -type d|grep __pycache__$)
 
-        rm $HOST_PREFIX/bin/*3 $HOST_PREFIX/bin/python3-config
+        if make -j$(nproc) install
+        then
+            rm -rf $(find $ROOT/devices/ -type d|grep __pycache__$)
+            rm $HOST_PREFIX/bin/python3-config \
+                $HOST_PREFIX/bin/idle3 \
+                $HOST_PREFIX/bin/pydoc3 \
+                $HOST_PREFIX/bin/python3
 
-        patchelf --remove-needed libintl.so.8  $HOST_PREFIX/bin/python${PYBUILD}
-        sed -i 's|-lintl ||g' ${SDKROOT}/devices/x86_64/usr/bin/python${PYBUILD}-config
-
-        cp -Rfv $ROOT/support/__EMSCRIPTEN__.patches/${PYBUILD}/. $HOST_PREFIX/lib/python${PYBUILD}/
+            # make ubuntu binaries able to run elsewhere
+            patchelf --remove-needed libintl.so.8  $HOST_PREFIX/bin/python${PYBUILD}
+            # and able to compile elsewhere
+            sed -i 's|-lintl ||g' ${SDKROOT}/devices/x86_64/usr/bin/python${PYBUILD}-config
+            cp -Rfv $ROOT/support/__EMSCRIPTEN__.patches/${PYBUILD}/. $HOST_PREFIX/lib/python${PYBUILD}/
+        else
+            echo "failed to build $PYTHON_FOR_BUILD"
+            exit 123
+        fi
     else
         echo "
 ==========================================================================
@@ -131,7 +137,7 @@ END
     reminder: you need clang libffi-dev and usual cpython requirements.
 ==========================================================================
     " 1>&2
-        exit 1
+        exit 133
     fi
 
     popd

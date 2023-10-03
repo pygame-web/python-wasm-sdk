@@ -240,13 +240,19 @@ END
 
     if pushd ${SDKROOT}/build/cpython-wasm
     then
-        mkdir -p ${SDKROOT}/prebuilt/emsdk
-        OBJDIR=$(echo -n build/temp.emscripten-wasm32-${PYBUILD}/opt/python-wasm-sdk/src/Python-3.*)
-        OBJS="${OBJDIR}/Modules/_ctypes/_ctypes.o \
-     ${OBJDIR}/Modules/_ctypes/callbacks.o \
-     ${OBJDIR}/Modules/_ctypes/callproc.o \
-     ${OBJDIR}/Modules/_ctypes/cfield.o \
-     ${OBJDIR}/Modules/_ctypes/stgdict.o"
+        if echo $PYBUILD|grep -q 11$
+        then
+            mkdir -p ${SDKROOT}/prebuilt/emsdk
+            OBJDIR=$(echo -n build/temp.emscripten-wasm32-${PYBUILD}/opt/python-wasm-sdk/src/Python-3.*)
+            OBJS="${OBJDIR}/Modules/_ctypes/_ctypes.o \
+             ${OBJDIR}/Modules/_ctypes/callbacks.o \
+             ${OBJDIR}/Modules/_ctypes/callproc.o \
+             ${OBJDIR}/Modules/_ctypes/cfield.o \
+             ${OBJDIR}/Modules/_ctypes/stgdict.o"
+        else
+        # 3.12+
+            OBJS=$(find $(pwd)/Modules/_ctypes|grep o$)
+        fi
 
         $SDKROOT/emsdk/upstream/emscripten/emar rcs ${SDKROOT}/prebuilt/emsdk/lib_ctypes${PYBUILD}.a $OBJS
         popd
