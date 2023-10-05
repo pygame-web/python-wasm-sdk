@@ -20,7 +20,7 @@ export PYTHONPYCACHEPREFIX=${PYTHONPYCACHEPREFIX:-$(realpath ${SDKROOT}/build/py
 export HOME=${SDKROOT}
 
 export HPY=${HOST_PREFIX}/bin/python${PYBUILD}
-export HPIP=${HOST_PREFIX}/bin/pip${PYBUILD}
+export HPIP="${HPY} -mpip"
 
 # cpython build opts
 export CPOPTS="-Os -g0 -fPIC"
