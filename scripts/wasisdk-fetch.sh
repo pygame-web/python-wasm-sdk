@@ -3,10 +3,12 @@
 
 if [[ -z ${WASISDK+z} ]]
 then
+    pushd ${SDKROOT:-/opt/python-wasm-sdk}
     . ${CONFIG:-config}
 
     export WASISDK="${SDKROOT}/wasisdk"
     export WASI_SDK_PREFIX="${WASISDK}/upstream"
+    export WASI_SYSROOT="${WASI_SDK_PREFIX}/share/wasi-sysroot"
 
 
 
@@ -14,7 +16,8 @@ then
     then
         echo "
         * using wasisdk from $(realpath wasisdk/upstream)
-            with sys python $SYS_PYTHON
+            with sys python $SYS_PYTHON and host python $HPY
+
 " 1>&2
     else
         pushd wasisdk
@@ -31,28 +34,116 @@ then
         ln ${SDKROOT}/wasisdk/bin/wasi ${SDKROOT}/wasisdk/bin/wasi-c++
         popd
 
+        $HPIP install cmake wasmtime
+
+        # /opt/python-wasm-sdk/devices/x86_64/usr/lib/python3.11/site-packages/cmake/data/share/cmake-3.27/Modules/Platform/
+        cp -v wasisdk/share/cmake/WASI.cmake ${SDKROOT}/devices/$(arch)/usr/lib/python${PYBUILD}/site-packages/cmake/data/share/cmake-*/Modules/Platform/
+
+cat > ${SDKROOT}/devices/$(arch)/usr/lib/python${PYBUILD}/site-packages/cmake/data/share/cmake-*/Modules/Platform/WASI.cmake <<END
+# Cmake toolchain description file for the Makefile
+
+set(CMAKE_TOOLCHAIN_FILE ${WASISDK}/share/cmake/wasi-sdk.cmake)
+
+# This is arbitrary, AFAIK, for now.
+cmake_minimum_required(VERSION 3.5.0)
+set(CMAKE_SYSTEM_NAME WASI)
+set(CMAKE_SYSTEM_VERSION 1)
+set(CMAKE_SYSTEM_PROCESSOR wasm32)
+set(triple wasm32-wasi)
+
+set(WASI True)
+option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
+set_property(GLOBAL PROPERTY CXX_EXCEPTIONS OFF)
+set_property(GLOBAL PROPERTY CXX_RTTI OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+set(COMPILER_SUPPORTS_FEXCEPTIONS FALSE)
+#add_compile_options(-fpic)
+#add_compile_options(-fno-exceptions)
+
+
+# Make HandleLLVMOptions.cmake happy.
+# TODO(sbc): We should probably fix llvm or libcxxabi instead.
+# See: https://reviews.llvm.org/D33753
+# set(UNIX 1)
+
+set(CMAKE_CROSSCOMPILING 1)
+
+
+if(WIN32)
+	set(WASI_HOST_EXE_SUFFIX ".exe")
+else()
+	set(WASI_HOST_EXE_SUFFIX "")
+endif()
+
+set(CMAKE_C_COMPILER ${WASISDK}/bin/wasi-c)
+set(CMAKE_CXX_COMPILER ${WASISDK}/bin/wasi-c++)
+set(CMAKE_ASM_COMPILER ${WASI_SDK_PREFIX}/bin/clang\${WASI_HOST_EXE_SUFFIX})
+set(CMAKE_AR ${WASI_SDK_PREFIX}/bin/llvm-ar\${WASI_HOST_EXE_SUFFIX})
+set(CMAKE_RANLIB ${WASI_SDK_PREFIX}/bin/llvm-ranlib\${WASI_HOST_EXE_SUFFIX})
+set(CMAKE_C_COMPILER_TARGET \${triple})
+set(CMAKE_CXX_COMPILER_TARGET \${triple})
+set(CMAKE_ASM_COMPILER_TARGET \${triple})
+
+# Don't look in the sysroot for executables to run during the build
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+# Only look in the sysroot (not in the host paths) for the rest
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
+
+END
+
+    pushd ${WASI_SYSROOT}
+    wget "https://github.com/vmware-labs/webassembly-language-runtimes/releases/download/libs%2Flibpng%2F1.6.39%2B20230629-ccb4cb0/libpng-1.6.39-wasi-sdk-20.0.tar.gz" -O-| tar xvfz -
+    wget "https://github.com/vmware-labs/webassembly-language-runtimes/releases/download/libs%2Fzlib%2F1.2.13%2B20230623-2993864/libz-1.2.13-wasi-sdk-20.0.tar.gz"  -O-| tar xvfz -
+    popd
+
+
     fi
+
+    popd
 
     export PATH="${WASISDK}/bin:${WASI_SDK_PREFIX}/bin:$PATH"
 
-    export WASI_SYSROOT="${WASI_SDK_PREFIX}/share/wasi-sysroot"
+    export PREFIX="${SDKROOT}/devices/wasi/usr"
 
-    export CC="${WASISDK}/bin/wasi-c"
-    export CPP="${WASISDK}/bin/wasi-cpp"
-    export CXX="${WASISDK}/bin/wasi++"
+    # instruct pkg-config to use wasi target root
+    export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig:${WASI_SYSROOT}/lib/wasm32-wasi/pkgconfig"
+
+    # for thirparty prebuilts .pc in sdk
+    export PKG_CONFIG_LIBDIR="${WASI_SYSROOT}/lib/wasm32-wasi/pkgconfig:${WASI_SYSROOT}/share/pkgconfig"
+    export PKG_CONFIG_SYSROOT_DIR="${WASI_SYSROOT}"
+
+
+    export PS1="[PyDK:wasi] \w $ "
 
 
     export LDSHARED="${WASI_SDK_PREFIX}/bin/wasm-ld"
     export AR="${WASI_SDK_PREFIX}/bin/llvm-ar"
     export RANLIB="${WASI_SDK_PREFIX}/bin/ranlib"
 
+    WASI_CFG="--sysroot=${WASI_SDK_PREFIX}/share/wasi-sysroot -I${WASISDK}/hotfix"
+    WASI_DEF="-D_WASI_EMULATED_MMAN -D_WASI_EMULATED_SIGNAL -D_WASI_EMULATED_PROCESS_CLOCKS -D_WASI_EMULATED_GETPID"
 
-    # instruct pkg-config to use wasi target root
-    export PKG_CONFIG_PATH="${SDKROOT}/devices/wasi/usr/lib/pkgconfig"
+    # wasi assembly
+    WASI_ALL="${WASI_CFG} ${WASI_DEF} -fPIC -fno-rtti -fno-exceptions"
 
-    # for thirparty prebuilts .pc in sdk
-    export PKG_CONFIG_LIBDIR="${WASI_SYSROOT}/lib/pkgconfig:${WASI_SYSROOT}/share/pkgconfig"
-    export PKG_CONFIG_SYSROOT_DIR="${WASI_SYSROOT}"
+
+    WASI_ALL="$WASI_ALL -Wno-unused-but-set-variable -Wno-unused-command-line-argument -Wno-unsupported-floating-point-opt"
+
+    # wasi linking
+    WASI_LNK="-lwasi-emulated-getpid -lwasi-emulated-mman -lwasi-emulated-signal -lwasi-emulated-process-clocks -lc++experimental -fno-exceptions"
+
+#    export CC="${WASISDK}/bin/wasi-c"
+#    export CPP="${WASISDK}/bin/wasi-cpp"
+#    export CXX="${WASISDK}/bin/wasi++"
+
+    CXX_lIBS="-lc++ -lc++abi -lc++experimental"
+
+    export CC="${WASI_SDK_PREFIX}/bin/clang ${WASI_ALL}"
+    export CXX="${WASI_SDK_PREFIX}/bin/clang++ ${WASI_ALL} ${CXX_lIBS}"
+    export CPP="${WASI_SDK_PREFIX}/bin/clang-cpp ${WASI_CFG} ${WASI_DEF}"
+
 
 
 

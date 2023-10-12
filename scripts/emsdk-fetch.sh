@@ -46,6 +46,11 @@ then
 #                wget https://raw.githubusercontent.com/paradust7/minetest-wasm/main/emsdk_emcc.patch
 #                patch -p1 < emsdk_emcc.patch
 
+
+                # fix mouse position for 3D canvas
+                wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/20442.diff
+                patch -p1 < 20442.diff
+
                 # https://github.com/paradust7/minetest-wasm/blob/main/emsdk_dirperms.patch
                 patch -p1 <<END
 --- emsdk-orig/upstream/emscripten/system/lib/wasmfs/wasmfs.cpp	2022-07-29 17:22:28.000000000 +0000
@@ -92,7 +97,6 @@ END
      case F_GETOWN_EX:
      case F_SETOWN:
 END
-
 
 
             popd
@@ -185,7 +189,7 @@ then
     # -mcpu=generic would activate those https://reviews.llvm.org/D125728
     # https://github.com/emscripten-core/emscripten/pull/17689
 
-    CPU="-mnontrapping-fptoint -mno-reference-types -mno-sign-ext -mno-mutable-globals -m32"
+    CPU="-sSUPPORT_LONGJMP=emscripten -mnontrapping-fptoint -mno-reference-types -mno-sign-ext -mno-mutable-globals -m32"
 else
     CPU="-mcpu=bleeding-edge -m32"
 fi
