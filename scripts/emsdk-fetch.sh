@@ -22,11 +22,11 @@ then
                 ./emsdk install ${EMFLAVOUR:-latest}
                 ./emsdk activate ${EMFLAVOUR:-latest}
                 pushd upstream/emscripten
-                    echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/20281"
+                    echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/20281 dylink.js : handle ** argument case"
                     wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/20281.diff
                     patch -p1 < 20281.diff
 
-                    echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/17956"
+                    echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/17956 file corruption when using emscripten_run_preload_plugins with BrowserFS"
                     wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/17956.diff
 
                     if patch -p1 < 17956.diff
@@ -47,9 +47,11 @@ then
 #                patch -p1 < emsdk_emcc.patch
 
 
-                # fix mouse position for 3D canvas
+                echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/20442 fix mouse position for 3D canvas"
+                pushd upstream/emscripten
                 wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/20442.diff
                 patch -p1 < 20442.diff
+                popd
 
                 # https://github.com/paradust7/minetest-wasm/blob/main/emsdk_dirperms.patch
                 patch -p1 <<END
@@ -153,6 +155,9 @@ END
             embuilder build $one
             embuilder --pic build $one
         done
+
+
+# maybe rewrite that in python and move it to emcc.py
 
         cat > emsdk/upstream/emscripten/emcc <<END
 #!/bin/bash
