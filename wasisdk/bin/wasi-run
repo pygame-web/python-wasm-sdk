@@ -1,0 +1,5 @@
+#!/bin/bash
+echo "WASI: $@"
+WASM=$1
+shift
+wasmtime run --mapdir /::/ $WASM -- $@

@@ -193,8 +193,9 @@ if \$MVP
 then
     # -mcpu=generic would activate those https://reviews.llvm.org/D125728
     # https://github.com/emscripten-core/emscripten/pull/17689
-
-    CPU="-sSUPPORT_LONGJMP=emscripten -mnontrapping-fptoint -mno-reference-types -mno-sign-ext -mno-mutable-globals -m32"
+    # -fPIC not allowed with -mno-mutable-globals
+    # -mno-sign-ext not allowed with pthread
+    CPU="-sSUPPORT_LONGJMP=emscripten -mnontrapping-fptoint -mno-reference-types -mno-sign-ext -m32"
 else
     CPU="-mcpu=bleeding-edge -m32"
 fi

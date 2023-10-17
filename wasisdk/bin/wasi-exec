@@ -1,0 +1,10 @@
+#!/bin/bash
+shift
+shift
+FN=$(realpath $1)
+shift
+#echo "WASI-EXEC : $FN $@"
+cd /
+export PS1="[PyDK:wasi] \w $ "
+#wasm3 $FN $@
+wasmtime run --mapdir /::/ $@
