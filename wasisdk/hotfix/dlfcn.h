@@ -19,22 +19,27 @@ extern "C" {
 
 #define RTLD_DI_LINKMAP 2
 
-int    dlclose(void *) {
+static int
+dlclose(void *) {
     puts("int dlclose(void)");
     return 0;
 }
 
-const char *errormsg = "dlerror";
-char  *dlerror(void) { 
+static const char *errormsg = "dlerror";
+
+static char *
+dlerror(void) { 
     return (char *)dlerror;    
 }
 
-void  *dlopen(const char *, int) {
+static void *
+dlopen(const char *, int) {
     puts("void *dlopen(const char *, int)");
     return NULL;
 }
 
-void  *dlsym(void *__restrict, const char *__restrict) {
+static void *
+dlsym(void *__restrict, const char *__restrict) {
     puts("void *dlsym(void *__restrict, const char *__restrict)");
     return NULL;
 }

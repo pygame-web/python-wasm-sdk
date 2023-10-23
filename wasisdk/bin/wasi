@@ -1,10 +1,13 @@
 #!/bin/bash
 
+# https://stackoverflow.com/questions/20530105/how-to-specify-a-custom-stdlib-directory-for-llvm
+# https://stackoverflow.com/questions/60712261/how-to-prevent-osx-gcc-to-always-search-usr-local-include
+
 WASI_CFG="--sysroot=${WASI_SDK_PREFIX}/share/wasi-sysroot -iwithsysroot /include/c++/v1 -I${WASISDK}/hotfix"
 WASI_DEF="-D_WASI_EMULATED_MMAN -D_WASI_EMULATED_SIGNAL -D_WASI_EMULATED_PROCESS_CLOCKS -D_WASI_EMULATED_GETPID"
 
 # wasi assembly
-WASI_ALL="${WASI_CFG} ${WASI_DEF} -fPIC -fno-rtti -fno-exceptions"
+WASI_ALL="${WASI_CFG} ${WASI_DEF} -fPIC -fno-rtti -fno-exceptions -include ${WASISDK}/hotfix/patch.h"
 
 
 WASI_ALL="$WASI_ALL -Wno-unused-but-set-variable -Wno-unused-command-line-argument -Wno-unsupported-floating-point-opt"
@@ -15,7 +18,7 @@ WASI_LNK="-lwasi-emulated-getpid -lwasi-emulated-mman -lwasi-emulated-signal -lw
 
 export CC="${WASI_SDK_PREFIX}/bin/clang ${WASI_ALL}"
 export CXX="${WASI_SDK_PREFIX}/bin/clang++ ${WASI_ALL}"
-export CPP="${WASI_SDK_PREFIX}/bin/clang-cpp ${WASI_CFG} ${WASI_DEF}"
+export CPP="${WASI_SDK_PREFIX}/bin/clang-cpp ${WASI_CFG} -include ${WASISDK}/hotfix/patch.h ${WASI_DEF}"
 
 if echo $0|grep -q c++$
 then

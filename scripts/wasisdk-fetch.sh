@@ -11,6 +11,8 @@ then
     export WASI_SYSROOT="${WASI_SDK_PREFIX}/share/wasi-sysroot"
 
 
+    export CMAKE_TOOLCHAIN_FILE=${SDKROOT}/wasisdk/share/cmake/Modules/Platform/WASI.cmake
+    export CMAKE_INSTALL_PREFIX="${SDKROOT}/devices/wasi/usr"
 
     if [ -d ${WASI_SDK_PREFIX} ]
     then
@@ -39,10 +41,17 @@ then
         # /opt/python-wasm-sdk/devices/x86_64/usr/lib/python3.11/site-packages/cmake/data/share/cmake-3.27/Modules/Platform/
         cp -v wasisdk/share/cmake/WASI.cmake ${SDKROOT}/devices/$(arch)/usr/lib/python${PYBUILD}/site-packages/cmake/data/share/cmake-*/Modules/Platform/
 
-cat > ${SDKROOT}/devices/$(arch)/usr/lib/python${PYBUILD}/site-packages/cmake/data/share/cmake-*/Modules/Platform/WASI.cmake <<END
+
+#cat > ${SDKROOT}/devices/$(arch)/usr/lib/python${PYBUILD}/site-packages/cmake/data/share/cmake-*/Modules/Platform/WASI.cmake <<END
+
+mkdir -p ${SDKROOT}/wasisdk/share/cmake/Modules/Platform/
+
+cat > ${CMAKE_TOOLCHAIN_FILE} <<END
 # Cmake toolchain description file for the Makefile
 
-set(CMAKE_TOOLCHAIN_FILE ${WASISDK}/share/cmake/wasi-sdk.cmake)
+# set(CMAKE_TOOLCHAIN_FILE "${CMAKE_TOOLCHAIN_FILE}")
+# list(APPEND CMAKE_MODULE_PATH "${WASISDK}/share/cmake/Modules")
+
 
 # This is arbitrary, AFAIK, for now.
 cmake_minimum_required(VERSION 3.5.0)
@@ -75,14 +84,37 @@ else()
 	set(WASI_HOST_EXE_SUFFIX "")
 endif()
 
+# lock those
 set(CMAKE_C_COMPILER ${WASISDK}/bin/wasi-c)
 set(CMAKE_CXX_COMPILER ${WASISDK}/bin/wasi-c++)
-set(CMAKE_ASM_COMPILER ${WASI_SDK_PREFIX}/bin/clang\${WASI_HOST_EXE_SUFFIX})
-set(CMAKE_AR ${WASI_SDK_PREFIX}/bin/llvm-ar\${WASI_HOST_EXE_SUFFIX})
-set(CMAKE_RANLIB ${WASI_SDK_PREFIX}/bin/llvm-ranlib\${WASI_HOST_EXE_SUFFIX})
-set(CMAKE_C_COMPILER_TARGET \${triple})
-set(CMAKE_CXX_COMPILER_TARGET \${triple})
-set(CMAKE_ASM_COMPILER_TARGET \${triple})
+
+set(CMAKE_C_COMPILER_ID_RUN TRUE)
+set(CMAKE_C_COMPILER_FORCED TRUE)
+set(CMAKE_C_COMPILER_WORKS TRUE)
+set(CMAKE_C_COMPILER_ID Clang)
+set(CMAKE_C_COMPILER_FRONTEND_VARIANT GNU)
+set(CMAKE_C_STANDARD_COMPUTED_DEFAULT 11)
+
+#set(CMAKE_C_STANDARD 99)
+#set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS ON)
+
+set(CMAKE_CXX_COMPILER_ID_RUN TRUE)
+set(CMAKE_CXX_COMPILER_FORCED TRUE)
+set(CMAKE_CXX_COMPILER_WORKS TRUE)
+set(CMAKE_CXX_COMPILER_ID Clang)
+set(CMAKE_CXX_COMPILER_FRONTEND_VARIANT GNU)
+set(CMAKE_CXX_STANDARD_COMPUTED_DEFAULT 98)
+
+set(CMAKE_C_PLATFORM_ID "wasi")
+set(CMAKE_CXX_PLATFORM_ID "wasi")
+
+set(CMAKE_ASM_COMPILER ${WASI_SDK_PREFIX}/bin/clang${WASI_HOST_EXE_SUFFIX})
+set(CMAKE_AR ${WASI_SDK_PREFIX}/bin/llvm-ar${WASI_HOST_EXE_SUFFIX})
+set(CMAKE_RANLIB ${WASI_SDK_PREFIX}/bin/llvm-ranlib${WASI_HOST_EXE_SUFFIX})
+set(CMAKE_C_COMPILER_TARGET ${triple})
+set(CMAKE_CXX_COMPILER_TARGET ${triple})
+set(CMAKE_ASM_COMPILER_TARGET ${triple})
 
 # Don't look in the sysroot for executables to run during the build
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
@@ -91,7 +123,40 @@ set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 
+# 64
+#set(CMAKE_SIZEOF_VOID_P 8)
+#set(CMAKE_C_SIZEOF_DATA_PTR 8)
+#set(CMAKE_CXX_SIZEOF_DATA_PTR 8)
+
+# 32
+set(CMAKE_SIZEOF_VOID_P 4)
+set(CMAKE_C_SIZEOF_DATA_PTR 4)
+set(CMAKE_CXX_SIZEOF_DATA_PTR 4)
+
+# faster
+set(CMAKE_SKIP_COMPATIBILITY_TESTS 1)
+set(CMAKE_SIZEOF_CHAR 1)
+set(CMAKE_SIZEOF_UNSIGNED_SHORT 2)
+set(CMAKE_SIZEOF_SHORT 2)
+set(CMAKE_SIZEOF_INT 4)
+set(CMAKE_SIZEOF_UNSIGNED_LONG 4)
+set(CMAKE_SIZEOF_UNSIGNED_INT 4)
+set(CMAKE_SIZEOF_LONG 4)
+set(CMAKE_SIZEOF_FLOAT 4)
+set(CMAKE_SIZEOF_DOUBLE 8)
+set(CMAKE_HAVE_LIMITS_H 1)
+set(CMAKE_HAVE_UNISTD_H 1)
+set(CMAKE_HAVE_PTHREAD_H 1)
+set(CMAKE_HAVE_SYS_PRCTL_H 1)
+set(CMAKE_WORDS_BIGENDIAN 0)
+
+set(CMAKE_EXECUTABLE_SUFFIX ".wasi")
+
+set(CMAKE_CROSSCOMPILING_EMULATOR "${WASISDK}/bin/wasi-run" FILEPATH "Path to the emulator for the target system.")
+
 END
+
+    # cp ${SDKROOT}/wasisdk/share/cmake/Modules/Platform/WASI.cmake ${SDKROOT}/devices/$(arch)/usr/lib/python${PYBUILD}/site-packages/cmake/data/share/cmake-*/Modules/Platform/
 
     pushd ${WASI_SYSROOT}
     wget "https://github.com/vmware-labs/webassembly-language-runtimes/releases/download/libs%2Flibpng%2F1.6.39%2B20230629-ccb4cb0/libpng-1.6.39-wasi-sdk-20.0.tar.gz" -O-| tar xvfz -
@@ -105,7 +170,7 @@ END
 
     export PATH="${WASISDK}/bin:${WASI_SDK_PREFIX}/bin:$PATH"
 
-    export PREFIX="${SDKROOT}/devices/wasi/usr"
+    export PREFIX=$CMAKE_INSTALL_PREFIX
 
     # instruct pkg-config to use wasi target root
     export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig:${WASI_SYSROOT}/lib/wasm32-wasi/pkgconfig"
@@ -128,7 +193,6 @@ END
     # wasi assembly
     WASI_ALL="${WASI_CFG} ${WASI_DEF} -fPIC -fno-rtti -fno-exceptions"
 
-
     WASI_ALL="$WASI_ALL -Wno-unused-but-set-variable -Wno-unused-command-line-argument -Wno-unsupported-floating-point-opt"
 
     # wasi linking
@@ -138,10 +202,10 @@ END
 #    export CPP="${WASISDK}/bin/wasi-cpp"
 #    export CXX="${WASISDK}/bin/wasi++"
 
-    CXX_lIBS="-lc++ -lc++abi -lc++experimental"
+    CXX_LIBS="-lc++ -lc++abi -lc++experimental"
 
     export CC="${WASI_SDK_PREFIX}/bin/clang ${WASI_ALL}"
-    export CXX="${WASI_SDK_PREFIX}/bin/clang++ ${WASI_ALL} ${CXX_lIBS}"
+    export CXX="${WASI_SDK_PREFIX}/bin/clang++ ${WASI_ALL} ${CXX_LIBS}"
     export CPP="${WASI_SDK_PREFIX}/bin/clang-cpp ${WASI_CFG} ${WASI_DEF}"
 
 
