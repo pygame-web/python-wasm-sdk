@@ -1,5 +1,9 @@
 #!/bin/bash
-echo "WASI: $@"
 WASM=$1
 shift
-wasmtime run --mapdir /::/ $WASM -- $@
+if [ -f "${WASM}.wasi" ]
+then
+    WASM="${WASM}.wasi"
+fi
+echo "WASI: $WASM $@"
+wasmtime --dir /::/ $WASM -- $@

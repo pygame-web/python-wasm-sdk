@@ -22,13 +22,9 @@ then
 
 " 1>&2
     else
+        export LC_ALL=C
         pushd wasisdk
-        if [ -f /pp ]
-        then
-            wget -c http://192.168.1.66/cfake/wasi-sdk-20.0-linux.tar.gz
-        else
-            wget -c https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-20/wasi-sdk-20.0-linux.tar.gz
-        fi
+        wget -c https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-20/wasi-sdk-20.0-linux.tar.gz
         tar xfz wasi-sdk-20.0-linux.tar.gz
         mv wasi-sdk-20.0 upstream && rm wasi-sdk-20.0-linux.tar.gz
         ln ${SDKROOT}/wasisdk/bin/wasi ${SDKROOT}/wasisdk/bin/wasi-c
@@ -38,19 +34,13 @@ then
 
         $HPIP install cmake wasmtime
 
-        # /opt/python-wasm-sdk/devices/x86_64/usr/lib/python3.11/site-packages/cmake/data/share/cmake-3.27/Modules/Platform/
-        cp -v wasisdk/share/cmake/WASI.cmake ${SDKROOT}/devices/$(arch)/usr/lib/python${PYBUILD}/site-packages/cmake/data/share/cmake-*/Modules/Platform/
-
-
-#cat > ${SDKROOT}/devices/$(arch)/usr/lib/python${PYBUILD}/site-packages/cmake/data/share/cmake-*/Modules/Platform/WASI.cmake <<END
-
 mkdir -p ${SDKROOT}/wasisdk/share/cmake/Modules/Platform/
 
 cat > ${CMAKE_TOOLCHAIN_FILE} <<END
 # Cmake toolchain description file for the Makefile
 
 # set(CMAKE_TOOLCHAIN_FILE "${CMAKE_TOOLCHAIN_FILE}")
-# list(APPEND CMAKE_MODULE_PATH "${WASISDK}/share/cmake/Modules")
+list(APPEND CMAKE_MODULE_PATH "${WASISDK}/share/cmake/Modules")
 
 
 # This is arbitrary, AFAIK, for now.
@@ -187,29 +177,27 @@ END
     export AR="${WASI_SDK_PREFIX}/bin/llvm-ar"
     export RANLIB="${WASI_SDK_PREFIX}/bin/ranlib"
 
-    WASI_CFG="--sysroot=${WASI_SDK_PREFIX}/share/wasi-sysroot -I${WASISDK}/hotfix"
-    WASI_DEF="-D_WASI_EMULATED_MMAN -D_WASI_EMULATED_SIGNAL -D_WASI_EMULATED_PROCESS_CLOCKS -D_WASI_EMULATED_GETPID"
-
-    # wasi assembly
-    WASI_ALL="${WASI_CFG} ${WASI_DEF} -fPIC -fno-rtti -fno-exceptions"
-
-    WASI_ALL="$WASI_ALL -Wno-unused-but-set-variable -Wno-unused-command-line-argument -Wno-unsupported-floating-point-opt"
-
-    # wasi linking
-    WASI_LNK="-lwasi-emulated-getpid -lwasi-emulated-mman -lwasi-emulated-signal -lwasi-emulated-process-clocks -lc++experimental -fno-exceptions"
-
-#    export CC="${WASISDK}/bin/wasi-c"
-#    export CPP="${WASISDK}/bin/wasi-cpp"
-#    export CXX="${WASISDK}/bin/wasi++"
-
-    CXX_LIBS="-lc++ -lc++abi -lc++experimental"
-
-    export CC="${WASI_SDK_PREFIX}/bin/clang ${WASI_ALL}"
-    export CXX="${WASI_SDK_PREFIX}/bin/clang++ ${WASI_ALL} ${CXX_LIBS}"
-    export CPP="${WASI_SDK_PREFIX}/bin/clang-cpp ${WASI_CFG} ${WASI_DEF}"
+    export CC="${WASISDK}/bin/wasi-c"
+    export CPP="${WASISDK}/bin/wasi-cpp"
+    export CXX="${WASISDK}/bin/wasi-c++"
 
 
+#    WASI_CFG="--sysroot=${WASI_SDK_PREFIX}/share/wasi-sysroot -I${WASISDK}/hotfix"
+#    WASI_DEF="-D_WASI_EMULATED_MMAN -D_WASI_EMULATED_SIGNAL -D_WASI_EMULATED_PROCESS_CLOCKS -D_WASI_EMULATED_GETPID"
 
+#    # wasi assembly
+#    WASI_ALL="${WASI_CFG} ${WASI_DEF} -fPIC -fno-rtti -fno-exceptions"
+
+#    WASI_ALL="$WASI_ALL -Wno-unused-but-set-variable -Wno-unused-command-line-argument -Wno-unsupported-floating-point-opt"
+
+#    # wasi linking
+#    WASI_LNK="-lwasi-emulated-getpid -lwasi-emulated-mman -lwasi-emulated-signal -lwasi-emulated-process-clocks -lc++experimental -fno-exceptions"
+
+#    CXX_LIBS="-lc++ -lc++abi -lc++experimental"
+
+#    export CC="${WASI_SDK_PREFIX}/bin/clang ${WASI_ALL}"
+#    export CXX="${WASI_SDK_PREFIX}/bin/clang++ ${WASI_ALL} ${CXX_LIBS}"
+#    export CPP="${WASI_SDK_PREFIX}/bin/clang-cpp ${WASI_CFG} ${WASI_DEF}"
 
 
 else
