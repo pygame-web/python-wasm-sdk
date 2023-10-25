@@ -6,4 +6,4 @@ then
     WASM="${WASM}.wasi"
 fi
 echo "WASI: $WASM $@"
-wasmtime --dir /::/ $WASM -- $@
+wasmtime --dir /::/ -- $WASM $@
