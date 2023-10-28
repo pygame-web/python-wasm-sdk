@@ -5,6 +5,13 @@
 
 . ${CONFIG:-config}
 
+if which meson
+then
+    echo meson found $(which meson)
+else
+    $HPY -m pip install meson
+fi
+
 . scripts/emsdk-fetch.sh
 
 if pushd ${ROOT}/src

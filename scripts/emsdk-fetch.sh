@@ -418,7 +418,9 @@ END
     # EM_PKG_CONFIG_PATH ?
     # https://emscripten.org/docs/compiling/Building-Projects.html#pkg-config
 
-    export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig"
+    export PKG_CONFIG_SYSROOT_DIR="${SDKROOT}/devices/emsdk"
+    export PKG_CONFIG_LIBDIR="${SDKROOT}/emsdk/upstream/emscripten/system/lib/pkgconfig"
+    export PKG_CONFIG_PATH="${SDKROOT}/devices/emsdk/usr/lib//pkgconfig:${HOST_PREFIX}/lib/pkgconfig"
 
     if echo $PATH|grep -q $EMSDK/upstream/emscripten/system/bin
     then
@@ -446,7 +448,6 @@ END
     fi
 
     mkdir -p src
-    export PKG_CONFIG_PATH="${SDKROOT}/emsdk/upstream/emscripten/system/lib/pkgconfig:${HOST_PREFIX}/lib/pkgconfig"
 
     export CPPFLAGS="-I$PREFIX/include"
     export LDFLAGS="-L$PREFIX/lib"
