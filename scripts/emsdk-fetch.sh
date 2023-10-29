@@ -420,7 +420,7 @@ END
 
     export PKG_CONFIG_SYSROOT_DIR="${SDKROOT}/devices/emsdk"
     export PKG_CONFIG_LIBDIR="${SDKROOT}/emsdk/upstream/emscripten/system/lib/pkgconfig"
-    export PKG_CONFIG_PATH="${SDKROOT}/devices/emsdk/usr/lib//pkgconfig:${HOST_PREFIX}/lib/pkgconfig"
+    export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig:${HOST_PREFIX}/lib/pkgconfig"
 
     if echo $PATH|grep -q $EMSDK/upstream/emscripten/system/bin
     then
