@@ -316,21 +316,17 @@ library_dirs = $PREFIX/lib
 include_dirs = $PREFIX/include
 NUMPY
 
-cat > $ROOT/${PYDK_PYTHON_HOST_PLATFORM}-shell.sh <<END
-#!/bin/bash
-export ROOT=${SDKROOT}
-export SDKROOT=${SDKROOT}
 
-export PYBUILD=\${PYBUILD:-$PYBUILD}
-export PYMAJOR=\$(echo -n \$PYBUILD|cut -d. -f1)
-export PYMINOR=\$(echo -n \$PYBUILD|cut -d. -f2)
+. scripts/make-shells.sh
 
-export CARGO_HOME=\${CARGO_HOME:-${SDKROOT}}/rust
-export RUSTUP_HOME=\${RUSTUP_HOME:-${SDKROOT}}/rust
-mkdir -p \${CARGO_HOME}/bin
-export PATH=\${CARGO_HOME}/bin:\$PATH
+# C/C++/cmake shell
 
-export PANDA_PRC_DIR=${SDKROOT}/support
+cat >> $ROOT/${PYDK_PYTHON_HOST_PLATFORM}-shell.sh <<END
+
+export PS1="[PyDK:emsdk] \w $ "
+
+export PYTHONSTARTUP="${SDKROOT}/support/__EMSCRIPTEN__.py"
+> \${HOME}/.pythonrc.py
 
 export EMSDK_QUIET=1
 export EM_IGNORE_SANITY=1
@@ -352,28 +348,11 @@ fi
 
 export SYS_PYTHON=${SYS_PYTHON}
 export EMSDK_PYTHON=${SYS_PYTHON}
-
-export PATH=${HOST_PREFIX}/bin:\$PATH:\${SDKROOT}/devices/emsdk/usr/bin
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}
-
-export PLATFORM_TRIPLET=${PYDK_PYTHON_HOST_PLATFORM}
-export PREFIX=$PREFIX
-export PYTHONPYCACHEPREFIX=${PYTHONPYCACHEPREFIX:-$PYTHONPYCACHEPREFIX}
-mkdir -p \$PYTHONPYCACHEPREFIX
-
-# so pip does not think everything in ~/.local is useable
-export HOME=${SDKROOT}
-
-export PYTHONDONTWRITEBYTECODE=1
-export PYTHONSTARTUP="${SDKROOT}/support/__EMSCRIPTEN__.py"
-> \${HOME}/.pythonrc.py
-
-export PS1="[PyDK:wasm] \w $ "
-
 export _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__emscripten_
 
 END
 
+# python shell
 cat > $HOST_PREFIX/bin/python3-wasm <<END
 #!/bin/bash
 
@@ -403,6 +382,8 @@ ${HOST_PREFIX}/bin/python\${PYBUILD} -u -B "\$@"
 END
 
 chmod +x $HOST_PREFIX/bin/python3-wasm
+
+
 
 cp -f $HOST_PREFIX/bin/python3-wasm ${SDKROOT}/
 

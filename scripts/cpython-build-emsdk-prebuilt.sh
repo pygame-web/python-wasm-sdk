@@ -2,7 +2,7 @@
 
 . ${CONFIG:-config}
 
-CYTHON_REL=${CYTHON_REL:-3.0.1}
+CYTHON_REL=${CYTHON_REL:-3.0.5}
 CYTHON_WHL=${CYTHON:-Cython-${CYTHON_REL}-py2.py3-none-any.whl}
 
 # all needed for PEP722/723
@@ -39,14 +39,13 @@ $PIP install --upgrade setuptools
 # /opt/python-wasm-sdk/python3-wasm setup.py bdist_wheel
 
 
-# cython get the latest release on gh
+# cython get the latest release on gh install on both host python and build python
 pushd build
     wget -q -c https://github.com/cython/cython/releases/download/${CYTHON_REL}/${CYTHON_WHL}
     $HPIP install --upgrade $CYTHON_WHL
 popd
 
 $PIP install build/$CYTHON_WHL
-
 
 # some we want to be certain to have in all minimal rootfs
 mkdir -p prebuilt/emsdk/common/site-packages/

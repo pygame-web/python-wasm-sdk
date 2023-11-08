@@ -83,7 +83,21 @@ do
         then
             echo WASI SDK TODO
             > ${SDKROOT}/python3-wasi
+
+# ROOT=/opt/python-wasm-sdk SDKROOT=/opt/python-wasm-sdk
+# HOST_PREFIX=/opt/python-wasm-sdk/devices/$(arch)/usr
             > ${SDKROOT}/wasm32-wasi-shell.sh
+
+            CPU=wasm32 TARGET=wasi \
+             PYDK_PYTHON_HOST_PLATFORM=wasm32-wasi \
+             PREFIX=/opt/python-wasm-sdk/devices/wasi/usr \
+             ./scripts/make-shells.sh
+
+            cat >> $ROOT/wasm32-wasi-shell.sh <<END
+
+export PS1="[PyDK:wasisdk] \w $ "
+
+END
 
             chmod +x ${SDKROOT}/python3-wasi ${SDKROOT}/wasm32-wasi-shell.sh
 

@@ -42,12 +42,12 @@ fi
 
 
 #stable
-# embind broke after 3.1.34
 # export EMFLAVOUR=3.1.34
-# export EMFLAVOUR=${EMFLAVOUR:latest}
 
+# embind broke in 3.1.48-tot (coro suspend/resume)
 
-EMFLAVOUR=${EMFLAVOUR:-tot}
+#export EMFLAVOUR=${EMFLAVOUR:latest}
+export EMFLAVOUR=${EMFLAVOUR:-tot}
 
 
 # base wasm features pure is "mvp" , "bi" is bigint
