@@ -189,19 +189,30 @@ PY_MODULE=false
 MVP=\${MVP:true}
 WASM_PURE=\${WASM_PURE:true}
 
+
+
+
 if \$MVP
 then
+
+    # turn of wasm ex (https://github.com/emscripten-core/emscripten/pull/20536)
+    # -fno-wasm-exceptions -sEMSCRIPTEN_LONGJMP=0
+
+    WASMOPTS="-fno-wasm-exceptions -sSUPPORT_LONGJMP=emscripten"
+
     # -mcpu=generic would activate those https://reviews.llvm.org/D125728
     # https://github.com/emscripten-core/emscripten/pull/17689
+
     # -fPIC not allowed with -mno-mutable-globals
     # -mno-sign-ext not allowed with pthread
-    CPU="-sSUPPORT_LONGJMP=emscripten -mnontrapping-fptoint -mno-reference-types -mno-sign-ext -m32"
+
+    CPU="-mnontrapping-fptoint -mno-reference-types -mno-sign-ext -m32"
 else
     CPU="-mcpu=bleeding-edge -m32"
 fi
 
 # quick hack until 3.1.47
-CPU="$WASM_EXTRA \$CPU"
+WASMOPTS="$WASM_EXTRA \$WASMOPTS"
 
 
 LINKING=\${LINKING:-false}
@@ -299,6 +310,15 @@ for arg do
         continue
     fi
 
+    if [ "\$arg" = "-pthread" ]
+    then
+        if echo \$CPU|grep -q mno-sign-ext
+        then
+            continue
+        fi
+    fi
+
+
     # that is for some very bad setup.py behaviour regarding cross compiling.
     # should not be needed ..
     [ "\$arg" = "-I/usr/include" ] && continue
@@ -365,8 +385,8 @@ then
         fi
     fi
 else
-    # pass CPU opts only when -c/-o but always PIC
-    $EMSDK_PYTHON -E \$0.py \$CPU_EXTRA -fpic \$COPTS \$CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
+    # do not pass WASM opts when -c/-o but always PIC
+    $EMSDK_PYTHON -E \$0.py $COPTS \$CPU \$CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
 fi
 #else
 #  unset _EMCC_CCACHE
