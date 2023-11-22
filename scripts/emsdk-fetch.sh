@@ -190,8 +190,6 @@ MVP=\${MVP:true}
 WASM_PURE=\${WASM_PURE:true}
 
 
-
-
 if \$MVP
 then
 
@@ -208,14 +206,14 @@ then
     #WASMOPTS="-fno-wasm-exceptions -sSUPPORT_LONGJMP=emscripten"
     #CPU="-mnontrapping-fptoint -mno-reference-types -mno-sign-ext -m32"
 
-    CPU="-sSUPPORT_LONGJMP=emscripten -mnontrapping-fptoint -mno-reference-types -mno-sign-ext -m32"
+    CPU="-D_FILE_OFFSET_BITS=64 -sSUPPORT_LONGJMP=emscripten -mnontrapping-fptoint -mno-reference-types -mno-sign-ext -m32"
 
 else
-    CPU="-mcpu=bleeding-edge -m64"
+    CPU="-D_FILE_OFFSET_BITS=64 -mcpu=bleeding-edge -m64"
 fi
 
-# quick hack until 3.1.47
-WASMOPTS="$WASM_EXTRA \$WASMOPTS"
+# try to keep 32 but with 64 iface (bitint)
+WASMEXTRA="$WASM_EXTRA \$WASMOPTS"
 
 
 LINKING=\${LINKING:-false}
@@ -384,7 +382,7 @@ done
 if \$IS_SHARED
 then
     # always pass CPU opts when linking
-    $EMSDK_PYTHON -E \$0.py \$SHARED $COPTS \$CPU \$LDFLAGS -sSIDE_MODULE -gsource-map --source-map-base / "\$@" \$COMMON
+    $EMSDK_PYTHON -E \$0.py \$SHARED $COPTS \$CPU \$WASM_EXTRA \$LDFLAGS -sSIDE_MODULE -gsource-map --source-map-base / "\$@" \$COMMON
     if \$MVP
     then
         if \$WASM_PURE
