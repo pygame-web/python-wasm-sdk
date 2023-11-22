@@ -187,6 +187,7 @@ END
     pushd $ROOT/src/cpython${PYBUILD}
     # fix double linking
     sed -i 's|   -lcrypto||g' Makefile.pre.in
+    sed -i 's|#error|//#error|g' /opt/python-wasm-sdk/src/Python-3.11.6/Include/pyport.h
     # please let compiler/user decide what to do with wasm CPU.
     sed -i 's|-sWASM_BIGINT||g' configure
     sed -i 's|-sWASM_BIGINT||g' configure.ac

@@ -198,7 +198,6 @@ then
     # turn of wasm ex (https://github.com/emscripten-core/emscripten/pull/20536)
     # -fno-wasm-exceptions -sEMSCRIPTEN_LONGJMP=0
 
-    WASMOPTS="-fno-wasm-exceptions -sSUPPORT_LONGJMP=emscripten"
 
     # -mcpu=generic would activate those https://reviews.llvm.org/D125728
     # https://github.com/emscripten-core/emscripten/pull/17689
@@ -206,9 +205,13 @@ then
     # -fPIC not allowed with -mno-mutable-globals
     # -mno-sign-ext not allowed with pthread
 
-    CPU="-mnontrapping-fptoint -mno-reference-types -mno-sign-ext -m32"
+    #WASMOPTS="-fno-wasm-exceptions -sSUPPORT_LONGJMP=emscripten"
+    #CPU="-mnontrapping-fptoint -mno-reference-types -mno-sign-ext -m32"
+
+    CPU="-sSUPPORT_LONGJMP=emscripten -mnontrapping-fptoint -mno-reference-types -mno-sign-ext -m32"
+
 else
-    CPU="-mcpu=bleeding-edge -m32"
+    CPU="-mcpu=bleeding-edge -m64"
 fi
 
 # quick hack until 3.1.47
@@ -294,6 +297,16 @@ for arg do
         continue
     fi
 
+    if [ "\$arg" = "-O3" ]
+    then
+        continue
+    fi
+
+    if [ "\$arg" = "-g" ]
+    then
+        continue
+    fi
+
     if [ "\$arg" = "-lgcc" ]
     then
         continue
@@ -371,7 +384,7 @@ done
 if \$IS_SHARED
 then
     # always pass CPU opts when linking
-    $EMSDK_PYTHON -E \$0.py \$SHARED \$CPU $COPTS $LDFLAGS -sSIDE_MODULE -gsource-map --source-map-base / "\$@" \$COMMON
+    $EMSDK_PYTHON -E \$0.py \$SHARED $COPTS \$CPU \$LDFLAGS -sSIDE_MODULE -gsource-map --source-map-base / "\$@" \$COMMON
     if \$MVP
     then
         if \$WASM_PURE
@@ -386,7 +399,12 @@ then
     fi
 else
     # do not pass WASM opts when -c/-o but always PIC
-    $EMSDK_PYTHON -E \$0.py $COPTS \$CPU \$CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
+    if echo $@|grep -q MAIN_MODULE
+    then
+        $EMSDK_PYTHON -E \$0.py $COPTS \$CPU \$CPU_EXTRA \$CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
+    else
+        $EMSDK_PYTHON -E \$0.py $COPTS \$CPU_EXTRA \$CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
+    fi
 fi
 #else
 #  unset _EMCC_CCACHE
