@@ -14,8 +14,8 @@ export PYMINOR=$(echo -n $PYBUILD|cut -d. -f2)
 export HOST_PREFIX=${HOST_PREFIX:-${SDKROOT}/devices/$(arch)/usr}
 export PREFIX=${PREFIX:-${SDKROOT}/devices/emsdk/usr}
 
-mkdir -p ${SDKROOT}/build/pycache ${SDKROOT}/build/pip
-export XDG_CACHE_HOME=$(realpath ${SDKROOT}/build/pip)
+mkdir -p ${SDKROOT}/build/pycache ${SDKROOT}/build/cache
+export XDG_CACHE_HOME=$(realpath ${SDKROOT}/build/cache)
 export PYTHONPYCACHEPREFIX=${PYTHONPYCACHEPREFIX:-$(realpath ${SDKROOT}/build/pycache)}
 
 
@@ -48,8 +48,10 @@ fi
 
 # embind broke in 3.1.48-tot (coro suspend/resume)
 
-#export EMFLAVOUR=${EMFLAVOUR:latest}
-export EMFLAVOUR=${EMFLAVOUR:-tot}
+# embding more broken in 3.1.51
+
+export EMFLAVOUR=${EMFLAVOUR:latest}
+#export EMFLAVOUR=${EMFLAVOUR:-tot}
 
 
 # base wasm features pure is "mvp" , "bi" is bigint
