@@ -37,8 +37,8 @@ CNF="emconfigure ./configure --prefix=$PREFIX --with-pic --disable-shared --host
 
 cd $ROOT/src
 
-TIFF_VER="4.3.0"
-WEBP_VER="1.2.2"
+TIFF_VER="4.6.0"
+WEBP_VER="1.3.2"
 
 # AVIF : OFF
 # JXL : OFF
@@ -63,6 +63,8 @@ then
         emmake make install 2>&1>/dev/null
         popd
     fi
+else
+    echo "  * NOT adding libtiff $TIFF_VER support"
 fi
 
 # ============ webp =========================

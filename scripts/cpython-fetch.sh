@@ -75,9 +75,9 @@ fi
 
 if echo $PYBUILD | grep -q 11$
 then
-    wget -q -c https://www.python.org/ftp/python/3.11.6/Python-3.11.6.tar.xz
-    tar xf Python-3.11.6.tar.xz
-    ln -s Python-3.11.6 cpython${PYBUILD}
+    wget -q -c https://www.python.org/ftp/python/3.11.7/Python-3.11.7.tar.xz
+    tar xf Python-3.11.7.tar.xz
+    ln -s Python-3.11.7 cpython${PYBUILD}
     export REBUILD=true
 fi
 

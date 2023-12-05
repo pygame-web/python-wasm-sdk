@@ -2,7 +2,7 @@
 
 . ${CONFIG:-config}
 
-CYTHON_REL=${CYTHON_REL:-3.0.5}
+CYTHON_REL=${CYTHON_REL:-3.0.6}
 CYTHON_WHL=${CYTHON:-Cython-${CYTHON_REL}-py2.py3-none-any.whl}
 
 # all needed for PEP722/723
