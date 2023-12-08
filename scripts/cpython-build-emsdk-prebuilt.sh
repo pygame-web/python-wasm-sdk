@@ -14,13 +14,19 @@ $HPIP install --upgrade $PACKAGING
 $HPIP install --upgrade setuptools
 
 # aioconsole only for the simulator
-$HPIP install --upgrade aioconsole
+# $HPIP install --upgrade aioconsole
+
+
 
 # support package build/install
 $HPY -m pip install --upgrade $PACKAGING
 
-
 PIP="${SDKROOT}/python3-wasm -m pip"
+
+
+$HPIP install --upgrade typing_extensions mypy_extensions
+$PIP install --upgrade typing_extensions mypy_extensions
+
 
 echo "
     *   cpython-build-emsdk-prebuilt pip==$PIP   *

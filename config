@@ -50,8 +50,8 @@ fi
 
 # embding more broken in 3.1.51
 
-export EMFLAVOUR=${EMFLAVOUR:latest}
-#export EMFLAVOUR=${EMFLAVOUR:-tot}
+#export EMFLAVOUR=${EMFLAVOUR:latest}
+export EMFLAVOUR=${EMFLAVOUR:-tot}
 
 
 # base wasm features pure is "mvp" , "bi" is bigint
