@@ -12,7 +12,7 @@ then
 
 
     export CMAKE_TOOLCHAIN_FILE=${SDKROOT}/wasisdk/share/cmake/Modules/Platform/WASI.cmake
-    export CMAKE_INSTALL_PREFIX="${SDKROOT}/devices/wasi/usr"
+    export CMAKE_INSTALL_PREFIX="${SDKROOT}/devices/wasisdk/usr"
 
     if [ -d ${WASI_SDK_PREFIX} ]
     then
@@ -24,9 +24,11 @@ then
     else
         export LC_ALL=C
         pushd wasisdk
-        wget -c https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-20/wasi-sdk-20.0-linux.tar.gz
-        tar xfz wasi-sdk-20.0-linux.tar.gz
-        mv wasi-sdk-20.0 upstream && rm wasi-sdk-20.0-linux.tar.gz
+        WASI_SDK=21
+        wget -c https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_SDK}/wasi-sdk-${WASI_SDK}.0-linux.tar.gz
+        tar xfz wasi-sdk-${WASI_SDK}.0-linux.tar.gz
+        mv wasi-sdk-${WASI_SDK}.0 upstream && rm wasi-sdk-${WASI_SDK}.0-linux.tar.gz
+
         ln ${SDKROOT}/wasisdk/bin/wasi ${SDKROOT}/wasisdk/bin/wasi-c
         ln ${SDKROOT}/wasisdk/bin/wasi ${SDKROOT}/wasisdk/bin/wasi-cpp
         ln ${SDKROOT}/wasisdk/bin/wasi ${SDKROOT}/wasisdk/bin/wasi-c++
@@ -34,9 +36,9 @@ then
 
         $HPIP install cmake wasmtime
 
-mkdir -p ${SDKROOT}/wasisdk/share/cmake/Modules/Platform/
+        mkdir -p ${SDKROOT}/wasisdk/share/cmake/Modules/Platform/
 
-cat > ${CMAKE_TOOLCHAIN_FILE} <<END
+        cat > ${CMAKE_TOOLCHAIN_FILE} <<END
 # Cmake toolchain description file for the Makefile
 
 # set(CMAKE_TOOLCHAIN_FILE "${CMAKE_TOOLCHAIN_FILE}")
@@ -146,12 +148,12 @@ set(CMAKE_CROSSCOMPILING_EMULATOR "${WASISDK}/bin/wasi-run" FILEPATH "Path to th
 
 END
 
-    # cp ${SDKROOT}/wasisdk/share/cmake/Modules/Platform/WASI.cmake ${SDKROOT}/devices/$(arch)/usr/lib/python${PYBUILD}/site-packages/cmake/data/share/cmake-*/Modules/Platform/
+        # cp ${SDKROOT}/wasisdk/share/cmake/Modules/Platform/WASI.cmake ${SDKROOT}/devices/$(arch)/usr/lib/python${PYBUILD}/site-packages/cmake/data/share/cmake-*/Modules/Platform/
 
-    pushd ${WASI_SYSROOT}
-    wget "https://github.com/vmware-labs/webassembly-language-runtimes/releases/download/libs%2Flibpng%2F1.6.39%2B20230629-ccb4cb0/libpng-1.6.39-wasi-sdk-20.0.tar.gz" -O-| tar xvfz -
-    wget "https://github.com/vmware-labs/webassembly-language-runtimes/releases/download/libs%2Fzlib%2F1.2.13%2B20230623-2993864/libz-1.2.13-wasi-sdk-20.0.tar.gz"  -O-| tar xvfz -
-    popd
+        pushd ${WASI_SYSROOT}
+        wget "https://github.com/vmware-labs/webassembly-language-runtimes/releases/download/libs%2Flibpng%2F1.6.39%2B20230629-ccb4cb0/libpng-1.6.39-wasi-sdk-20.0.tar.gz" -O-| tar xvfz -
+        wget "https://github.com/vmware-labs/webassembly-language-runtimes/releases/download/libs%2Fzlib%2F1.2.13%2B20230623-2993864/libz-1.2.13-wasi-sdk-20.0.tar.gz"  -O-| tar xvfz -
+        popd
 
 
     fi
@@ -180,25 +182,6 @@ END
     export CC="${WASISDK}/bin/wasi-c"
     export CPP="${WASISDK}/bin/wasi-cpp"
     export CXX="${WASISDK}/bin/wasi-c++"
-
-
-#    WASI_CFG="--sysroot=${WASI_SDK_PREFIX}/share/wasi-sysroot -I${WASISDK}/hotfix"
-#    WASI_DEF="-D_WASI_EMULATED_MMAN -D_WASI_EMULATED_SIGNAL -D_WASI_EMULATED_PROCESS_CLOCKS -D_WASI_EMULATED_GETPID"
-
-#    # wasi assembly
-#    WASI_ALL="${WASI_CFG} ${WASI_DEF} -fPIC -fno-rtti -fno-exceptions"
-
-#    WASI_ALL="$WASI_ALL -Wno-unused-but-set-variable -Wno-unused-command-line-argument -Wno-unsupported-floating-point-opt"
-
-#    # wasi linking
-#    WASI_LNK="-lwasi-emulated-getpid -lwasi-emulated-mman -lwasi-emulated-signal -lwasi-emulated-process-clocks -lc++experimental -fno-exceptions"
-
-#    CXX_LIBS="-lc++ -lc++abi -lc++experimental"
-
-#    export CC="${WASI_SDK_PREFIX}/bin/clang ${WASI_ALL}"
-#    export CXX="${WASI_SDK_PREFIX}/bin/clang++ ${WASI_ALL} ${CXX_LIBS}"
-#    export CPP="${WASI_SDK_PREFIX}/bin/clang-cpp ${WASI_CFG} ${WASI_DEF}"
-
 
 else
     echo "wasidk: config already set !" 1>&2

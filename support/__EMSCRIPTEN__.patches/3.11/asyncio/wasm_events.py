@@ -538,7 +538,7 @@ else:
 
 class EmPipe:
     def _close_self_pipe(self):
-        pdb("_close_self_pipe(self)")
+        #pdb("_close_self_pipe(self)")
         return
 
         self._remove_reader(self._ssock.fileno())

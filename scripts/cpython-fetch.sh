@@ -66,9 +66,9 @@ then
 #        export REBUILD=true
 #    fi
 
-    wget -q -c https://www.python.org/ftp/python/3.12.0/Python-3.12.0.tar.xz
-    tar xf Python-3.12.0.tar.xz
-    ln -s Python-3.12.0 cpython${PYBUILD}
+    wget -q -c https://www.python.org/ftp/python/3.12.1/Python-3.12.1.tar.xz
+    tar xf Python-3.12.1.tar.xz
+    ln -s Python-3.12.1 cpython${PYBUILD}
     export REBUILD=true
 fi
 
