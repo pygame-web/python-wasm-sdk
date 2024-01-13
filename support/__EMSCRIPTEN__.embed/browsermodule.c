@@ -666,7 +666,7 @@ Function_call(Function *self, PyObject *args, PyObject *kwargs) {
         try {
           var arg_values = [];
           for (var i = 0; i < $2; ++i) {
-            var arg_handle = getValue($3+i*4, 'i32');
+            var arg_handle = getValue($3+i*4, "i32");
             arg_handles.push(arg_handle);
             arg_values.push(Emval.toValue(arg_handle));
           }
@@ -893,7 +893,7 @@ static EM_VAL py_to_emval(PyObject *val) {
           }
           var argv = _malloc(argc * 4);
           for (var i = 0; i < argc; ++i) {
-            setValue(argv+i*4, Emval.toHandle(arguments[i]), 'i32');
+            setValue(argv+i*4, Emval.toHandle(arguments[i]), "i32");
           }
           var result = __py_call($1, $2, Emval.toHandle(this), argc, argv);
           return Emval.toValue(result);
@@ -1079,6 +1079,35 @@ browser_getattr(PyObject *self, PyObject *arg) {
 }
 
 /**
+ * excute javascript code and returns the value.
+ */
+static PyObject *
+browser_eval(PyObject *self, PyObject *arg) {
+  EM_VAL key_handle = py_to_emval(arg);
+  if (key_handle == NULL) {
+    return NULL;
+  }
+
+  EM_VAL result = (EM_VAL)EM_ASM_INT({
+    try {
+      return Emval.toHandle(eval(Emval.toValue($0)));
+    }
+    catch (ex) {
+      return -Emval.toHandle(ex);
+    }
+    finally {
+      __emval_decref($0);
+    }
+  }, key_handle);
+
+  if (result == (EM_VAL)_EMVAL_UNDEFINED) {
+    PyErr_SetObject(PyExc_AttributeError, arg);
+    return NULL;
+  }
+  return emval_to_py(result);}
+
+
+/**
  * Opens an alert window to print the given message.
  */
 static PyObject *
@@ -1143,6 +1172,7 @@ browser_prompt(PyObject *self, PyObject *args) {
 static PyMethodDef browser_functions[] = {
   { "__getattr__", &browser_getattr, METH_O },
   { "alert", &browser_alert, METH_O },
+  { "eval", &browser_eval, METH_O },
   { "confirm", &browser_confirm, METH_O },
   { "prompt", &browser_prompt, METH_VARARGS },
   { NULL, NULL }

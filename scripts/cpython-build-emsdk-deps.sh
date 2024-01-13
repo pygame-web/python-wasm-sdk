@@ -39,6 +39,8 @@ cd $ROOT/src
 
 TIFF_VER="4.6.0"
 WEBP_VER="1.3.2"
+SDL_IMG="2.8.2"
+
 
 # AVIF : OFF
 # JXL : OFF
@@ -103,13 +105,12 @@ else
             * build SDL2_image from release
 "  1>&2
     else
-        #bad png+grayscale https://github.com/libsdl-org/SDL_image/releases/download/candidate-2.5.1/SDL2_image-2.5.1.tar.gz
-        wget -c -q https://github.com/libsdl-org/SDL_image/releases/download/release-2.6.3/SDL2_image-2.6.3.tar.gz
+        wget -c -q https://github.com/libsdl-org/SDL_image/releases/download/release-${SDL_IMG}/SDL2_image-${SDL_IMG}.tar.gz
 
-        tar xfz SDL2_image-2.6.3.tar.gz
+        tar xfz SDL2_image-${SDL_IMG}.tar.gz
     fi
 
-    pushd SDL2_image-2.6.3
+    pushd SDL2_image-${SDL_IMG}
     CFLAGS=$CPOPTS EMCC_CFLAGS="$ALL" CC=emcc  $CNF \
      --disable-sdltest --disable-jpg-shared --disable-png-shared
     #--disable-tif-shared
