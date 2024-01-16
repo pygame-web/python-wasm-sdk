@@ -32,7 +32,7 @@ ORIGIN=$(pwd)
 
 # 3.12 3.11 3.10
 
-BUILDS=${BUILDS:-3.11 3.12}
+BUILDS=${BUILDS:-3.11 3.12 3.13}
 
 for PYBUILD in $BUILDS
 do

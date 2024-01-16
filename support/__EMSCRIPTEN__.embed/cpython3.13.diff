@@ -1,108 +1,40 @@
-diff --git a/Programs/python.c b/Programs/python.c
-index 84148f7..348207e 100644
---- a/Programs/python.c
-+++ b/Programs/python.c
-@@ -2,16 +2,72 @@
+diff --git a/Python/sysmodule.c b/Python/sysmodule.c
+index c2de4ec..0bae03c 100644
+--- a/Python/sysmodule.c
++++ b/Python/sysmodule.c
+@@ -55,7 +55,7 @@ extern void *PyWin_DLLhModule;
+ extern const char *PyWin_DLLVersionString;
+ #endif
  
- #include "Python.h"
+-#ifdef __EMSCRIPTEN__
++#if 0
+ #  include <emscripten.h>
+ #endif
  
--#ifdef MS_WINDOWS
--int
--wmain(int argc, wchar_t **argv)
-+#if __PYDK__
-+#include "pycore_call.h"          // _PyObject_CallNoArgs()
-+#include "pycore_initconfig.h"    // _PyArgv
-+#include "pycore_interp.h"        // _PyInterpreterState.sysdict
-+#include "pycore_pathconfig.h"    // _PyPathConfig_ComputeSysPath0()
-+#include "pycore_pylifecycle.h"   // _Py_PreInitializeFromPyArgv()
-+#include "pycore_pystate.h"       // _PyInterpreterState_GET()
-+
-+static PyStatus
-+pymain_init(const _PyArgv *args)
-+{
-+    PyStatus status;
-+
-+    status = _PyRuntime_Initialize();
-+    if (_PyStatus_EXCEPTION(status)) {
-+        return status;
-+    }
-+
-+    PyPreConfig preconfig;
-+    PyPreConfig_InitPythonConfig(&preconfig);
-+
-+    status = _Py_PreInitializeFromPyArgv(&preconfig, args);
-+    if (_PyStatus_EXCEPTION(status)) {
-+        return status;
-+    }
-+
-+    PyConfig config;
-+    PyConfig_InitPythonConfig(&config);
-+
-+    if (args->use_bytes_argv) {
-+        status = PyConfig_SetBytesArgv(&config, args->argc, args->bytes_argv);
-+    }
-+    else {
-+        status = PyConfig_SetArgv(&config, args->argc, args->wchar_argv);
-+    }
-+    if (_PyStatus_EXCEPTION(status)) {
-+        goto done;
-+    }
-+
-+    status = Py_InitializeFromConfig(&config);
-+    if (_PyStatus_EXCEPTION(status)) {
-+        goto done;
-+    }
-+    status = _PyStatus_OK();
-+
-+done:
-+    PyConfig_Clear(&config);
-+    return status;
-+}
-+
-+static void
-+pymain_free(void)
- {
--    return Py_Main(argc, argv);
-+    _PyImport_Fini2();
-+    _PyPathConfig_ClearGlobal();
-+    _Py_ClearStandardStreamEncoding();
-+    _Py_ClearArgcArgv();
-+    _PyRuntime_Finalize();
+@@ -3222,7 +3222,7 @@ make_impl_info(PyObject *version_info)
+     return NULL;
  }
-+
-+#include "/opt/python-wasm-sdk/support/__EMSCRIPTEN__.c"
- #else
- int
- main(int argc, char **argv)
- {
-+
-     return Py_BytesMain(argc, argv);
- }
--#endif
-+#endif //#if __PYDK__
-diff --git a/configure b/configure
-index 0e5f3f6..5cf6451 100755
---- a/configure
-+++ b/configure
-@@ -9179,7 +9179,7 @@ fi
  
-         as_fn_append LDFLAGS_NODIST " -sALLOW_MEMORY_GROWTH -sTOTAL_MEMORY=20971520"
+-#ifdef __EMSCRIPTEN__
++#if 0
  
--        as_fn_append LDFLAGS_NODIST " -sWASM_BIGINT"
-+        as_fn_append LDFLAGS_NODIST " "
+ PyDoc_STRVAR(emscripten_info__doc__,
+ "sys._emscripten_info\n\
+@@ -3454,7 +3454,7 @@ _PySys_InitCore(PyThreadState *tstate, PyObject *sysdict)
+         goto type_init_failed;
+     }
  
-         as_fn_append LDFLAGS_NODIST " -sFORCE_FILESYSTEM -lidbfs.js -lnodefs.js -lproxyfs.js -lworkerfs.js"
- 
-diff --git a/configure.ac b/configure.ac
-index 4938681..ecad731 100644
---- a/configure.ac
-+++ b/configure.ac
-@@ -2103,7 +2103,7 @@ AS_CASE([$ac_sys_system],
-     AS_VAR_APPEND([LDFLAGS_NODIST], [" -sALLOW_MEMORY_GROWTH -sTOTAL_MEMORY=20971520"])
- 
-     dnl map int64_t and uint64_t to JS bigint
--    AS_VAR_APPEND([LDFLAGS_NODIST], [" -sWASM_BIGINT"])
-+    AS_VAR_APPEND([LDFLAGS_NODIST], [" "])
- 
-     dnl Include file system support
-     AS_VAR_APPEND([LDFLAGS_NODIST], [" -sFORCE_FILESYSTEM -lidbfs.js -lnodefs.js -lproxyfs.js -lworkerfs.js"])
+-#ifdef __EMSCRIPTEN__
++#if 0
+     if (EmscriptenInfoType == NULL) {
+         EmscriptenInfoType = PyStructSequence_NewType(&emscripten_info_desc);
+         if (EmscriptenInfoType == NULL) {
+@@ -3734,7 +3734,7 @@ _PySys_FiniTypes(PyInterpreterState *interp)
+ #endif
+     _PyStructSequence_FiniBuiltin(interp, &Hash_InfoType);
+     _PyStructSequence_FiniBuiltin(interp, &AsyncGenHooksType);
+-#ifdef __EMSCRIPTEN__
++#if 0
+     if (_Py_IsMainInterpreter(interp)) {
+         Py_CLEAR(EmscriptenInfoType);
+     }

@@ -2,11 +2,11 @@
 
 . ${CONFIG:-config}
 
-CYTHON_REL=${CYTHON_REL:-3.0.6}
+CYTHON_REL=${CYTHON_REL:-3.0.8}
 CYTHON_WHL=${CYTHON:-Cython-${CYTHON_REL}-py2.py3-none-any.whl}
 
 # all needed for PEP722/723
-PACKAGING="pip build wheel pyparsing packaging installer"
+PACKAGING="pip build wheel pyparsing packaging PATCHES/installer-1.0.0.dev0-py3-none-any.whl"
 
 $HPIP install --upgrade $PACKAGING
 

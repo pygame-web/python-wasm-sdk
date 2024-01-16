@@ -85,7 +85,7 @@ END
 
 END
 
-    if echo $PYBUILD|grep -q 3.12$
+    if echo $PYBUILD|grep -q 3.13$
     then
         # Prevent freezing bytecode with a different magic
         rm -f $HOST_PREFIX/bin/python3 $HOST_PREFIX/bin/python${PYBUILD}
