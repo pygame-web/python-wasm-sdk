@@ -6,7 +6,8 @@ CYTHON_REL=${CYTHON_REL:-3.0.8}
 CYTHON_WHL=${CYTHON:-Cython-${CYTHON_REL}-py2.py3-none-any.whl}
 
 # all needed for PEP722/723
-PACKAGING="pip build wheel pyparsing packaging PATCHES/installer-1.0.0.dev0-py3-none-any.whl"
+PACKAGING="pip build wheel pyparsing packaging"
+# PATCHES/installer-1.0.0.dev0-py3-none-any.whl" BUG 3.13
 
 $HPIP install --upgrade $PACKAGING
 
@@ -55,7 +56,10 @@ $PIP install build/$CYTHON_WHL
 
 # some we want to be certain to have in all minimal rootfs
 mkdir -p prebuilt/emsdk/common/site-packages/
-for pkg in pyparsing packaging installer pkg_resources
+
+# BUG 3.13 : installer
+
+for pkg in pyparsing packaging pkg_resources
 do
     if [ -d prebuilt/emsdk/${PYBUILD}/site-packages/$pkg ]
     then
@@ -77,19 +81,19 @@ do
 done
 
 
+
+
 pushd src
 
-
 # TODO
-
-
-
-
-
-
-
-
-
+    if [ -d installer ]
+    then
+        echo "  * re-using installer git copy"
+    else
+        echo "  * getting installer git copy"
+        git clone --no-tags --depth 1 --single-branch --branch main https://github.com/pypa/installer/
+    fi
+    cp -rf installer/src/installer ../prebuilt/emsdk/common/site-packages/
 
 
 
