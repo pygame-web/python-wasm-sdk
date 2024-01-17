@@ -20,6 +20,23 @@ do
     $pkg
 done
 
+# those depend on nanoX/microwindows compiled above
+if [ -d $ROOT/sources.wasm/x11 ]
+then
+    for pkg in $ROOT/sources.wasm/x11/*.sh
+    do
+        cd $ROOT
+        chmod +x $pkg
+        echo "
+
+        Third party (X11) : $pkg
+
+
+    "
+        $pkg
+    done
+fi
+
 
 cd $ROOT
 
