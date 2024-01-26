@@ -95,13 +95,8 @@ pushd src
     fi
     cp -rf installer/src/installer ../prebuilt/emsdk/common/site-packages/
 
-
-
-
-
-
-
-
-
-
 popd
+
+rm ${SDKROOT}/prebuilt/emsdk/common/site-packages/installer/_scripts/*exe
+
+

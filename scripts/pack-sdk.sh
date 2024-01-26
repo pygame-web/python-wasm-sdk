@@ -7,6 +7,7 @@ tar -cpPR \
     ${SDKROOT}/python3-was? \
     ${SDKROOT}/wasm32-*-shell.sh \
     ${SDKROOT}/*sdk \
+    ${SDKROOT}/scripts/*sdk-fetch.sh \
     ${SDKROOT}/devices/* \
     ${SDKROOT}/prebuilt/* \
      > /tmp/sdk/python${PYBUILD}-wasm-sdk-${CIVER}.tar
