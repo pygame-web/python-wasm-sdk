@@ -19,6 +19,7 @@ then
         echo "
         * using wasisdk from $(realpath wasisdk/upstream)
             with sys python $SYS_PYTHON and host python $HPY
+        and toolchain file CMAKE_TOOLCHAIN_FILE=$CMAKE_TOOLCHAIN_FILE
 
 " 1>&2
     else
@@ -153,6 +154,10 @@ END
         pushd ${WASI_SYSROOT}
         wget "https://github.com/vmware-labs/webassembly-language-runtimes/releases/download/libs%2Flibpng%2F1.6.39%2B20230629-ccb4cb0/libpng-1.6.39-wasi-sdk-20.0.tar.gz" -O-| tar xvfz -
         wget "https://github.com/vmware-labs/webassembly-language-runtimes/releases/download/libs%2Fzlib%2F1.2.13%2B20230623-2993864/libz-1.2.13-wasi-sdk-20.0.tar.gz"  -O-| tar xvfz -
+        wget "https://github.com/vmware-labs/webassembly-language-runtimes/releases/download/libs%2Fsqlite%2F3.42.0%2B20230623-2993864/libsqlite-3.42.0-wasi-sdk-20.0.tar.gz" -O-| tar xvfz -
+        wget "https://github.com/vmware-labs/webassembly-language-runtimes/releases/download/libs%2Flibxml2%2F2.11.4%2B20230623-2993864/libxml2-2.11.4-wasi-sdk-20.0.tar.gz" -O-| tar xvfz -
+        wget "https://github.com/vmware-labs/webassembly-language-runtimes/releases/download/libs%2Fbzip2%2F1.0.8%2B20230623-2993864/libbzip2-1.0.8-wasi-sdk-20.0.tar.gz"  -O-| tar xvfz -
+        wget "https://github.com/vmware-labs/webassembly-language-runtimes/releases/download/libs%2Flibuuid%2F1.0.3%2B20230623-2993864/libuuid-1.0.3-wasi-sdk-20.0.tar.gz" -O-| tar xvfz -
         popd
 
 
@@ -168,7 +173,8 @@ END
     export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig:${WASI_SYSROOT}/lib/wasm32-wasi/pkgconfig"
 
     # for thirparty prebuilts .pc in sdk
-    export PKG_CONFIG_LIBDIR="${WASI_SYSROOT}/lib/wasm32-wasi/pkgconfig:${WASI_SYSROOT}/share/pkgconfig"
+    export PKG_CONFIG_LIBDIR="${WASI_SYSROOT}/lib/wasm32-wasi/pkgconfig"
+    #:${WASI_SYSROOT}/share/pkgconfig"
     export PKG_CONFIG_SYSROOT_DIR="${WASI_SYSROOT}"
 
 
