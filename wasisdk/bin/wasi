@@ -16,7 +16,7 @@ fi
 WASI_DEF="-D_GNU_SOURCE -D_WASI_EMULATED_MMAN -D_WASI_EMULATED_SIGNAL -D_WASI_EMULATED_PROCESS_CLOCKS -D_WASI_EMULATED_GETPID"
 
 # wasi assembly
-WASI_ALL="${WASI_CFG} ${WASI_PATCH} ${WASI_DEF} -fPIC -fno-rtti -fno-exceptions"
+WASI_ALL="${WASI_CFG} ${WASI_PATCH} ${WASI_DEF} -fPIC -fno-rtti -fno-exceptions -z stack-size=131072"
 
 WASI_ALL="$WASI_ALL -Wno-unused-but-set-variable -Wno-unused-command-line-argument -Wno-unsupported-floating-point-opt"
 
