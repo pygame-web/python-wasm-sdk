@@ -54,18 +54,12 @@ ORIGIN=$(pwd)
 
 # 3.12 3.11 3.10
 
-BUILDS=${BUILDS:-3.11 3.13 3.12}
+BUILDS=${BUILDS:-3.12 3.13}
 
 for PYBUILD in $BUILDS
 do
     cd "$ORIGIN"
 
-#    if echo $PYBUILD|grep -q 12$
-#    then
-#        wasisdk=true
-#    else
-#        wasisdk=false
-#    fi
 
     if [ -f ${SDKROOT}/dev ]
     then
