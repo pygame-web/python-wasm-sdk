@@ -8,8 +8,9 @@ reset
 . /etc/lsb-release
 DISTRIB="${DISTRIB_ID}-${DISTRIB_RELEASE}"
 
-export SDKROOT=/opt/python-wasm-sdk
+SDKROOT=${SDKROOT:-/opt/python-wasm-sdk}
 
+export SDKROOT
 export CIVER=${CIVER:-$DISTRIB}
 export CI=true
 
@@ -17,33 +18,54 @@ if echo $0|grep -q python-wasm-sdk
 then
     echo " * adding emsdk to wasm-sdk"
     emsdk=true
+    wasisdk=${wasisdk:-false}
+    nimsdk=${nimsdk:-false}
 else
     emsdk=false
+    BUILDS=3.12
+    wasisdk=true
+    nimsdk=true
 fi
 
-echo " * adding wasi-sdk to wasm-sdk"
-wasisdk=true
+if $wasisdk
+then
+    echo " * adding wasi-sdk to wasm-sdk"
+fi
+
+if $nimsdk
+then
+    echo " * adding nim-sdk to wasm-sdk"
+fi
 
 
-sudo mkdir -p ${SDKROOT}
-sudo chmod 777 ${SDKROOT}
+
+
+if [ -d ${SDKROOT} ]
+then
+    echo "assming destination $SDKROOT is ready"
+else
+    sudo mkdir -p ${SDKROOT}
+    sudo chmod 777 ${SDKROOT}
+fi
+
+chmod +x ${SDKROOT}/scripts/*
 
 ORIGIN=$(pwd)
 
 # 3.12 3.11 3.10
 
-BUILDS=${BUILDS:-3.11 3.12 3.13}
+BUILDS=${BUILDS:-3.11 3.13 3.12}
 
 for PYBUILD in $BUILDS
 do
     cd "$ORIGIN"
 
-    if echo $PYBUILD|grep -q 12$
-    then
-        wasisdk=true
-    else
-        wasisdk=false
-    fi
+#    if echo $PYBUILD|grep -q 12$
+#    then
+#        wasisdk=true
+#    else
+#        wasisdk=false
+#    fi
 
     if [ -f ${SDKROOT}/dev ]
     then
@@ -76,6 +98,8 @@ do
             . scripts/cpython-fetch.sh
 
             cd ${SDKROOT}
+
+            # generic wasm patchwork
             . support/__EMSCRIPTEN__.sh
 
             . scripts/cpython-build-host.sh 2>&1 >/dev/null
@@ -84,6 +108,18 @@ do
 
         fi
 
+        cat > /opt/python-wasm-sdk/devices/$(arch)/usr/bin/py <<END
+#!/bin/bash
+export XDG_SESSION_TYPE=x11
+export SDKROOT=${SDKROOT}
+export PYTHONPATH=/data/git/pygbag/src:/data/git/platform_wasm:${PYTHONPATH}
+export PYTHONPYCACHEPREFIX=$PYTHONPYCACHEPREFIX
+export HOME=${SDKROOT}
+export PATH=${SDKROOT}/devices/$(arch)/usr/bin:\$PATH
+export LD_LIBRARY_PATH=${SDKROOT}/devices/$(arch)/usr/lib:${SDKROOT}/devices/$(arch)/usr/lib64:$LD_LIBRARY_PATH
+${SDKROOT}/devices/$(arch)/usr/bin/python\${PYBUILD:-$PYBUILD} $@
+END
+        chmod + /opt/python-wasm-sdk/devices/$(arch)/usr/bin/py
 
 
         if $emsdk
@@ -149,32 +185,43 @@ do
 
             CPU=wasm32 TARGET=wasi \
              PYDK_PYTHON_HOST_PLATFORM=wasm32-wasi \
-             PREFIX=/opt/python-wasm-sdk/devices/wasi/usr \
+             PREFIX=/opt/python-wasm-sdk/devices/wasisdk/usr \
              ./scripts/make-shells.sh
 
             cat >> $ROOT/wasm32-wasi-shell.sh <<END
 #!/bin/bash
-pushd ${SDKROOT}
-. scripts/wasisdk-fetch.sh
-popd
+. ${WASISDK}/wasisdk_env.sh
 
-export PS1="[PyDK:wasisdk] \w $ "
+parse_git_branch() {
+     git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
+}
+    export PS1="[PyDK:wasi]  \[\e[32m\]\w \[\e[91m\]\$(parse_git_branch)\[\e[00m\]\$ "
+
 
 END
 
             chmod +x ${SDKROOT}/python3-wasi ${SDKROOT}/wasm32-wasi-shell.sh
 
-
-
         fi
+
+        if $nimsdk
+        then
+            ${SDKROOT}/python-nim-sdk.sh
+        fi
+
+        wget https://github.com/bytecodealliance/wasmtime/releases/download/v17.0.1/wasmtime-v17.0.1-x86_64-linux.tar.xz -O-|xzcat|tar xfv -
+        mv -vf $(find wasmtime*|grep /wasmtime$) ${WASISDK}/bin/
 
         . ${SDKROOT}/scripts/pack-sdk.sh
 
     else
         echo "cd failed"  1>&2
-        exit 156
+        exit 208
     fi
 done
+
+
+
 
 exit 0
 

@@ -1,18 +1,15 @@
 #!/bin/bash
 
+
+SDKROOT=${SDKROOT:-/opt/python-wasm-sdk}
+
+pushd ${SDKROOT}
+
 . ${CONFIG:-config}
 
 
-export PREFIX=${PREFIX:-${SDKROOT}/devices/wasisdk/usr}
+#export PREFIX=${PREFIX:-${SDKROOT}/devices/wasisdk/usr}
 export PYTHON_FOR_BUILD=${PYTHON_FOR_BUILD:-${HPY}}
-
-
-echo "
-    * building cpython-wasi ${PREFIX}/bin/python${PYBUILD}.wasm
-    with PYTHON_FOR_BUILD=$PYTHON_FOR_BUILD
-" 1>&2
-
-
 
 
 if [ -f ${PYTHON_FOR_BUILD} ]
@@ -26,10 +23,6 @@ else
     popd
 fi
 
-. ${SDKROOT}/scripts/wasisdk-fetch.sh
-
-
-
 
 export LD_LIBRARY_PATH=${SDKROOT}/devices/x86_64/usr/lib:$LD_LIBRARY_PATH
 
@@ -38,7 +31,20 @@ then
 
     PYSRC=${SDKROOT}/src/cpython${PYBUILD}
 
-    echo " * building python wasi from ${PYSRC}"
+    . ${SDKROOT}/wasisdk/wasisdk_env.sh
+
+
+    echo "
+
+    * building cpython-wasi ${PREFIX}/bin/python${PYBUILD}.wasm
+        from ${PYSRC}
+        with PYTHON_FOR_BUILD=$PYTHON_FOR_BUILD
+        CC=$CC
+        CXX=$CXX
+        CPP=$CPP
+
+" 1>&2
+
 
     mkdir -p ${SDKROOT}/build/cpython-wasi
 
@@ -96,3 +102,4 @@ else
     echo cannot find PYTHON_FOR_BUILD=$PYTHON_FOR_BUILD
 fi
 
+popd

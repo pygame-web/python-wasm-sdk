@@ -4,7 +4,9 @@
 # https://stackoverflow.com/questions/60712261/how-to-prevent-osx-gcc-to-always-search-usr-local-include
 
 
-WASI_CFG="--sysroot=${WASI_SDK_PREFIX}/share/wasi-sysroot -iwithsysroot /include/c++/v1 -I${WASISDK}/hotfix"
+WASI_CFG="--sysroot=${WASI_SDK_PREFIX}/share/wasi-sysroot -iwithsysroot /include/c++/v1"
+
+# -I${WASISDK}/hotfix using upstream/share/wasi-sysroot/include/wasm32-wasi instead
 
 if echo "${@}"|grep -q \\-fno-builtin
 then

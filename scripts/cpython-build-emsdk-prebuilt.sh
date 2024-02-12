@@ -28,6 +28,15 @@ PIP="${SDKROOT}/python3-wasm -m pip"
 $HPIP install --upgrade typing_extensions mypy_extensions
 $PIP install --upgrade typing_extensions mypy_extensions
 
+# numpy build
+$HPIP install --upgrade meson-python
+$PIP install --upgrade meson-python
+
+$HPIP install --upgrade pyproject-metadata
+$PIP install --upgrade pyproject-metadata
+
+$HPIP install --upgrade ninja
+
 
 echo "
     *   cpython-build-emsdk-prebuilt pip==$PIP   *

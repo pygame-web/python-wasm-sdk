@@ -1,4 +1,7 @@
 #!/bin/bash
+if [[ -z ${CONFIG_ENV+z} ]]
+then
+export CONFIG_ENV=true
 export LC_ALL=C
 export ROOT=${ROOT:-$(pwd)}
 export SDKROOT=${SDKROOT:-$ROOT}
@@ -42,18 +45,6 @@ else
     fi
 fi
 
-
-#stable
-# export EMFLAVOUR=3.1.34
-
-# embind broke in 3.1.48-tot (coro suspend/resume)
-
-# embding more broken in 3.1.51
-
-#export EMFLAVOUR=${EMFLAVOUR:latest}
-export EMFLAVOUR=${EMFLAVOUR:-tot}
-
-
 # base wasm features pure is "mvp" , "bi" is bigint
 
 if [ -f /mvp ]
@@ -71,31 +62,77 @@ else
     export WASM_PURE=false
 fi
 
+
+
+# ============ emscripten ==============
+
+# stable
+# export EMFLAVOUR=3.1.34
+
+# embind broke in 3.1.48-tot (coro suspend/resume)
+
+# embding more broken in 3.1.51
+
+#export EMFLAVOUR=${EMFLAVOUR:latest}
+export EMFLAVOUR=${EMFLAVOUR:-tot}
+
 #temp fix for oom on CI (Error: Process completed with exit code 143.)
 export EMSDK_NUM_CORES=1
 
+# for shared modules
 export PYDK_PYTHON_HOST_PLATFORM=wasm32-${WASM_FLAVOUR}-emscripten
 
-if echo $LD_LIBRARY_PATH |grep -q ${HOST_PREFIX}/lib
-then
-    # config already set
-    echo -n
-else
-    OLDPATH=${PATH}
-    PATH=/usr/local/bin:/usr/bin:/opt/bin:/bin
-    # this is python used for emsdk : ${SYS_PYTHON} -> ${EMSDK_PYTHON}
-    for py in 10 9 8 7
-    do
-        if command -v python${PYMAJOR}.${py} >/dev/null
-        then
-            export SYS_PYTHON=$(command -v python${PYMAJOR}.${py})
-            break
-        else
-            # sane default
-            export SYS_PYTHON=$(command -v python${PYMAJOR})
-        fi
-    done
+# ============== wasi sdk ===============
 
-    export LD_LIBRARY_PATH="${HOST_PREFIX}/lib:$LD_LIBRARY_PATH"
-    export PATH="${HOST_PREFIX}/bin:$OLDPATH"
+# stable
+export WASI_SDK=${WASI_SDK:-20}
+export WASI_URL=https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_SDK}/wasi-sdk-${WASI_SDK}.0-linux.tar.gz
+export WASISDK="${SDKROOT}/wasisdk"
+
+
+# =============== Nimrod ====================
+
+# stable
+NIM_VERSION=nim-2.0.2
+NIM_URL=https://nim-lang.org/download/${NIM_VERSION}-linux_x64.tar.xz
+
+
+NIM_VERSION=nim-git
+NIM_URL=https://github.com/nim-lang/Nim
+
+export NIM_VERSION NIM_URL
+export NIMSDK=${NIMSDK:-"${SDKROOT}/nimsdk"}
+
+
+PATH=/usr/bin:/bin
+for extrabin in /usr/local/bin /opt/bin
+do
+    if echo $PATH|grep -q ":$extrabin"
+    then
+        continue
+    fi
+
+    if [ -d $extrabin ]
+    then
+        PATH=$extrabin:$PATH
+    fi
+done
+
+
+# this is python used for emsdk : ${SYS_PYTHON} -> ${EMSDK_PYTHON}
+for py in 10 9 8 7
+do
+    if command -v python${PYMAJOR}.${py} >/dev/null
+    then
+        export SYS_PYTHON=$(command -v python${PYMAJOR}.${py})
+        break
+    else
+        # sane default
+        export SYS_PYTHON=$(command -v python${PYMAJOR})
+    fi
+done
+
+export GITGET="git clone --recursive --no-tags --depth 1 --single-branch --branch"
+export LD_LIBRARY_PATH="${HOST_PREFIX}/lib:$LD_LIBRARY_PATH"
+export PATH="${HOST_PREFIX}/bin:$PATH"
 fi
