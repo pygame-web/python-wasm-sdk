@@ -54,7 +54,7 @@ ORIGIN=$(pwd)
 
 # 3.12 3.11 3.10
 
-BUILDS=${BUILDS:-3.12 3.13}
+BUILDS=${BUILDS:-3.11 3.12 3.13}
 
 for PYBUILD in $BUILDS
 do
@@ -78,6 +78,9 @@ do
 
         # make install cpython will force bytecode generation
         export PYTHONPYCACHEPREFIX="$(realpath build/pycache)"
+
+        # reset config
+        unset CONFIG_ENV
 
         . ${CONFIG:-config}
 
