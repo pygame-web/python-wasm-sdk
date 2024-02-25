@@ -95,14 +95,15 @@ static char *
 tempnam (const char *dir, const char *pfx)
 {
     char buf[FILENAME_MAX];
-
+    int all;
+    char *ptr;
     int	dirlen = strlen(dir);
     if (dirlen>=FILENAME_MAX)
     	return NULL;
 
     memcpy(buf,dir,FILENAME_MAX);
     buf[dirlen] = '/';
-    int all;
+
 
     if (pfx) {
         all = dirlen + 1 + strlen(pfx);
@@ -116,7 +117,7 @@ tempnam (const char *dir, const char *pfx)
     memcpy(buf+all, "XXXXXX", 6	);
     all += 6 ;
     buf[all]= 0;
-    char *ptr =	(char *)malloc(all);
+    ptr =	(char *)malloc(all);
     memcpy(ptr,	buf, all);
     return mktemp(ptr);
 }

@@ -336,6 +336,7 @@ for arg do
     [ "\$arg" = "-I/usr/include/SDL2" ] && continue
     [ "\$arg" = "-L/usr/lib64" ]	&& continue
     [ "\$arg" = "-L/usr/lib" ]   && continue
+    [ "\$arg" = "-latomic" ]   && continue
 
     if [ "\$arg" = "-shared" ]
     then

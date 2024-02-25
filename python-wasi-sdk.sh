@@ -54,7 +54,7 @@ ORIGIN=$(pwd)
 
 # 3.12 3.11 3.10
 
-BUILDS=${BUILDS:-3.11 3.12 3.13}
+BUILDS=${BUILDS:-3.12 3.13}
 
 for PYBUILD in $BUILDS
 do
@@ -114,9 +114,9 @@ export PYTHONPYCACHEPREFIX=$PYTHONPYCACHEPREFIX
 export HOME=${SDKROOT}
 export PATH=${SDKROOT}/devices/$(arch)/usr/bin:\$PATH
 export LD_LIBRARY_PATH=${SDKROOT}/devices/$(arch)/usr/lib:${SDKROOT}/devices/$(arch)/usr/lib64:$LD_LIBRARY_PATH
-${SDKROOT}/devices/$(arch)/usr/bin/python\${PYBUILD:-$PYBUILD} $@
+${SDKROOT}/devices/$(arch)/usr/bin/python\${PYBUILD:-$PYBUILD} \$@
 END
-        chmod + /opt/python-wasm-sdk/devices/$(arch)/usr/bin/py
+        chmod +x /opt/python-wasm-sdk/devices/$(arch)/usr/bin/py
 
 
         if $emsdk

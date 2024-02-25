@@ -69,8 +69,7 @@ END
     PYOPTS="--disable-ipv6 \
      --with-c-locale-coercion --without-pymalloc --without-pydebug \
      --with-ensurepip $TESTSUITE \
-     --with-decimal-contextvar --disable-shared \
-     --with-computed-gotos"
+     --with-decimal-contextvar --disable-shared"
 
     cat >> pyconfig.h <<END
 #ifdef HAVE_LIBINTL_H
@@ -111,24 +110,31 @@ END
      ${ROOT}/src/cpython${PYBUILD}/configure \
      --prefix=$HOST_PREFIX $PYOPTS
     then
-
         if make -j$(nproc) install
         then
-            rm -rf $(find $ROOT/devices/ -type d|grep __pycache__$)
-            rm $HOST_PREFIX/bin/python3-config \
-                $HOST_PREFIX/bin/idle3 \
-                $HOST_PREFIX/bin/pydoc3 \
-                $HOST_PREFIX/bin/python3
-
-            # make ubuntu binaries able to run elsewhere
-            patchelf --remove-needed libintl.so.8  $HOST_PREFIX/bin/python${PYBUILD}
-            # and able to compile elsewhere
-            sed -i 's|-lintl ||g' ${SDKROOT}/devices/x86_64/usr/bin/python${PYBUILD}-config
-            cp -Rfv $ROOT/support/__EMSCRIPTEN__.patches/${PYBUILD}/. $HOST_PREFIX/lib/python${PYBUILD}/
+            echo "CPython $PYTHON_FOR_BUILD ready" 1>&2
         else
-            echo "failed to build $PYTHON_FOR_BUILD"
-            exit 123
+            echo "failed to build $PYTHON_FOR_BUILD"  1>&2
+            exit 118
         fi
+
+#        if make -j$(nproc) install
+#        then
+#            rm -rf $(find $ROOT/devices/ -type d|grep __pycache__$)
+#            rm $HOST_PREFIX/bin/python3-config \
+#                $HOST_PREFIX/bin/idle3 \
+#                $HOST_PREFIX/bin/pydoc3 \
+#                $HOST_PREFIX/bin/python3
+
+#            # make ubuntu binaries able to run elsewhere
+#            patchelf --remove-needed libintl.so.8  $HOST_PREFIX/bin/python${PYBUILD}
+#            # and able to compile elsewhere
+#            sed -i 's|-lintl ||g' ${SDKROOT}/devices/x86_64/usr/bin/python${PYBUILD}-config
+#            cp -Rfv $ROOT/support/__EMSCRIPTEN__.patches/${PYBUILD}/. $HOST_PREFIX/lib/python${PYBUILD}/
+#        else
+#            echo "failed to build $PYTHON_FOR_BUILD"
+#            exit 123
+#        fi
     else
         echo "
 ==========================================================================

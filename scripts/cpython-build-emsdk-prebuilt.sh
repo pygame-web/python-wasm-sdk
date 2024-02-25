@@ -5,54 +5,36 @@
 CYTHON_REL=${CYTHON_REL:-3.0.8}
 CYTHON_WHL=${CYTHON:-Cython-${CYTHON_REL}-py2.py3-none-any.whl}
 
-# all needed for PEP722/723
-PACKAGING="pip build wheel pyparsing packaging"
-# PATCHES/installer-1.0.0.dev0-py3-none-any.whl" BUG 3.13
-
-$HPIP install --upgrade $PACKAGING
-
-# setuptools for HPy/static
-$HPIP install --upgrade setuptools
-
-# aioconsole only for the simulator
-# $HPIP install --upgrade aioconsole
-
-
-
-# support package build/install
-$HPY -m pip install --upgrade $PACKAGING
-
 PIP="${SDKROOT}/python3-wasm -m pip"
 
+# all needed for PEP722/723, hpy, cffi modules and wheel building
 
-$HPIP install --upgrade typing_extensions mypy_extensions
-$PIP install --upgrade typing_extensions mypy_extensions
+# pip  pip-24.0 broken
+for module in typing_extensions mypy_extensions meson-python pyproject-metadata \
+ setuptools build wheel pyparsing packaging \
+ git+https://github.com/cffi/cffi git+https://github.com/pypa/installer
+do
+    if $HPIP install --force $module
+    then
+        if $PIP install --upgrade --force "$module"
+        then
+            echo "  pre-installing $module"  1>&2
+        else
+            echo "  TARGET FAILED on required module $module" 1>&2
+            exit 23
+        fi
+    else
+        echo "  HOST FAILED on required module $module" 1>&2
+        exit 27
+    fi
+done
 
-# numpy build
-$HPIP install --upgrade meson-python
-$PIP install --upgrade meson-python
-
-$HPIP install --upgrade pyproject-metadata
-$PIP install --upgrade pyproject-metadata
-
-$HPIP install --upgrade ninja
-
+# cannot use wasi ninja yet
+$HPIP install --force ninja
 
 echo "
     *   cpython-build-emsdk-prebuilt pip==$PIP   *
 " 1>&2
-
-
-
-$PIP install --upgrade $PACKAGING
-
-# setuptools for HPy/static
-$PIP install --upgrade setuptools
-
-
-
-# make wheels
-# /opt/python-wasm-sdk/python3-wasm setup.py bdist_wheel
 
 
 # cython get the latest release on gh install on both host python and build python
@@ -88,8 +70,6 @@ do
         fi
     fi
 done
-
-
 
 
 pushd src
