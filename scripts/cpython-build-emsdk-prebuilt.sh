@@ -10,22 +10,17 @@ PIP="${SDKROOT}/python3-wasm -m pip"
 # all needed for PEP722/723, hpy, cffi modules and wheel building
 
 # pip  pip-24.0 broken
-for module in typing_extensions mypy_extensions meson-python pyproject-metadata \
+for module in typing_extensions mypy_extensions pyproject-metadata \
  setuptools build wheel pyparsing packaging \
- git+https://github.com/cffi/cffi git+https://github.com/pypa/installer
+ git+https://github.com/python-cffi/cffi meson-python git+https://github.com/pypa/installer
 do
-    if $HPIP install --force $module
+    $PIP install --force $module
+    if $HPIP install --upgrade --force "$module"
     then
-        if $PIP install --upgrade --force "$module"
-        then
-            echo "  pre-installing $module"  1>&2
-        else
-            echo "  TARGET FAILED on required module $module" 1>&2
-            exit 23
-        fi
+        echo "  pre-installing $module"  1>&2
     else
-        echo "  HOST FAILED on required module $module" 1>&2
-        exit 27
+        echo "  TARGET FAILED on required module $module" 1>&2
+        exit 23
     fi
 done
 
