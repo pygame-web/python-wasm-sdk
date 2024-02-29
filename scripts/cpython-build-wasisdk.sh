@@ -59,8 +59,8 @@ cross_compiling=yes
 END
 
     pushd ${SDKROOT}/build/cpython-wasi
-        sed -i 's| -Wl,--stack-first -Wl,--initial-memory=10485760|--stack-first --initial-memory=10485760|g' $PYSRC/configure.ac
-        sed -i 's| -Wl,--stack-first -Wl,--initial-memory=10485760|--stack-first --initial-memory=10485760|g' $PYSRC/configure
+#        sed -i 's| -Wl,--stack-first -Wl,--initial-memory=10485760| --stack-first --initial-memory=10485760|g' $PYSRC/configure.ac
+#        sed -i 's| -Wl,--stack-first -Wl,--initial-memory=10485760| --stack-first --initial-memory=10485760|g' $PYSRC/configure
 
         LDSHARED="${SDKROOT}/wasisdk/upstream/bin/wasm-ld --no-entry" CONFIG_SITE=$PYSRC/Tools/wasm/config.site-wasm32-wasisdk \
         $PYSRC/configure -C \

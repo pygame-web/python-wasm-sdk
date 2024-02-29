@@ -97,7 +97,7 @@ END
 # FIXME: use pkg config !!!
 
     EMCC_CFLAGS="-I${SDKROOT}/emsdk/upstream/emscripten/cache/sysroot/include/freetype2" \
-     CC=emcc CXX=emc++ emmake make -C src NX11=Y NANOX=Y ARCH=EMSCRIPTEN LINK_APP_INTO_SERVER=Y NANOXDEMO=N ERASEMOVE=1
+     CC=emcc CXX=emc++ emmake make -C src NX11=Y NANOX=Y MICROWIN=N ARCH=EMSCRIPTEN LINK_APP_INTO_SERVER=Y NANOXDEMO=N ERASEMOVE=1
 
 
     if [ -f /pp ]
