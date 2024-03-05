@@ -46,8 +46,15 @@ then
 #                wget https://raw.githubusercontent.com/paradust7/minetest-wasm/main/emsdk_emcc.patch
 #                patch -p1 < emsdk_emcc.patch
 
+                echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/21472 glfw3: gl level version major/minor hints"
+
+                pushd upstream/emscripten
+                wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/21472.diff
+                patch -p1 < 21472.diff
+                popd
 
                 echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/20442 fix mouse position for 3D canvas"
+
                 pushd upstream/emscripten
                 wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/20442.diff
                 patch -p1 < 20442.diff

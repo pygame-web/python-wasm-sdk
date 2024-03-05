@@ -1,0 +1,11 @@
+#!/bin/bash
+if [ -f /proc/sys/fs/binfmt_misc/wasm32-wasi ]
+then
+    WASM=$1
+    shift
+else
+    echo ':wasm32-wasi:M::\x00asm:\xff\xff\xff\xff:/opt/python-wasm-sdk/wasisdk/bin/wasi-binfmt:' > /proc/sys/fs/binfmt_misc/register
+    exit 0
+fi
+wasmtime --env PYTHONDONTWRITEBYTECODE=1 --dir /::/ -- $WASM $@
+
