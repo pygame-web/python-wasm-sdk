@@ -9,9 +9,8 @@ PIP="${SDKROOT}/python3-wasm -m pip"
 
 # all needed for PEP722/723, hpy, cffi modules and wheel building
 
-# pip  pip-24.0 broken
 for module in typing_extensions mypy_extensions pyproject-metadata \
- setuptools build wheel pyparsing packaging setuptools_scm \
+ setuptools build wheel pyparsing packaging hatchling setuptools_scm \
  git+https://github.com/python-cffi/cffi meson-python git+https://github.com/pypa/installer
 do
     $PIP install --force $module

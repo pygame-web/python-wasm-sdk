@@ -44,6 +44,7 @@ cd $ROOT
 
 # https://download.osgeo.org/libtiff/tiff-4.3.0.tar.gz
 # http://code.google.com/intl/en-US/speed/webp/index.html
+# https://github.com/webmproject/libwebp/tags
 
 ALL="-fPIC -s USE_SDL=2 -sUSE_LIBPNG -sUSE_LIBJPEG $CPPFLAGS"
 CNF="emconfigure ./configure --prefix=$PREFIX --with-pic --disable-shared --host $(clang -dumpmachine)"
@@ -116,7 +117,7 @@ then
 "  1>&2
 else
     #[ -d SDL_image ] || git clone https://github.com/libsdl-org/SDL_image
-    if [ -d SDL2_image-2.6.1 ]
+    if [ -d SDL2_${SDL_IMG} ]
     then
         echo "
             * build SDL2_image from release

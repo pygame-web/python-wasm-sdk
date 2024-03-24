@@ -118,6 +118,11 @@ do
     fi
 done
 
+# ================ aosp ===================
+
+AOSP_NDK=25.2.9519653
+
+
 
 # this is python used for emsdk : ${SYS_PYTHON} -> ${EMSDK_PYTHON}
 for py in 10 9 8 7

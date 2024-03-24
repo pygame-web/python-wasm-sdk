@@ -65,8 +65,17 @@ else
 #TODO: check if export PATH=${HOST_PREFIX}/bin:$PATH is really set to avoid system python with different bytecode
 #and no loder lib-dynload in the way.
 
+    if echo $PYBUILD|grep 13$
+    then
+        GIL="--disable-gil"
+    else
+        GIL=""
+    fi
+
+
     EMCC_CFLAGS="-O0 -g0 -fPIC" CFLAGS="-O0 -g0 -fPIC" CC=${SDKROOT}/emsdk/upstream/emscripten/emcc \
-     emconfigure $ROOT/src/libffi/configure --host=wasm32-bi-emscripten\
+     emconfigure $ROOT/src/libffi/configure --host=wasm32-bi-emscripten \
+     $GIL \
       --prefix=$PREFIX --enable-static --disable-shared --disable-dependency-tracking\
       --disable-builddir --disable-multi-os-directory --disable-raw-api --disable-docs
 

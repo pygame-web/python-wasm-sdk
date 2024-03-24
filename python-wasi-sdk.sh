@@ -22,7 +22,7 @@ then
     nimsdk=${nimsdk:-false}
 else
     emsdk=false
-    BUILDS=3.12
+    BUILDS=3.13
     wasisdk=true
     nimsdk=true
 fi

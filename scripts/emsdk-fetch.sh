@@ -56,8 +56,10 @@ then
                 echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/20442 fix mouse position for 3D canvas"
 
                 pushd upstream/emscripten
-                wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/20442.diff
-                patch -p1 < 20442.diff
+                # wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/20442.diff
+                # patch -p1 < 20442.diff
+                wget https://patch-diff.githubusercontent.com/raw/pmp-p/emscripten/pull/2.diff
+                patch -p1 < 2.diff
                 popd
 
                 # https://github.com/paradust7/minetest-wasm/blob/main/emsdk_dirperms.patch
