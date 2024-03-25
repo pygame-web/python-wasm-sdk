@@ -65,17 +65,10 @@ else
 #TODO: check if export PATH=${HOST_PREFIX}/bin:$PATH is really set to avoid system python with different bytecode
 #and no loder lib-dynload in the way.
 
-    if echo $PYBUILD|grep 13$
-    then
-        GIL="--disable-gil"
-    else
-        GIL=""
-    fi
 
 
     EMCC_CFLAGS="-O0 -g0 -fPIC" CFLAGS="-O0 -g0 -fPIC" CC=${SDKROOT}/emsdk/upstream/emscripten/emcc \
      emconfigure $ROOT/src/libffi/configure --host=wasm32-bi-emscripten \
-     $GIL \
       --prefix=$PREFIX --enable-static --disable-shared --disable-dependency-tracking\
       --disable-builddir --disable-multi-os-directory --disable-raw-api --disable-docs
 
@@ -203,11 +196,22 @@ END
     # please let compiler/user decide what to do with wasm CPU.
     sed -i 's|-sWASM_BIGINT||g' configure
     sed -i 's|-sWASM_BIGINT||g' configure.ac
+
+    # do not mess with wasm sysconfig name
+    if echo $PYBUILD|grep -q 13$
+    then
+        GIL="--disable-gil"
+        sed -i 's|{ABIFLAGS}t|{ABIFLAGS}|g' configure
+        sed -i 's|{ABIFLAGS}t|{ABIFLAGS}|g' configure.ac
+    else
+        GIL=""
+    fi
+
     popd
 
 
     PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig" CONFIG_SITE=$ROOT/src/cpython${PYBUILD}/Tools/wasm/config.site-wasm32-pydk \
-    emconfigure $ROOT/src/cpython${PYBUILD}/configure -C --with-emscripten-target=browser \
+    emconfigure $ROOT/src/cpython${PYBUILD}/configure -C --with-emscripten-target=browser $GIL \
      --cache-file=${PYTHONPYCACHEPREFIX}/config.cache \
      --enable-wasm-dynamic-linking $TESTSUITE\
      --host=$PYDK_PYTHON_HOST_PLATFORM \

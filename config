@@ -21,6 +21,7 @@ mkdir -p ${SDKROOT}/build/pycache ${SDKROOT}/build/cache
 export XDG_CACHE_HOME=$(realpath ${SDKROOT}/build/cache)
 export PYTHONPYCACHEPREFIX=${PYTHONPYCACHEPREFIX:-$(realpath ${SDKROOT}/build/pycache)}
 
+export WHEELS=/data/git/archives/repo
 
 export HOME=${SDKROOT}
 
