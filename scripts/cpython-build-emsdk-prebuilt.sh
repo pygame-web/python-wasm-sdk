@@ -9,6 +9,49 @@ PIP="${SDKROOT}/python3-wasm -m pip"
 
 # all needed for PEP722/723, hpy, cffi modules and wheel building
 
+if echo $PYBUILD|grep -q 3.13$
+then
+# cython get the latest release on gh install on both host python and build python
+pushd build
+    wget -q -c https://github.com/cython/cython/releases/download/${CYTHON_REL}/${CYTHON_WHL}
+    $HPIP install --upgrade $CYTHON_WHL
+popd
+else
+    echo "
+
+
+
+
+
+
+
+
+
+
+
+
+        USING CYTHON GIT
+
+
+
+
+
+
+
+
+
+
+
+
+
+"
+    $HPIP install --upgrade git+https://github.com/cython/cython
+fi
+
+
+$PIP install build/$CYTHON_WHL
+
+
 for module in typing_extensions mypy_extensions pyproject-metadata \
  setuptools build wheel pyparsing packaging hatchling setuptools_scm \
  git+https://github.com/python-cffi/cffi meson-python git+https://github.com/pypa/installer
@@ -31,13 +74,6 @@ echo "
 " 1>&2
 
 
-# cython get the latest release on gh install on both host python and build python
-pushd build
-    wget -q -c https://github.com/cython/cython/releases/download/${CYTHON_REL}/${CYTHON_WHL}
-    $HPIP install --upgrade $CYTHON_WHL
-popd
-
-$PIP install build/$CYTHON_WHL
 
 # some we want to be certain to have in all minimal rootfs
 mkdir -p prebuilt/emsdk/common/site-packages/

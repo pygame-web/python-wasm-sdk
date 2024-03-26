@@ -42,7 +42,7 @@ fi
 
 if [ -d ${SDKROOT} ]
 then
-    echo "assming destination $SDKROOT is ready"
+    echo "Assuming destination $SDKROOT is ready"
 else
     sudo mkdir -p ${SDKROOT}
     sudo chmod 777 ${SDKROOT}

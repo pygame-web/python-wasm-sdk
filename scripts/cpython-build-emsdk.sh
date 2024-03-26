@@ -231,7 +231,8 @@ END
     then
         if emmake make WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/ install
         then
-            echo ok
+            echo "Fixing missing mimalloc for Free Threading 3.13+"
+            cp -rf $ROOT/src/cpython${PYBUILD}/Include/internal/mimalloc/mimalloc ${PREFIX}/include/python${PYBUILD}/internal/
         else
             exit 1
         fi
@@ -240,7 +241,7 @@ END
         emmake make -j1 Modules/_ctypes/_ctypes.o
         if emmake make WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/ install
         then
-            echo ok
+            echo "ok"
         else
             echo "
 
