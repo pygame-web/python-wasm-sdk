@@ -64,7 +64,7 @@ END
 
         LDSHARED="${SDKROOT}/wasisdk/upstream/bin/wasm-ld --no-entry" CONFIG_SITE=$PYSRC/Tools/wasm/config.site-wasm32-wasisdk \
         $PYSRC/configure -C \
-        --with-c-locale-coercion --without-pymalloc --disable-ipv6  --with-ensurepip=no \
+        --with-c-locale-coercion --without-pymalloc --disable-ipv6  --disable-gil --with-ensurepip=no \
         --prefix=${PREFIX} \
         --host=wasm32-unknown-wasi --with-suffix=.wasm \
         --build=$($PYSRC/config.guess) \
@@ -88,15 +88,31 @@ END
 
         if make && make install
         then
-            echo done
-#                cat > ${SDKROOT}/bin/python3 <<END
-##!/bin/bash
-#wasmtime --dir=/ --dir=. ${SDKROOT}/bin/python3.wasm \$@
-#END
-#                chmod +x ${SDKROOT}/bin/python3
-#                ln ${SDKROOT}/bin/python3 ${SDKROOT}/bin/python
-            fi
+            sed -i 's|cpython/pthread_stubs|pthread|g' ${PREFIX}/include/python${PYBUILD}/cpython/pythread.h
+        fi
     popd
+
+    pushd ${SDKROOT}/wasisdk
+        if [ -f libpython${PYBUILD}.a ]
+        then
+            echo already moved initial libpython${PYBUILD}.a
+        else
+            mv /opt/python-wasm-sdk/devices/wasisdk/usr/lib/libpython${PYBUILD}.a /opt/python-wasm-sdk/wasisdk/
+        fi
+
+        LINKALL="/opt/python-wasm-sdk/wasisdk/libpython3.13.a \
+         /opt/python-wasm-sdk/build/cpython-wasi/Modules/_decimal/libmpdec/libmpdec.a \
+         /opt/python-wasm-sdk/build/cpython-wasi/Modules/_hacl/libHacl_Hash_SHA2.a \
+         /opt/python-wasm-sdk/build/cpython-wasi/Modules/expat/libexpat.a \
+         /opt/python-wasm-sdk/wasisdk/upstream/share/wasi-sysroot/lib/wasm32-wasi/libbz2.a \
+         /opt/python-wasm-sdk/wasisdk/upstream/share/wasi-sysroot/lib/wasm32-wasi/libz.a \
+         /opt/python-wasm-sdk/wasisdk/upstream/share/wasi-sysroot/lib/wasm32-wasi/libsqlite3.a \
+         /opt/python-wasm-sdk/wasisdk/upstream/share/wasi-sysroot/lib/wasm32-wasi/libuuid.a"
+
+        wasi-c -nostdlib -fpic -r -Wl,--whole-archive -o libpython${PYBUILD}.o $LINKALL
+        llvm-ar rcs ${PREFIX}/lib/libpython${PYBUILD}.a libpython${PYBUILD}.o
+    popd
+
 
 else
     echo cannot find PYTHON_FOR_BUILD=$PYTHON_FOR_BUILD

@@ -203,6 +203,8 @@ END
         GIL="--disable-gil"
         sed -i 's|{ABIFLAGS}t|{ABIFLAGS}|g' configure
         sed -i 's|{ABIFLAGS}t|{ABIFLAGS}|g' configure.ac
+        sed -i 's|--wasi preview2||g' configure
+        sed -i 's|--wasi preview2||g' configure.ac
     else
         GIL=""
     fi
