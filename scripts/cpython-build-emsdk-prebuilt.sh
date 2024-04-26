@@ -2,7 +2,7 @@
 
 . ${CONFIG:-config}
 
-CYTHON_REL=${CYTHON_REL:-3.0.8}
+CYTHON_REL=${CYTHON_REL:-3.0.10}
 CYTHON_WHL=${CYTHON:-Cython-${CYTHON_REL}-py2.py3-none-any.whl}
 
 PIP="${SDKROOT}/python3-wasm -m pip"
@@ -11,45 +11,26 @@ PIP="${SDKROOT}/python3-wasm -m pip"
 
 if echo $PYBUILD|grep -q 3.13$
 then
-# cython get the latest release on gh install on both host python and build python
-pushd build
-    wget -q -c https://github.com/cython/cython/releases/download/${CYTHON_REL}/${CYTHON_WHL}
-    $HPIP install --upgrade $CYTHON_WHL
-popd
-else
     echo "
 
 
+        USING CYTHON GIT for $PYBUILD
 
-
-
-
-
-
-
-
-
-
-        USING CYTHON GIT
-
-
-
-
-
-
-
-
-
-
-
+        TODO: install in wasm interpreter : $PIP
 
 
 "
     $HPIP install --upgrade git+https://github.com/cython/cython
+else
+    # cython get the latest release on gh install on both host python and build python
+    pushd build
+    wget -q -c https://github.com/cython/cython/releases/download/${CYTHON_REL}/${CYTHON_WHL}
+    $HPIP install --upgrade $CYTHON_WHL
+    popd
+    $PIP install build/$CYTHON_WHL
 fi
 
 
-$PIP install build/$CYTHON_WHL
 
 
 for module in typing_extensions mypy_extensions pyproject-metadata \

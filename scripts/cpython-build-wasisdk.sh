@@ -100,7 +100,7 @@ END
             mv /opt/python-wasm-sdk/devices/wasisdk/usr/lib/libpython${PYBUILD}.a /opt/python-wasm-sdk/wasisdk/
         fi
 
-        LINKALL="/opt/python-wasm-sdk/wasisdk/libpython3.13.a \
+        LINKALL="/opt/python-wasm-sdk/wasisdk/libpython${PYBUILD}.a \
          /opt/python-wasm-sdk/build/cpython-wasi/Modules/_decimal/libmpdec/libmpdec.a \
          /opt/python-wasm-sdk/build/cpython-wasi/Modules/_hacl/libHacl_Hash_SHA2.a \
          /opt/python-wasm-sdk/build/cpython-wasi/Modules/expat/libexpat.a \
@@ -109,6 +109,7 @@ END
          /opt/python-wasm-sdk/wasisdk/upstream/share/wasi-sysroot/lib/wasm32-wasi/libsqlite3.a \
          /opt/python-wasm-sdk/wasisdk/upstream/share/wasi-sysroot/lib/wasm32-wasi/libuuid.a"
 
+# maybe just -nostartfiles  ? https://github.com/WebAssembly/wasi-sdk/issues/320
         wasi-c -nostdlib -fpic -r -Wl,--whole-archive -o libpython${PYBUILD}.o $LINKALL
         llvm-ar rcs ${PREFIX}/lib/libpython${PYBUILD}.a libpython${PYBUILD}.o
     popd
