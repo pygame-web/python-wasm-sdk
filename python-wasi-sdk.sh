@@ -38,8 +38,6 @@ then
 fi
 
 
-
-
 if [ -d ${SDKROOT} ]
 then
     echo "Assuming destination $SDKROOT is ready"
@@ -52,7 +50,7 @@ chmod +x ${SDKROOT}/scripts/*
 
 ORIGIN=$(pwd)
 
-BUILDS=${BUILDS:-3.13}
+BUILDS=${BUILDS:-"3.12 3.13"}
 
 for PYBUILD in $BUILDS
 do
