@@ -45,18 +45,18 @@ fi
 
 if echo $PYBUILD |grep -q 12$
 then
-    wget -q -c https://www.python.org/ftp/python/3.12.2/Python-3.12.2.tar.xz
-    tar xf Python-3.12.2.tar.xz
-    ln -s Python-3.12.2 cpython${PYBUILD}
+    wget -q -c https://www.python.org/ftp/python/3.12.3/Python-3.12.3.tar.xz
+    tar xf Python-3.12.3.tar.xz
+    ln -s Python-3.12.3 cpython${PYBUILD}
     export REBUILD=true
 fi
 
 
 if echo $PYBUILD | grep -q 11$
 then
-    wget -q -c https://www.python.org/ftp/python/3.11.8/Python-3.11.8.tar.xz
-    tar xf Python-3.11.8.tar.xz
-    ln -s Python-3.11.8 cpython${PYBUILD}
+    wget -q -c https://www.python.org/ftp/python/3.11.9/Python-3.11.9.tar.xz
+    tar xf Python-3.11.9.tar.xz
+    ln -s Python-3.11.9 cpython${PYBUILD}
     export REBUILD=true
 fi
 

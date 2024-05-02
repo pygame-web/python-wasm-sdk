@@ -18,12 +18,17 @@ export HOST_PREFIX=${HOST_PREFIX:-${SDKROOT}/devices/$(arch)/usr}
 export PREFIX=${PREFIX:-${SDKROOT}/devices/emsdk/usr}
 
 mkdir -p ${SDKROOT}/build/pycache ${SDKROOT}/build/cache
-export XDG_CACHE_HOME=$(realpath ${SDKROOT}/build/cache)
 export PYTHONPYCACHEPREFIX=${PYTHONPYCACHEPREFIX:-$(realpath ${SDKROOT}/build/pycache)}
 
 export WHEELS=/data/git/archives/repo
 
-export HOME=${SDKROOT}
+export HOME=$(realpath ${SDKROOT})
+export XDG_DATA_HOME=${HOME}/build/share
+export XDG_CACHE_HOME=${HOME}/build/cache
+export XDG_CONFIG_HOME=${HOME}/build/config
+export XDG_DATA_DIRS=${HOME}/build/share
+
+mkdir -p $XDG_DATA_HOME $XDG_CACHE_HOME $XDG_CONFIG_HOME
 
 export HPY=${HOST_PREFIX}/bin/python${PYBUILD}
 export HPIP="${HPY} -mpip"
@@ -89,6 +94,8 @@ export PYDK_PYTHON_HOST_PLATFORM=wasm32-${WASM_FLAVOUR}-emscripten
 export WASI_SDK=${WASI_SDK:-20}
 export WASI_URL=https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_SDK}/wasi-sdk-${WASI_SDK}.0-linux.tar.gz
 export WASISDK="${SDKROOT}/wasisdk"
+
+export WASMTIME_HOME=$WASISDK
 
 
 # =============== Nimrod ====================
