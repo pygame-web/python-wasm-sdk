@@ -21,7 +21,12 @@ then
                 #git checkout 91f8563a9d1a4a0ec03bbb2be23485367d85a091
                 ./emsdk install ${EMFLAVOUR:-latest}
                 ./emsdk activate ${EMFLAVOUR:-latest}
+
+
                 pushd upstream/emscripten
+                    echo "FIXME: applying stdio* are not const"
+                    sed -i 's|extern FILE \*const|extern FILE \*|g' cache/sysroot/include/stdio.h
+
                     echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/20281 dylink.js : handle ** argument case"
                     wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/20281.diff
                     patch -p1 < 20281.diff
