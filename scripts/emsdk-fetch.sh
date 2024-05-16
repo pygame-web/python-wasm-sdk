@@ -65,6 +65,10 @@ then
                 # patch -p1 < 20442.diff
                 wget https://patch-diff.githubusercontent.com/raw/pmp-p/emscripten/pull/2.diff
                 patch -p1 < 2.diff
+
+                echo "FIXME: Applying https://github.com/pmp-p/emscripten/pull/3 ioctl TIOCSWINSZ"
+                wget  https://github.com/pmp-p/emscripten/pull/3.diff
+                patch -p1 < 3.diff
                 popd
 
                 # https://github.com/paradust7/minetest-wasm/blob/main/emsdk_dirperms.patch

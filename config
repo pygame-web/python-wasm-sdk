@@ -126,6 +126,10 @@ do
     fi
 done
 
+# ================ bun ====================
+export BUN_INSTALL="$HOME/.bun"
+export PATH=$BUN_INSTALL/bin:$PATH
+
 # ================ aosp ===================
 
 AOSP_NDK=25.2.9519653
