@@ -13,7 +13,7 @@ else
     tar xvfz proj-9.4.0.tar.gz
     mv proj-9.4.0 libproj
 
-    pushd libgeos
+    pushd libproj
     # patch
     popd
 fi
