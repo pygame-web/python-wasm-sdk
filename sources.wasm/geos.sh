@@ -50,7 +50,6 @@ else
     mkdir -p $ROOT/build/libgeos
     pushd $ROOT/build/libgeos
     emcmake cmake -DCMAKE_INSTALL_PREFIX:PATH=$PREFIX ${ROOT}/src/libgeos
-    #emconfigure ${ROOT}/src/libgeos/configure --prefix=$PREFIX --disable-test
     emmake make -j $(nproc) install
     popd
 fi
