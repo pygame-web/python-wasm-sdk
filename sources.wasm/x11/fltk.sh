@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. ${CONFIG:-config}
+. ${SDKROOT}/scripts/emsdk-fetch.sh
 
 
 cd ${ROOT}/src
@@ -14,14 +14,12 @@ then
     echo "
         ${PKG} already prepared
     "
-    pushd ${PKG}
 else
     git clone --recursive https://github.com/pmp-p/${PKG}
-    pushd ${PKG}
-    touch ../${PKG}.patched
+    touch ${PKG}.patched
 fi
 
-. ${SDKROOT}/scripts/emsdk-fetch.sh
+pushd ${PKG}
 
 . fltk-wasm-build.sh
 

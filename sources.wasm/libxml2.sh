@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. ${CONFIG:-config}
+. scripts/emsdk-fetch.sh
 
 
 cd ${ROOT}/src
@@ -20,7 +20,6 @@ then
         already built in $PREFIX/lib/libxml2.a
     "
 else
-    . ${SDKROOT}/scripts/emsdk-fetch.sh
 
     mkdir -p $ROOT/build/libxml2
     pushd $ROOT/build/libxml2
