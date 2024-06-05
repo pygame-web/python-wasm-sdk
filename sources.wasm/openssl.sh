@@ -1,11 +1,10 @@
 #!/bin/bash
 
-. ${CONFIG:-config}
 . scripts/emsdk-fetch.sh
 
 cd ${ROOT}/src
-export OPENSSL="openssl-1.1.1s"
-export URL_OPENSSL=https://ftp.openssl.org/source/$OPENSSL.tar.gz
+export OPENSSL="openssl-1.1.1w"
+export URL_OPENSSL=https://www.openssl.org/source/old/1.1.1/openssl-1.1.1w.tar.gz
 
 
 

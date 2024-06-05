@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-22.04
     env:
        BUILDS: 3.12 3.13
-       EMFLAVOUR: 3.1.59
+       EMFLAVOUR: tot
     
     steps:
     - uses: actions/checkout@v3.3.0
