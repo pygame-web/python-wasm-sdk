@@ -46,8 +46,8 @@ fi
 if echo $PYBUILD |grep -q 13$
 then
     wget -q -c https://www.python.org/ftp/python/3.13.0/Python-3.13.0b3.tar.xz
-    tar xf Python-3.13.0b1.tar.xz
-    ln -s Python-3.13.0b1 cpython${PYBUILD}
+    tar xf Python-3.13.0b3.tar.xz
+    ln -s Python-3.13.0b3 cpython${PYBUILD}
 
 fi
 
