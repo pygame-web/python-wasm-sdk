@@ -49,6 +49,10 @@ then
     tar xf Python-3.13.0b3.tar.xz
     ln -s Python-3.13.0b3 cpython${PYBUILD}
 
+    pushd cpython${PYBUILD}
+
+    popd
+
 fi
 
 if echo $PYBUILD |grep -q 12$

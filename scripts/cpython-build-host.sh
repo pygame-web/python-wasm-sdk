@@ -23,18 +23,13 @@ else
     fi
 fi
 
-# in this special case build testsuite
-# main repo https://github.com/pmp-p/python-wasm-plus
-
+# special case build testsuite
 # pygame-web won't build test modules
-
-if echo $GITHUB_WORKSPACE|grep -q /python-wasm-plus/
+if echo $GITHUB_WORKSPACE|grep -q /python-wasm-sdk/
 then
-    TESTSUITE="--enable-test-modules"
-    #TESTSUITE=""
+    TESTSUITE=""
 else
     TESTSUITE="--enable-test-modules"
-    #TESTSUITE=""
 fi
 
 echo "
@@ -104,11 +99,14 @@ END
             " 1>&2
             sleep 6
         fi
+        GIL="--disable-gil"
+    else
+        GIL=""
     fi
 
     if CC=clang CXX=clang++ CFLAGS="-fPIC" CPPFLAGS="-fPIC" \
      ${ROOT}/src/cpython${PYBUILD}/configure \
-     --prefix=$HOST_PREFIX $PYOPTS
+     --prefix=$HOST_PREFIX $PYOPTS $GIL
     then
         if make -j$(nproc) install
         then
@@ -117,24 +115,6 @@ END
             echo "failed to build $PYTHON_FOR_BUILD"  1>&2
             exit 118
         fi
-
-#        if make -j$(nproc) install
-#        then
-#            rm -rf $(find $ROOT/devices/ -type d|grep __pycache__$)
-#            rm $HOST_PREFIX/bin/python3-config \
-#                $HOST_PREFIX/bin/idle3 \
-#                $HOST_PREFIX/bin/pydoc3 \
-#                $HOST_PREFIX/bin/python3
-
-#            # make ubuntu binaries able to run elsewhere
-#            patchelf --remove-needed libintl.so.8  $HOST_PREFIX/bin/python${PYBUILD}
-#            # and able to compile elsewhere
-#            sed -i 's|-lintl ||g' ${SDKROOT}/devices/x86_64/usr/bin/python${PYBUILD}-config
-#            cp -Rfv $ROOT/support/__EMSCRIPTEN__.patches/${PYBUILD}/. $HOST_PREFIX/lib/python${PYBUILD}/
-#        else
-#            echo "failed to build $PYTHON_FOR_BUILD"
-#            exit 123
-#        fi
     else
         echo "
 ==========================================================================

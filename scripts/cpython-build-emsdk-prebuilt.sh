@@ -9,6 +9,21 @@ PIP="${SDKROOT}/python3-wasm -m pip"
 
 # all needed for PEP722/723, hpy, cffi modules and wheel building
 
+for module in flit git+https://github.com/pygame-web/wheel \
+ typing_extensions mypy_extensions pyproject-metadata \
+ git+https://github.com/pygame-web/setuptools build pyparsing packaging hatchling setuptools_scm \
+ git+https://github.com/python-cffi/cffi meson-python git+https://github.com/pypa/installer
+do
+    $PIP install --no-build-isolation --force $module
+    if $HPIP install --upgrade --force "$module"
+    then
+        echo "  pre-installing $module"  1>&2
+    else
+        echo "  TARGET FAILED on required module $module" 1>&2
+        exit 23
+    fi
+done
+
 if echo $PYBUILD|grep -q 3.13$
 then
     echo "
@@ -21,6 +36,7 @@ then
 
 "
     $HPIP install --upgrade git+https://github.com/cython/cython
+    $PIP install --upgrade --no-build-isolation git+https://github.com/cython/cython
 else
     # cython get the latest release on gh install on both host python and build python
     pushd build
@@ -30,22 +46,6 @@ else
     $PIP install build/$CYTHON_WHL
 fi
 
-
-
-
-for module in typing_extensions mypy_extensions pyproject-metadata \
- setuptools build wheel pyparsing packaging hatchling setuptools_scm \
- git+https://github.com/python-cffi/cffi meson-python git+https://github.com/pypa/installer
-do
-    $PIP install --force $module
-    if $HPIP install --upgrade --force "$module"
-    then
-        echo "  pre-installing $module"  1>&2
-    else
-        echo "  TARGET FAILED on required module $module" 1>&2
-        exit 23
-    fi
-done
 
 # cannot use wasi ninja yet
 $HPIP install --force ninja
