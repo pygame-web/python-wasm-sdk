@@ -9,10 +9,13 @@ PIP="${SDKROOT}/python3-wasm -m pip"
 
 # all needed for PEP722/723, hpy, cffi modules and wheel building
 
-for module in flit git+https://github.com/pygame-web/wheel \
+for module in flit \
  typing_extensions mypy_extensions pyproject-metadata \
- git+https://github.com/pygame-web/setuptools build pyparsing packaging hatchling setuptools_scm \
- git+https://github.com/python-cffi/cffi meson-python git+https://github.com/pypa/installer
+ build pyparsing packaging hatchling setuptools_scm meson-python \
+ git+https://github.com/pygame-web/setuptools \
+ git+https://github.com/pygame-web/wheel \
+ git+https://github.com/python-cffi/cffi \
+ git+https://github.com/pypa/installer
 do
     $PIP install --no-build-isolation --force $module
     if $HPIP install --upgrade --force "$module"
@@ -31,12 +34,12 @@ then
 
         USING CYTHON GIT for $PYBUILD
 
-        TODO: install in wasm interpreter : $PIP
+
 
 
 "
-    $HPIP install --upgrade git+https://github.com/cython/cython
     $PIP install --upgrade --no-build-isolation git+https://github.com/cython/cython
+    $HPIP install --upgrade --force git+https://github.com/cython/cython
 else
     # cython get the latest release on gh install on both host python and build python
     pushd build

@@ -176,6 +176,8 @@ END
 
         curl -fsSL https://bun.sh/install | bash
 
+        npm install --prefix $ROOT/emsdk/node/??.??.* -g pnpm@^8.0.0
+
 # maybe rewrite that in python and move it to emcc.py
 
         cat > emsdk/upstream/emscripten/emcc <<END
