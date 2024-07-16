@@ -202,7 +202,8 @@ END
             ${SDKROOT}/python-nim-sdk.sh
         fi
 
-        wget https://github.com/bytecodealliance/wasmtime/releases/download/v17.0.1/wasmtime-v17.0.1-x86_64-linux.tar.xz -O-|xzcat|tar xfv -
+        # wget https://github.com/bytecodealliance/wasmtime/releases/download/v17.0.1/wasmtime-v17.0.1-x86_64-linux.tar.xz -O-|xzcat|tar xfv -
+        wget https://github.com/bytecodealliance/wasmtime/releases/download/v22.0.0/wasmtime-v22.0.0-x86_64-linux.tar.xz -O-|xzcat|tar xfv -
         mv -vf $(find wasmtime*|grep /wasmtime$) ${WASISDK}/bin/
 
         . ${SDKROOT}/scripts/pack-sdk.sh

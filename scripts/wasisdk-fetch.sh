@@ -16,7 +16,7 @@ pushd ${SDKROOT}
         wget -c https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_SDK}/wasi-sdk-${WASI_SDK}.0-linux.tar.gz
         tar xfz wasi-sdk-${WASI_SDK}.0-linux.tar.gz
         mv wasi-sdk-${WASI_SDK}.0 upstream && rm wasi-sdk-${WASI_SDK}.0-linux.tar.gz
-        
+
         ln ${SDKROOT}/wasisdk/bin/wasi ${SDKROOT}/wasisdk/bin/cc
         ln ${SDKROOT}/wasisdk/bin/wasi ${SDKROOT}/wasisdk/bin/wasi-c
         ln ${SDKROOT}/wasisdk/bin/wasi ${SDKROOT}/wasisdk/bin/wasi-cpp
