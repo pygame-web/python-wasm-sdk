@@ -61,8 +61,8 @@ then
 else
     export WASM_FLAVOUR=bi
 
-    # extra features. Safari 14 is expected to have BIGINT, ignore the emsdk warnings.
-    export WASM_EXTRA="-sWASM_BIGINT -sMIN_SAFARI_VERSION=140100"
+    # extra features. Safari 140100 is expected to have BIGINT ? emsdk warnings ?
+    export WASM_EXTRA="-sWASM_BIGINT -sMIN_SAFARI_VERSION=150000"
 
     # tell to not normalize modules.
     export WASM_PURE=false
@@ -91,8 +91,10 @@ export PYDK_PYTHON_HOST_PLATFORM=wasm32-${WASM_FLAVOUR}-emscripten
 # ============== wasi sdk ===============
 
 # stable
-export WASI_SDK=${WASI_SDK:-20}
-export WASI_URL=https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_SDK}/wasi-sdk-${WASI_SDK}.0-linux.tar.gz
+export WASI_SDK=${WASI_SDK:-23.0}
+export WASI_SDK_MAJOR=$(echo ${WASI_SDK}|cut -d. -f1)
+export WASI_SDK_MINOR=$(echo ${WASI_SDK}|cut -d. -f2)
+export WASI_URL=https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_SDK_MAJOR}/wasi-sdk-${WASI_SDK}-linux.tar.gz
 export WASISDK="${SDKROOT}/wasisdk"
 
 export WASMTIME_HOME=$WASISDK
@@ -101,7 +103,7 @@ export WASMTIME_HOME=$WASISDK
 # =============== Nimrod ====================
 
 # stable
-NIM_VERSION=nim-2.0.2
+NIM_VERSION=nim-2.0.8
 NIM_URL=https://nim-lang.org/download/${NIM_VERSION}-linux_x64.tar.xz
 
 

@@ -203,7 +203,8 @@ unset PYTHONPATH
 # -Wwarn-absolute-paths
 # --valid-abspath ${SDKROOT}
 
-COMMON="-Wno-unsupported-floating-point-opt -Wno-unused-command-line-argument -Wno-unreachable-code-fallthrough -Wno-limited-postlink-optimizations"
+# COMMON="-Wno-unsupported-floating-point-opt"
+COMMON="-Wno-limited-postlink-optimizations -Wno-unused-command-line-argument -Wno-unreachable-code-fallthrough -Wno-unused-function"
 SHARED=""
 IS_SHARED=false
 PY_MODULE=false
@@ -488,6 +489,9 @@ END
         export PATH=$EMSDK/upstream/emscripten/system/bin:$EMSDK/upstream/emscripten:$PATH
     fi
 
+    mkdir -p ${SDKROOT}/devices/$(arch)/usr/bin/
+    cp $SDKROOT/wasisdk/bin/wasm-objdump* ${SDKROOT}/devices/$(arch)/usr/bin/
+
     TRUE=$(which true)
     for fix in readelf ldconfig
     do
@@ -496,14 +500,8 @@ END
     done
 
 
-    if [ -f /pp ]
-    then
-        # yes, i only have a amd200GE with 32G
-        NPROC=1
-        export EMSDK_NUM_CORES=1
-    else
-        NPROC=$(nproc)
-    fi
+    export NPROC=1
+    export EMSDK_NUM_CORES=$NPROC
 
     mkdir -p src
 

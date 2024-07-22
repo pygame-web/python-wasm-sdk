@@ -114,6 +114,14 @@ ${SDKROOT}/devices/$(arch)/usr/bin/python\${PYBUILD:-$PYBUILD} \$@
 END
         chmod +x /opt/python-wasm-sdk/devices/$(arch)/usr/bin/py
 
+        # always install wasmtime because wasm-objdump needs it.
+        if [ -f ${SDKROOT}/devices/$(arch)/usr/bin/wastime ]
+        then
+            echo "keeping installed wasmtime and wasi binaries"
+        else
+            wget https://github.com/bytecodealliance/wasmtime/releases/download/v22.0.0/wasmtime-v22.0.0-x86_64-linux.tar.xz -O-|xzcat|tar xfv -
+            mv -vf $(find wasmtime*|grep /wasmtime$) ${SDKROOT}/devices/$(arch)/usr/bin
+        fi
 
         if $emsdk
         then
@@ -192,7 +200,6 @@ parse_git_branch() {
 
 
 END
-
             chmod +x ${SDKROOT}/python3-wasi ${SDKROOT}/wasm32-wasi-shell.sh
 
         fi
@@ -201,10 +208,6 @@ END
         then
             ${SDKROOT}/python-nim-sdk.sh
         fi
-
-        # wget https://github.com/bytecodealliance/wasmtime/releases/download/v17.0.1/wasmtime-v17.0.1-x86_64-linux.tar.xz -O-|xzcat|tar xfv -
-        wget https://github.com/bytecodealliance/wasmtime/releases/download/v22.0.0/wasmtime-v22.0.0-x86_64-linux.tar.xz -O-|xzcat|tar xfv -
-        mv -vf $(find wasmtime*|grep /wasmtime$) ${WASISDK}/bin/
 
         . ${SDKROOT}/scripts/pack-sdk.sh
 

@@ -171,3 +171,90 @@ getppid(void) {
     return 1;
 #endif
 }
+
+
+static gid_t
+getegid(void) {
+	return 99;
+}
+
+static uid_t
+geteuid(void) {
+    return 1000;
+}
+
+static mode_t 
+umask(mode_t mask) {
+	return 18;
+}
+
+
+// errno.h
+#define EHOSTDOWN 117		/* Host is down */
+
+
+// pwd.h
+
+static int
+getpwuid_r(uid_t uid, struct passwd *pwd, char *buf, size_t buflen, struct passwd **result) {
+  return ENOENT;
+}
+
+
+static int
+kill(pid_t pid, int sig) {
+	puts("nokill");
+}
+
+
+// socket.h
+#define SO_KEEPALIVE    9
+#define SO_REUSEADDR    2
+
+typedef uint32_t socklen_t;
+
+
+static int
+fd_sock = 100;
+
+static int
+socket(int domain, int type, int protocol) {
+    return fd_sock++;
+}
+
+static int
+bind(int socket, void *address, socklen_t address_len) {
+	return 0;
+}
+
+static int
+connect(int socket, void *address, socklen_t address_len) {
+	return 0;
+}
+
+static ssize_t
+sendto(int socket, const void *message, size_t length, int flags, void *dest_addr, socklen_t dest_len) {
+	return 0;
+}
+
+static ssize_t
+recvfrom(int socket, void *buffer, size_t length, int flags, void *address, socklen_t *address_len) {
+	return 0;
+}
+
+static int
+setsockopt(int socket, int level, int option_name, const void *option_value, socklen_t option_len) {
+	return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+

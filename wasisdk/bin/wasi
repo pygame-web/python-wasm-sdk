@@ -3,31 +3,39 @@
 # https://stackoverflow.com/questions/20530105/how-to-specify-a-custom-stdlib-directory-for-llvm
 # https://stackoverflow.com/questions/60712261/how-to-prevent-osx-gcc-to-always-search-usr-local-include
 
-
-WASI_CFG="--sysroot=${WASI_SDK_PREFIX}/share/wasi-sysroot -iwithsysroot /include/c++/v1"
-
-# -I${WASISDK}/hotfix using upstream/share/wasi-sysroot/include/wasm32-wasi instead
-
-if echo "${@}"|grep -q \\-fno-builtin
+if ${CONFIGURE:-false}
 then
-    WASI_PATCH=""
+    CXX_LIBS=
+    WASI_LNK=
+    CPP=clang-cpp
+    CXX=clang++
+    CC=clang
 else
-    WASI_PATCH="-include ${WASISDK}/hotfix/patch.h"
+    WASI_CFG="--sysroot=${WASI_SDK_PREFIX}/share/wasi-sysroot -iwithsysroot /include/c++/v1"
+
+    # -I${WASISDK}/hotfix using upstream/share/wasi-sysroot/include/wasm32-wasi instead
+
+    if echo "${@}"|grep -q \\-fno-builtin
+    then
+        WASI_PATCH=""
+    else
+        WASI_PATCH="-include ${WASISDK}/hotfix/patch.h -isystem ${WASISDK}/hotfix"
+    fi
+
+    WASI_DEF="-D_GNU_SOURCE -D_WASI_EMULATED_MMAN -D_WASI_EMULATED_SIGNAL -D_WASI_EMULATED_PROCESS_CLOCKS -D_WASI_EMULATED_GETPID"
+
+    # wasi assembly
+    WASI_ALL="${WASI_CFG} ${WASI_PATCH} ${WASI_DEF} -fPIC -fno-rtti -fno-exceptions -z stack-size=131072"
+
+    WASI_ALL="$WASI_ALL -Wno-unused-but-set-variable -Wno-unused-command-line-argument -Wno-unsupported-floating-point-opt"
+
+    # wasi linking
+    WASI_LNK="-lwasi-emulated-getpid -lwasi-emulated-mman -lwasi-emulated-signal -lwasi-emulated-process-clocks"
+
+    export CC="${WASI_SDK_PREFIX}/bin/clang ${WASI_ALL}"
+    export CXX="${WASI_SDK_PREFIX}/bin/clang++ ${WASI_ALL}"
+    export CPP="${WASI_SDK_PREFIX}/bin/clang-cpp ${WASI_CFG} ${WASI_DEF}"
 fi
-
-WASI_DEF="-D_GNU_SOURCE -D_WASI_EMULATED_MMAN -D_WASI_EMULATED_SIGNAL -D_WASI_EMULATED_PROCESS_CLOCKS -D_WASI_EMULATED_GETPID"
-
-# wasi assembly
-WASI_ALL="${WASI_CFG} ${WASI_PATCH} ${WASI_DEF} -fPIC -fno-rtti -fno-exceptions -z stack-size=131072"
-
-WASI_ALL="$WASI_ALL -Wno-unused-but-set-variable -Wno-unused-command-line-argument -Wno-unsupported-floating-point-opt"
-
-# wasi linking
-WASI_LNK="-lwasi-emulated-getpid -lwasi-emulated-mman -lwasi-emulated-signal -lwasi-emulated-process-clocks"
-
-export CC="${WASI_SDK_PREFIX}/bin/clang ${WASI_ALL}"
-export CXX="${WASI_SDK_PREFIX}/bin/clang++ ${WASI_ALL}"
-export CPP="${WASI_SDK_PREFIX}/bin/clang-cpp ${WASI_CFG} ${WASI_DEF}"
 
 if echo ${0}|grep -q c++$
 then
@@ -35,17 +43,17 @@ then
     then
         echo "WASI SHARED: ${@}"
         # unsupported ATM
-        $CXX $@ ${CXX_LIBS} ${WASI_LNK}
+        $CXX "$@" ${CXX_LIBS} ${WASI_LNK}
     else
-        $CXX $@ ${CXX_LIBS} ${WASI_LNK}
+        $CXX "$@" ${CXX_LIBS} ${WASI_LNK}
     fi
 else
     # preprocessor or c compiler
     if echo ${0}|grep -q cpp$
     then
-        $CPP ${@}
+        $CPP "${@}"
     else
-        $CC ${@} -Wno-unused-function
+        $CC "${@}" -Wno-unused-function
     fi
 fi
 

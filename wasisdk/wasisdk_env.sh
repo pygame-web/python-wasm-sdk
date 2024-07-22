@@ -7,6 +7,7 @@ then
     export WASISDK_ENV=true
     . ${CONFIG:-${SDKROOT}/config}
 
+    export WASI=true
     export ARCH=wasisdk
     export WASISDK=${WASISDK:-"${SDKROOT}/${ARCH}"}
     export WASI_SDK_PREFIX="${WASISDK}/upstream"
