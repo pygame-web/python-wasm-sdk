@@ -25,7 +25,8 @@ else
     pushd $ROOT/build/libxml2
     emconfigure ${ROOT}/src/libxml2/configure --prefix=$PREFIX \
      --with-http=no --with-ftp=no --with-python=no --with-threads=no \
-     --enable-shared=no --enable-static=yes
+     --enable-shared=no --enable-static=yes \
+     --without-icu
 
 # --enable-shared=yes => link error of
 #wasm-ld: error: xmllint-xmllint.o: undefined symbol: xmlMemSetup
