@@ -13,10 +13,10 @@ else
     tar xf icu4c-75_1-src.tgz
 fi
 
-if [ -f $PREFIX/lib/libicu.a ]
+if [ -f $PREFIX/lib/libicui18n.a ]
 then
     echo "
-        already built in $PREFIX/lib/libicu.a
+        already built in $PREFIX/lib/
     "
 else
 
