@@ -2,7 +2,6 @@
 
 . scripts/emsdk-fetch.sh
 
-
 cd ${ROOT}/src
 
 if [ -d icu ]
@@ -11,6 +10,7 @@ then
 else
     wget -c https://github.com/unicode-org/icu/releases/download/release-75-1/icu4c-75_1-src.tgz
     tar xfz icu4c-75_1-src.tgz
+
 fi
 
 if [ -f $PREFIX/lib/libicui18n.a ]
@@ -35,9 +35,8 @@ else
     failed to build ICU
 
 "
-        exit 38
+            exit 38
+        fi
     popd
 fi
-
-
 
