@@ -69,7 +69,8 @@ else
     sed -i 's|^CROSS_COMPILE.*$|CROSS_COMPILE=|g' Makefile
     emmake make build_generated libssl.a libcrypto.a
     cp -r include/openssl "$PREFIX/include"
-    cp libcrypto.a libssl.a "$PREFIX/lib"
+    ln -s $PREFIX/include/openssl $EMSDK/upstream/emscripten/cache/sysroot/include/
+    cp libcrypto.a libssl.a "$PREFIX/lib" $EMSDK/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/
     popd
 fi
 
