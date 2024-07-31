@@ -480,6 +480,7 @@ END
     export PKG_CONFIG_SYSROOT_DIR="${SDKROOT}/devices/emsdk"
     export PKG_CONFIG_LIBDIR="${SDKROOT}/emsdk/upstream/emscripten/system/lib/pkgconfig"
     export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig:${HOST_PREFIX}/lib/pkgconfig"
+    export EM_PKG_CONFIG_PATH=$PKG_CONFIG_PATH
 
     if echo $PATH|grep -q $EMSDK/upstream/emscripten/system/bin
     then
@@ -488,6 +489,9 @@ END
     else
         export PATH=$EMSDK/upstream/emscripten/system/bin:$EMSDK/upstream/emscripten:$PATH
     fi
+
+    #ln $EMSDK/upstream/emscripten/emstrip $EMSDK/upstream/emscripten/strip
+    #ln $EMSDK/upstream/emscripten/emstrip.py $EMSDK/upstream/emscripten/strip.py
 
     mkdir -p ${SDKROOT}/devices/$(arch)/usr/bin/
     cp $SDKROOT/wasisdk/bin/wasm-objdump* ${SDKROOT}/devices/$(arch)/usr/bin/

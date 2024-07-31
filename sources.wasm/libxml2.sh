@@ -1,5 +1,7 @@
 #!/bin/bash
 
+. ${CONFIG:-config}
+
 . scripts/emsdk-fetch.sh
 
 
