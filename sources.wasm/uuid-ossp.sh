@@ -6,7 +6,7 @@
 
 cd ${ROOT}/src
 
-if [ -d icu ]
+if [ -d uuid-1.6.2 ]
 then
     echo ok
 else
