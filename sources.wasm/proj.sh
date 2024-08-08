@@ -1,7 +1,6 @@
 #!/bin/bash
 
-. ${CONFIG:-config}
-
+. scripts/emsdk-fetch.sh
 
 cd ${ROOT}/src
 
@@ -25,8 +24,6 @@ then
         already built in $PREFIX/lib/libproj.a
     "
 else
-    . ${SDKROOT}/scripts/emsdk-fetch.sh
-
     mkdir -p $ROOT/build/libproj
     pushd $ROOT/build/libproj
     emcmake cmake ../../src/libproj \
