@@ -45,9 +45,13 @@ fi
 
 if echo $PYBUILD |grep -q 13$
 then
-    wget -q -c https://www.python.org/ftp/python/3.13.0/Python-3.13.0b4.tar.xz
-    tar xf Python-3.13.0b4.tar.xz
-    ln -s Python-3.13.0b4 cpython${PYBUILD}
+#    wget -q -c https://www.python.org/ftp/python/3.13.0/Python-3.13.0b4.tar.xz
+#    tar xf Python-3.13.0b4.tar.xz
+#    ln -s Python-3.13.0b4 cpython${PYBUILD}
+    wget -q -c https://www.python.org/ftp/python/3.13.0/Python-3.13.0rc1.tar.xz
+    tar xf Python-3.13.0rc1.tar.xz
+    ln -s Python-3.13.0rc1 cpython${PYBUILD}
+
     mkdir $ROOT/devices/emsdk/usr/lib $ROOT/devices/$(arch)/usr/lib -p
     ln -s $ROOT/devices/$(arch)/usr/lib/python3.13t  $ROOT/devices/$(arch)/usr/lib/python3.13
     ln -s $ROOT/devices/emsdk/usr/lib/python3.13t  $ROOT/devices/emsdk/usr/lib/python3.13
@@ -59,9 +63,9 @@ fi
 
 if echo $PYBUILD |grep -q 12$
 then
-    wget -q -c https://www.python.org/ftp/python/3.12.4/Python-3.12.4.tar.xz
-    tar xf Python-3.12.4.tar.xz
-    ln -s Python-3.12.4 cpython${PYBUILD}
+    wget -q -c https://www.python.org/ftp/python/3.12.5/Python-3.12.5.tar.xz
+    tar xf Python-3.12.5.tar.xz
+    ln -s Python-3.12.5 cpython${PYBUILD}
 fi
 
 

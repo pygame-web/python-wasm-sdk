@@ -4,9 +4,7 @@
 
 cd ${ROOT}/src
 export OPENSSL="openssl-1.1.1w"
-export URL_OPENSSL=https://www.openssl.org/source/old/1.1.1/openssl-1.1.1w.tar.gz
-
-
+export URL_OPENSSL=https://github.com/openssl/openssl/releases/download/OpenSSL_1_1_1w/openssl-1.1.1w.tar.gz
 
 if [ -f openssl.patched ]
 then
@@ -70,7 +68,9 @@ else
     emmake make build_generated libssl.a libcrypto.a
     cp -r include/openssl "$PREFIX/include"
     ln -s $PREFIX/include/openssl $EMSDK/upstream/emscripten/cache/sysroot/include/
-    cp libcrypto.a libssl.a "$PREFIX/lib" $EMSDK/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/
+    cp libcrypto.a libssl.a $PREFIX/lib/
+    cp libcrypto.a libssl.a $EMSDK/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/pic/
     popd
+    [ -f $PREFIX/lib/libssl.a ] || exit 74
 fi
 
