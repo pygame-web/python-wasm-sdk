@@ -17,7 +17,17 @@ do
 
 
 "
-    $pkg
+    if $pkg
+    then
+        echo "$pkg : done"
+    else
+        echo "
+
+Failed to build extra $pkg
+
+"
+        exit 29
+    fi
 done
 
 # those depend on nanoX/microwindows compiled above
