@@ -14,7 +14,7 @@ export SDKROOT
 export CIVER=${CIVER:-$DISTRIB}
 export CI=true
 
-if echo $0|grep -q python-wasm-sdk
+if echo $0|grep -q python-wasm-sdk\.sh
 then
     echo " * adding emsdk to wasm-sdk"
     emsdk=true
@@ -119,7 +119,9 @@ END
         then
             echo "keeping installed wasmtime and wasi binaries"
         else
-            wget https://github.com/bytecodealliance/wasmtime/releases/download/v22.0.0/wasmtime-v22.0.0-x86_64-linux.tar.xz -O-|xzcat|tar xfv -
+            #wget https://github.com/bytecodealliance/wasmtime/releases/download/v22.0.0/wasmtime-v22.0.0-x86_64-linux.tar.xz \
+            wget https://github.com/bytecodealliance/wasmtime/releases/download/v23.0.2/wasmtime-v23.0.2-$(arch)-linux.tar.xz
+             -O-|xzcat|tar xfv -
             mv -vf $(find wasmtime*|grep /wasmtime$) ${SDKROOT}/devices/$(arch)/usr/bin
         fi
 

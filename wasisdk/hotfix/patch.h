@@ -196,7 +196,8 @@ umask(mode_t mask) {
 // pwd.h
 
 static int
-getpwuid_r(uid_t uid, struct passwd *pwd, char *buf, size_t buflen, struct passwd **result) {
+//getpwuid_r(uid_t uid, struct passwd *pwd, char *buf, size_t buflen, struct passwd **result) {
+getpwuid_r(uid_t uid, void *pwd, char *buf, size_t buflen, void **result) {
   return ENOENT;
 }
 
@@ -204,6 +205,7 @@ getpwuid_r(uid_t uid, struct passwd *pwd, char *buf, size_t buflen, struct passw
 static int
 kill(pid_t pid, int sig) {
 	puts("nokill");
+    return 0;
 }
 
 
@@ -256,5 +258,46 @@ setsockopt(int socket, int level, int option_name, const void *option_value, soc
 
 
 
+#define SOCK_RAW 3
+#define SO_ERROR 0x1007
 
+static struct servent *
+getservbyname(const char *name, const char *proto) {
+    return NULL;
+}
 
+static struct servent *
+getservbyport(int port, const char *proto) {
+    return NULL;
+}
+
+static struct protoent *
+getprotobyname(const char *name) {
+    return NULL;
+}
+static struct hostent *
+gethostbyname(const char *name){
+    return NULL;
+}
+
+static struct hostent *
+gethostbyaddr(const void *addr, socklen_t len, int type) {
+    return NULL;
+}
+
+static struct protoent *
+getprotoent(void) {
+    return NULL;
+}
+
+static const char cc_hstrerror[] = "hstrerror";
+
+static int * __h_errno_location(void){
+    return NULL;
+}
+
+static const char *
+hstrerror(int ecode)
+{
+    return &cc_hstrerror[0];
+}

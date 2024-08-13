@@ -41,7 +41,7 @@ END
             mv $PREFIX/include/uuid.h $EMSDK/upstream/emscripten/cache/sysroot/include/ossp/
             cp -r $EMSDK/upstream/emscripten/cache/sysroot/include/ossp $PREFIX/include/
             mv $PREFIX/lib/libuuid.a $PREFIX/lib/libossp-uuid.a
-            cp $PREFIX/lib/libossp-uuid.a $EMSDK/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/
+            cp $PREFIX/lib/libossp-uuid.a $EMSDK/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/pic
             rm $PREFIX/lib/libuuid.la
         else
             echo "
