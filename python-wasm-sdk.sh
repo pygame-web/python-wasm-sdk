@@ -95,11 +95,15 @@ do
             # generic wasm patchwork
             . support/__EMSCRIPTEN__.sh
 
-            . scripts/cpython-build-host.sh 2>&1 >/dev/null
+            . scripts/cpython-build-host.sh 2>&1 >/tmp/python-wasm-sdk.log
 
-            . scripts/cpython-build-host-deps.sh >/dev/null
+            [ -f $HPY ] || exit 100
+
+            . scripts/cpython-build-host-deps.sh > /dev/null
 
         fi
+
+        [ -f $HPY ] || exit 106
 
         cat > /opt/python-wasm-sdk/devices/$(arch)/usr/bin/py <<END
 #!/bin/bash

@@ -37,11 +37,16 @@ END
             cp uuid.pc ../../src/uuid-1.6.2/
             echo "------ installing uuid ---------"
             emmake make install
-            mkdir -p $EMSDK/upstream/emscripten/cache/sysroot/include/ossp
-            mv $PREFIX/include/uuid.h $EMSDK/upstream/emscripten/cache/sysroot/include/ossp/
-            cp -r $EMSDK/upstream/emscripten/cache/sysroot/include/ossp $PREFIX/include/
+            INCDIR=$EMSDK/upstream/emscripten/cache/sysroot/include
+            LIBDIR=$EMSDK/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten
+            mkdir -p ${INCDIR}/ossp
+            mv $PREFIX/include/uuid.h ${INCDIR}/ossp/
+
+            cp -r ${INCDIR}/ossp $PREFIX/include/
             mv $PREFIX/lib/libuuid.a $PREFIX/lib/libossp-uuid.a
-            cp $PREFIX/lib/libossp-uuid.a $EMSDK/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/pic
+            # FIXME: non pic version is not built
+            cp $PREFIX/lib/libossp-uuid.a $LIBDIR
+            cp $PREFIX/lib/libossp-uuid.a $LIBDIR/pic
             rm $PREFIX/lib/libuuid.la
         else
             echo "

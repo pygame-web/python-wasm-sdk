@@ -21,7 +21,7 @@ then
         already built in $PREFIX/lib/
     "
 else
-
+    mkdir -p $PREFIX/lib/icu
     mkdir -p $ROOT/build/libicu
 
     pushd $ROOT/build/libicu
