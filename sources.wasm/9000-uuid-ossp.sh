@@ -10,8 +10,9 @@ if [ -d uuid-1.6.2 ]
 then
     echo ok
 else
-    wget -c http://www.mirrorservice.org/sites/ftp.ossp.org/pkg/lib/uuid/uuid-1.6.2.tar.gz
-    tar xfz uuid-1.6.2.tar.gz
+    #wget -c http://www.mirrorservice.org/sites/ftp.ossp.org/pkg/lib/uuid/uuid-1.6.2.tar.gz
+    #tar xfz uuid-1.6.2.tar.gz
+    git clone https://github.com/pygame-web/ossp-uuid uuid-1.6.2
 fi
 
 if [ -f $PREFIX/lib/libossp-uuid.a ]
