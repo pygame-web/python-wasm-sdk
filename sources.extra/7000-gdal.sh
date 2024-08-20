@@ -1,22 +1,21 @@
 #!/bin/bash
 
-. scripts/emsdk-fetch.sh
+. ${CONFIG:-config}
 
-cd ${ROOT}/src
+DO_PATCH=true
 
-DO_PATCH=false
-
-if [ -d libgdal ]
+if [ -d src/libgdal ]
 then
     echo ok
 else
-    wget -c https://github.com/OSGeo/gdal/releases/download/v3.9.1/gdal-3.9.1.tar.gz
-    tar xfz gdal-3.9.1.tar.gz
-    mv gdal-3.9.1 libgdal
-    pushd libgdal
-        if $DO_PATCH
-        then
-            patch -p1 <<END
+    pushd ${ROOT}/src
+        wget -c https://github.com/OSGeo/gdal/releases/download/v3.9.1/gdal-3.9.1.tar.gz
+        tar xfz gdal-3.9.1.tar.gz
+        mv gdal-3.9.1 libgdal
+        pushd libgdal
+            if $DO_PATCH
+            then
+                patch -p1 <<END
 --- gdal-3.9.1/port/cpl_recode_iconv.cpp
 +++ libgdal/port/cpl_recode_iconv.cpp
 @@ -297,8 +297,7 @@
@@ -39,9 +38,9 @@ else
          if (nConverted == static_cast<size_t>(-1))
          {
 END
-        fi
+            fi
+        popd
     popd
-
 fi
 
 if [ -f $PREFIX/lib/libgdal.a ]
@@ -50,6 +49,8 @@ then
         already built in $PREFIX/lib/libgdal.a
     "
 else
+
+    . scripts/emsdk-fetch.sh
 
     mkdir -p $ROOT/build/libgdal
     pushd $ROOT/build/libgdal
@@ -95,6 +96,18 @@ END
     emmake make install
     mv ${ICONV_H}.save ${ICONV_H}
     popd
-    [ -f $PREFIX/lib/libgdal.a ] || exit 98
+
+fi
+
+if [ -f $PREFIX/lib/libgdal.a ]
+then
+    echo -n
+else
+    echo "
+
+    failed to build GDAL
+
+"
+    exit 110
 fi
 

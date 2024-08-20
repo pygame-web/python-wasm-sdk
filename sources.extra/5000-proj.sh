@@ -1,19 +1,20 @@
 #!/bin/bash
 
-. scripts/emsdk-fetch.sh
+. ${CONFIG:-config}
 
-cd ${ROOT}/src
 
-if [ -d libproj ]
+
+if [ -d src/libproj ]
 then
     echo ok
 else
-    wget -c https://download.osgeo.org/proj/proj-9.4.0.tar.gz
-    tar xvfz proj-9.4.0.tar.gz
-    mv proj-9.4.0 libproj
-
-    pushd libproj
-    # patch
+    pushd ${ROOT}/src
+        wget -c https://download.osgeo.org/proj/proj-9.4.0.tar.gz
+        tar xvfz proj-9.4.0.tar.gz
+        mv proj-9.4.0 libproj
+        pushd libproj
+            # patch
+        popd
     popd
 fi
 
@@ -21,15 +22,30 @@ fi
 if [ -f $PREFIX/lib/libproj.a ]
 then
     echo "
-        already built in $PREFIX/lib/libproj.a
+        $PREFIX/lib/libproj.a already built
     "
 else
+    . scripts/emsdk-fetch.sh
+
     mkdir -p $ROOT/build/libproj
+
     pushd $ROOT/build/libproj
-    emcmake cmake ../../src/libproj \
-     -DCMAKE_INSTALL_PREFIX=$PREFIX -DENABLE_TIFF=NO -DENABLE_CURL=NO -DUSE_EXTERNAL_GTEST=NO -DBUILD_PROJSYNC=no
-    emmake make -j $(nproc) install
+        EMCC_CFLAGS="-sDISABLE_EXCEPTION_CATCHING=1" emcmake cmake ../../src/libproj \
+         -DCMAKE_INSTALL_PREFIX=$PREFIX -DENABLE_TIFF=NO -DENABLE_CURL=NO -DUSE_EXTERNAL_GTEST=NO -DBUILD_PROJSYNC=no
+        EMCC_CFLAGS="-sDISABLE_EXCEPTION_CATCHING=1" emmake make -j $(nproc) install
     popd
+
+    if [ -f $PREFIX/lib/libproj.a ]
+    then
+        echo -n
+    else
+        echo "
+
+    failed to build PROJ
+
+"
+        exit 47
+    fi
 fi
 
 
