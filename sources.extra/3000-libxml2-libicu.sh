@@ -21,15 +21,16 @@ then
         already built in $PREFIX/lib/
     "
 else
-    mkdir -p $PREFIX/lib/icu
     mkdir -p $ROOT/build/libicu
-
     pushd $ROOT/build/libicu
-        if emconfigure ../../src/icu/source/configure --prefix=$PREFIX \
+        if emconfigure $ROOT/src/icu/source/configure --prefix=$PREFIX \
          --disable-shared --enable-static \
          --disable-samples --disable-tests --disable-tools \
          --disable-extras --disable-draft
         then
+            [ -f ./common/Makefile.patched ] && rm ./common/Makefile.patched
+            grep -v DDEFAULT_ICU_PLUGINS ./common/Makefile > ./common/Makefile.patched
+            rm ./common/Makefile && ln ./common/Makefile.patched ./common/Makefile
             emmake make install
         else
             echo "
