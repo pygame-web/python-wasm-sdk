@@ -223,6 +223,7 @@ END
     fi
 done
 
+tar -cpRz ./emsdk-extra.sh sources.extra/* > /tmpp/sdk/sdk-extra.tar.gz
 
 
 

@@ -32,7 +32,7 @@ done
 
 if ${EXTRA:-false}
 then
-    . scripts/cpython-build-emsdk-extra.sh
+    . scripts/emsdk-extra.sh
 fi
 
 cd $ROOT

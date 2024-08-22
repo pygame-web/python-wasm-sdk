@@ -31,7 +31,9 @@ else
         then
             [ -f ./common/Makefile.patched ] && rm ./common/Makefile.patched
             grep -v DDEFAULT_ICU_PLUGINS ./common/Makefile > ./common/Makefile.patched
-            rm ./common/Makefile && ln ./common/Makefile.patched ./common/Makefile
+            cat ./common/Makefile.patched > ./common/Makefile
+            emmake make
+            cat ./common/Makefile.patched > ./common/Makefile
             emmake make install
         fi
     popd

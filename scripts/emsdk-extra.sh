@@ -2,6 +2,8 @@
 
 . ${CONFIG:-config}
 
+mkdir -p src build
+
 for pkg in $ROOT/sources.extra/*.sh
 do
     cd $ROOT
