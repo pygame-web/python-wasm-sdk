@@ -215,6 +215,10 @@ END
             ${SDKROOT}/python-nim-sdk.sh
         fi
 
+        # pack extra build scripts
+        tar -cpRz ./scripts/emsdk-extra.sh ./sources.extra/* > /tmp/sdk/sdk-extra.tar.gz
+
+        # pack sdl as minimal prebuilt tar, and use lz4 compression on it
         . ${SDKROOT}/scripts/pack-sdk.sh
 
     else
@@ -222,8 +226,6 @@ END
         exit 208
     fi
 done
-
-tar -cpRz ./emsdk-extra.sh sources.extra/* > /tmpp/sdk/sdk-extra.tar.gz
 
 
 

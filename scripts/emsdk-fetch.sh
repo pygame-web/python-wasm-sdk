@@ -28,9 +28,28 @@ then
                     sed -i 's|extern FILE \*const|extern FILE \*|g' cache/sysroot/include/stdio.h
 
                     echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/20281 dylink.js : handle ** argument case"
+if [ -f test/other/test_em_js_side.c b/test/other/test_em_js_side.c ]
+then
                     wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/20281.diff
                     patch -p1 < 20281.diff
+else
+                    patch -p1 <<END
+diff --git a/src/library_dylink.js b/src/library_dylink.js
+index 632e20aa61e3..ebb13995d6c3 100644
+--- a/src/library_dylink.js
++++ b/src/library_dylink.js
+@@ -803,7 +803,7 @@ var LibraryDylink = {
+             cSig = cSig.split(',');
+             for (var i in cSig) {
+               var jsArg = cSig[i].split(' ').pop();
+-              jsArgs.push(jsArg.replace('*', ''));
++              jsArgs.push(jsArg.replaceAll('*', ''));
+             }
+           }
+           var func = `(${jsArgs}) => ${body};`;
+END
 
+fi
                     echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/17956 file corruption when using emscripten_run_preload_plugins with BrowserFS"
                     wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/17956.diff
 
