@@ -7,7 +7,7 @@ fi
 
 echo "making $TAG tarball" 1>&2
 
-cd /
+pushd /
 mkdir -p /tmp/sdk
 tar -cpPR \
     ${SDKROOT}/config \
@@ -22,4 +22,4 @@ tar -cpPR \
      > /tmp/sdk/python${PYBUILD}-${TAG}-sdk-${CIVER}.tar.lz4
 
 echo "done"  1>&2
-
+popd

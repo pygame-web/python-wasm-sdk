@@ -544,6 +544,7 @@ END
     export EMCC_SKIP_SANITY_CHECK=1
     export EM_IGNORE_SANITY=1
 
+    export SYSROOT=$EMSDK/upstream/emscripten/cache/sysroot
 
 else
     echo "emsdk: config already set !" 1>&2
