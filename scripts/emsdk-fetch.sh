@@ -534,7 +534,7 @@ END
 
     # module build opts
     export CFLDPFX="$CPPFLAGS $LDFLAGS -Wno-unused-command-line-argument"
-    export PYDK=minimal
+    export PYDK=true
 
     if command -v ccache 2>&1 >/dev/null; then
         export EM_COMPILER_WRAPPER=ccache
