@@ -21,8 +21,12 @@ struct passwd
   char *pw_shell;		/* Shell program.  */
 };
 
-struct passwd *getpwnam(const char *name);
+static struct passwd *getpwnam(const char *name) {
+    return NULL;
+}
 
-struct passwd *getpwuid(uid_t uid);
+static struct passwd *getpwuid(uid_t uid) {
+    return NULL;
+}
 
 #endif

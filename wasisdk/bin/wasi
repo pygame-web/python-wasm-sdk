@@ -27,12 +27,12 @@ else
     # wasi assembly
     WASI_ALL="${WASI_CFG} ${WASI_PATCH} ${WASI_DEF} -fPIC -fno-rtti -fno-exceptions -z stack-size=131072"
 
-    WASI_ALL="$WASI_ALL -Wno-unused-but-set-variable -Wno-unused-command-line-argument -Wno-unsupported-floating-point-opt"
+    WASI_ALL="$WASI_ALL -Wno-unused-but-set-variable -Wno-unused-command-line-argument -Wno-unsupported-floating-point-opt -Wno-nullability-completeness"
 
     # wasi linking
     WASI_LNK="-lwasi-emulated-getpid -lwasi-emulated-mman -lwasi-emulated-signal -lwasi-emulated-process-clocks"
 
-    export CC="${WASI_SDK_PREFIX}/bin/clang ${WASI_ALL}"
+    export CC="${WASI_SDK_PREFIX}/bin/clang ${WASI_ALL} ${WASI_CFLAGS}"
     export CXX="${WASI_SDK_PREFIX}/bin/clang++ ${WASI_ALL}"
     export CPP="${WASI_SDK_PREFIX}/bin/clang-cpp ${WASI_CFG} ${WASI_DEF}"
 fi

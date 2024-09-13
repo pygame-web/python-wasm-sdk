@@ -203,7 +203,7 @@ parse_git_branch() {
      git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
 }
 
-export PS1="[PyDK:wasi]  \[\e[32m\]\w \[\e[91m\]\$(parse_git_branch)\[\e[00m\]\$ "
+export PS1="[PyDK:wasi] \[\e[32m\]\w \[\e[91m\]\$(parse_git_branch)\[\e[00m\]\$ "
 
 END
             chmod +x ${SDKROOT}/python3-wasi ${SDKROOT}/wasm32-wasi-shell.sh

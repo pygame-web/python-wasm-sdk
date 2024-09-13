@@ -52,10 +52,11 @@ struct addrinfo {
 #define EAI_SYSTEM     -11
 #define EAI_OVERFLOW   -12
 
-int getaddrinfo (const char *__restrict, const char *__restrict, const struct addrinfo *__restrict, struct addrinfo **__restrict);
-void freeaddrinfo (struct addrinfo *);
-int getnameinfo (const struct sockaddr *__restrict, socklen_t, char *__restrict, socklen_t, char *__restrict, socklen_t, int);
-const char *gai_strerror(int);
+//int getaddrinfo (const char *__restrict, const char *__restrict, const struct addrinfo *__restrict, struct addrinfo **__restrict);
+//void freeaddrinfo (struct addrinfo *);
+//int getnameinfo (const struct sockaddr *__restrict, socklen_t, char *__restrict, socklen_t, char *__restrict, socklen_t, int);
+#define getnameinfo(...) (-1)
+//const char *gai_strerror(int);
 
 
 /* Legacy functions follow (marked OBsolete in SUS) */

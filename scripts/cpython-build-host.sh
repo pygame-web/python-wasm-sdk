@@ -6,6 +6,8 @@ export PYTHON_FOR_BUILD=${PYTHON_FOR_BUILD:-${HPY}}
 
 mkdir -p build/cpython-host
 
+[ -L $HOST_PREFIX/lib64 ] || ln -s $HOST_PREFIX/lib $HOST_PREFIX/lib64
+
 if $REBUILD
 then
     echo "

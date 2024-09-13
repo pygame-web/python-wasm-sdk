@@ -28,13 +28,13 @@ dlclose(void *) {
 static const char *errormsg = "dlerror";
 
 static char *
-dlerror(void) { 
-    return (char *)dlerror;    
+dlerror(void) {
+    return (char *)dlerror;
 }
 
 static void *
-dlopen(const char *, int) {
-    puts("void *dlopen(const char *, int)");
+dlopen(const char *filename, int flags) {
+    fprintf(stderr,"void *dlopen(const char *filename = %s, int flags=)", filename, flags);
     return NULL;
 }
 
