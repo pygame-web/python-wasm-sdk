@@ -21,12 +21,17 @@ extern "C" {
 
 static int
 dlclose(void *) {
-    puts("int dlclose(void)");
+    puts("int dlclose(void) STUB");
     return 0;
 }
 
 static const char *errormsg = "dlerror";
+#if defined(PYDK)
+extern char *dlerror(void);
+extern void *dlopen(const char *filename, int flags);
+extern void *dlsym(void *__restrict handle, const char *__restrict symbol);
 
+#else
 static char *
 dlerror(void) {
     return (char *)dlerror;
@@ -34,16 +39,16 @@ dlerror(void) {
 
 static void *
 dlopen(const char *filename, int flags) {
-    fprintf(stderr,"void *dlopen(const char *filename = %s, int flags=)", filename, flags);
+    fprintf(stderr,"void *dlopen(const char *filename = %s, int flags=%d)\n", filename, flags);
     return NULL;
 }
 
 static void *
-dlsym(void *__restrict, const char *__restrict) {
-    puts("void *dlsym(void *__restrict, const char *__restrict)");
+dlsym(void *__restrict handle, const char *__restrict symbol) {
+    fprintf(stderr, "void *dlsym(void *handle = %p, const char *symbol = %s\n", handle, symbol);
     return NULL;
 }
-
+#endif
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 typedef struct {

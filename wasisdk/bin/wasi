@@ -53,7 +53,7 @@ else
     then
         $CPP "${@}"
     else
-        $CC "${@}" -Wno-unused-function
+        $CC "${@}" ${WASI_LNK} -Wno-unused-function
     fi
 fi
 
