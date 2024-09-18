@@ -70,25 +70,28 @@ fi
 #                wget https://raw.githubusercontent.com/paradust7/minetest-wasm/main/emsdk_emcc.patch
 #                patch -p1 < emsdk_emcc.patch
 
-                echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/21472 glfw3: gl level version major/minor hints"
-
                 pushd upstream/emscripten
-                wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/21472.diff
-                patch -p1 < 21472.diff
+                    echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/21472 glfw3: gl level version major/minor hints"
+                    wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/21472.diff
+                    patch -p1 < 21472.diff
+
+
+                    echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/20442 fix mouse position for 3D canvas"
+                    # wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/20442.diff
+                    # patch -p1 < 20442.diff
+                    wget https://patch-diff.githubusercontent.com/raw/pmp-p/emscripten/pull/2.diff
+                    patch -p1 < 2.diff
+
+                    echo "FIXME: Applying https://github.com/pmp-p/emscripten/pull/3 ioctl TIOCSWINSZ"
+                    wget  https://github.com/pmp-p/emscripten/pull/3.diff
+                    patch -p1 < 3.diff
+
+                    echo "FIXME:  remove XHR for .data and use fetch"
+                    wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/22016.diff
+                    patch -p1 < 22016.diff
                 popd
 
-                echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/20442 fix mouse position for 3D canvas"
 
-                pushd upstream/emscripten
-                # wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/20442.diff
-                # patch -p1 < 20442.diff
-                wget https://patch-diff.githubusercontent.com/raw/pmp-p/emscripten/pull/2.diff
-                patch -p1 < 2.diff
-
-                echo "FIXME: Applying https://github.com/pmp-p/emscripten/pull/3 ioctl TIOCSWINSZ"
-                wget  https://github.com/pmp-p/emscripten/pull/3.diff
-                patch -p1 < 3.diff
-                popd
 
                 # https://github.com/paradust7/minetest-wasm/blob/main/emsdk_dirperms.patch
                 patch -p1 <<END
@@ -103,25 +106,28 @@ fi
      assert(inserted && "TODO: handle preload insertion errors");
    }
 END
-                # https://raw.githubusercontent.com/paradust7/minetest-wasm/main/emsdk_file_packager.patch
-                patch -p1 << END
---- emsdk1/upstream/emscripten/tools/file_packager.py	2022-03-24 19:45:39.000000000 +0000
-+++ emsdk2/upstream/emscripten/tools/file_packager.py	2022-03-22 10:13:11.332849695 +0000
-@@ -686,8 +686,12 @@
-       use_data = '''// Reuse the bytearray from the XHR as the source for file reads.
-           DataRequest.prototype.byteArray = byteArray;
-           var files = metadata['files'];
-+          function make_callback(i) {
-+            var req = DataRequest.prototype.requests[files[i].filename];
-+            return () => {req.onload()};
-+          }
-           for (var i = 0; i < files.length; ++i) {
--            DataRequest.prototype.requests[files[i].filename].onload();
-+            setTimeout(make_callback(i));
-           }'''
-       use_data += ("          Module['removeRunDependency']('datafile_%s');\n"
-                    % js_manipulation.escape_for_js_string(data_target))
-END
+
+#                # https://raw.githubusercontent.com/paradust7/minetest-wasm/main/emsdk_file_packager.patch
+#                patch -p1 << END
+#--- emsdk1/upstream/emscripten/tools/file_packager.py	2022-03-24 19:45:39.000000000 +0000
+#+++ emsdk2/upstream/emscripten/tools/file_packager.py	2022-03-22 10:13:11.332849695 +0000
+#@@ -686,8 +686,12 @@
+#       use_data = '''// Reuse the bytearray from the XHR as the source for file reads.
+#           DataRequest.prototype.byteArray = byteArray;
+#           var files = metadata['files'];
+#+          function make_callback(i) {
+#+            var req = DataRequest.prototype.requests[files[i].filename];
+#+            return () => {req.onload()};
+#+          }
+#           for (var i = 0; i < files.length; ++i) {
+#-            DataRequest.prototype.requests[files[i].filename].onload();
+#+            setTimeout(make_callback(i));
+#           }'''
+#       use_data += ("          Module['removeRunDependency']('datafile_%s');\n"
+#                    % js_manipulation.escape_for_js_string(data_target))
+#END
+
+
                 # https://raw.githubusercontent.com/paradust7/minetest-wasm/main/emsdk_setlk.patch
                 patch -p1 << END
 --- emsdk-orig/upstream/emscripten/system/lib/wasmfs/syscalls.cpp	2022-07-29 17:22:28.000000000 +0000
@@ -136,6 +142,8 @@ END
      case F_GETOWN_EX:
      case F_SETOWN:
 END
+
+
 
 
             popd
