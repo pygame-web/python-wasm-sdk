@@ -73,13 +73,14 @@ fi
 # ============ emscripten ==============
 
 # stable
-export EMFLAVOUR=3.1.65
+# export EMFLAVOUR=${EMFLAVOUR:3.1.65}
 
 # embind broke in 3.1.48-tot (coro suspend/resume)
 # embding more broken in 3.1.51
 
-#export EMFLAVOUR=${EMFLAVOUR:latest}
-#export EMFLAVOUR=${EMFLAVOUR:-tot}
+export EMFLAVOUR=${EMFLAVOUR:latest}
+
+
 
 #temp fix for oom on CI (Error: Process completed with exit code 143.)
 export EMSDK_NUM_CORES=1
