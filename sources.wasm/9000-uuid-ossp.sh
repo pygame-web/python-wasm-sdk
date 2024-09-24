@@ -15,7 +15,10 @@ else
     git clone https://github.com/pygame-web/ossp-uuid uuid-1.6.2
 fi
 
-if [ -f $PREFIX/lib/libossp-uuid.a ]
+INCDIR=$EMSDK/upstream/emscripten/cache/sysroot/include
+LIBDIR=$EMSDK/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten
+
+if [ -f $LIBDIR/pic/libossp-uuid.a ]
 then
     echo "
         already built in $PREFIX/lib/
@@ -23,40 +26,46 @@ then
 else
 
     mkdir -p $ROOT/build/libuuid
-    cat > config.site <<END
-ac_cv_prog_ac_ct_STRIP=/bin/true
-ac_cv_prog_STRIP=/bin/true
+
+    for mode in "--without-pic"  "--with-pic"
+    do
+        rm -rf $ROOT/build/libuuid/*
+        pushd $ROOT/build/libuuid
+            cat > config.site << END
+ac_cv_exeext=.cjs
 END
-    pushd $ROOT/build/libuuid
-        mkdir -p bin
-        ln -sf /bin/true bin/strip
-        export PATH=$(pwd)/bin:$PATH
-        if STRIP=/bin/true CONFIG_SITE=config.site emconfigure ../../src/uuid-1.6.2/configure --with-gnu-ld --with-pic --disable-shared --prefix=$PREFIX
-        then
-            emmake make
-            sed -i 's|luuid|lossp-uuid|g' uuid.pc
-            cp uuid.pc ../../src/uuid-1.6.2/
-            echo "------ installing uuid ---------"
-            emmake make install
-            INCDIR=$EMSDK/upstream/emscripten/cache/sysroot/include
-            LIBDIR=$EMSDK/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten
-            mkdir -p ${INCDIR}/ossp
-            mv $PREFIX/include/uuid.h ${INCDIR}/ossp/
+            mkdir -p bin
+            ln -sf /bin/true bin/strip
+            export PATH=$(pwd)/bin:$PATH
 
-            cp -r ${INCDIR}/ossp $PREFIX/include/
-            mv $PREFIX/lib/libuuid.a $PREFIX/lib/libossp-uuid.a
-            # FIXME: non pic version is not built
-            cp $PREFIX/lib/libossp-uuid.a $LIBDIR
-            cp $PREFIX/lib/libossp-uuid.a $LIBDIR/pic
-            rm $PREFIX/lib/libuuid.la
-        else
-            echo "
+            if CONFIG_SIZE=$(pwd)/config.site emconfigure ../../src/uuid-1.6.2/configure --with-gnu-ld $mode --disable-shared --prefix=$PREFIX
+            then
+                emmake make
+                sed -i 's|luuid|lossp-uuid|g' uuid.pc
+                cp uuid.pc ../../src/uuid-1.6.2/
+                echo "------ installing uuid ---------"
+                emmake make install
+                mkdir -p ${INCDIR}/ossp
+                mv $PREFIX/include/uuid.h ${INCDIR}/ossp/
 
-    failed to build uuid-ossp
+                cp -r ${INCDIR}/ossp $PREFIX/include/
 
-"
-            exit 44
-        fi
-    popd
+                if echo $mode | grep -q with-pic
+                then
+                    mv $PREFIX/lib/libuuid.a $LIBDIR/pic/libossp-uuid.a
+                else
+                    mv $PREFIX/lib/libuuid.a $LIBDIR/libossp-uuid.a
+                fi
+                rm $PREFIX/lib/libuuid.la
+            else
+                echo "
+
+        failed to build uuid-ossp
+
+    "
+                exit 44
+            fi
+        popd
+    done
 fi
 

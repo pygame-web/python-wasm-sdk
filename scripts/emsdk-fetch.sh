@@ -86,13 +86,13 @@ fi
                     wget  https://github.com/pmp-p/emscripten/pull/3.diff
                     patch -p1 < 3.diff
 
-                    echo "FIXME:  remove XHR for .data and use fetch"
-                    wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/22016.diff
-                    patch -p1 < 22016.diff
+                    #echo "FIXME:  remove XHR for .data and use fetch" MERGED
+                    #wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/22016.diff
+                    #patch -p1 < 22016.diff
 
-                    echo "FIXME: scriptDirectory workaround"
-                    wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/22605.diff
-                    patch -p1 < 22605.diff 
+                    #echo "FIXME: scriptDirectory workaround" MERGER
+                    #wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/22605.diff
+                    #patch -p1 < 22605.diff
                 popd
 
 
