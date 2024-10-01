@@ -2,7 +2,7 @@
 
 . ${CONFIG:-config}
 
-CYTHON_REL=${CYTHON_REL:-3.0.10}
+CYTHON_REL=${CYTHON_REL:-3.0.11}
 CYTHON_WHL=${CYTHON:-Cython-${CYTHON_REL}-py2.py3-none-any.whl}
 
 PIP="${SDKROOT}/python3-wasm -m pip"
@@ -38,8 +38,8 @@ then
 
 
 "
-    $PIP install --upgrade --no-build-isolation git+https://github.com/cython/cython
-    $HPIP install --upgrade --force git+https://github.com/cython/cython
+    $PIP install --upgrade --no-build-isolation git+https://github.com/pygame-web/cython.git
+    $HPIP install --upgrade --force git+https://github.com/pygame-web/cython.git
 else
     # cython get the latest release on gh install on both host python and build python
     pushd build

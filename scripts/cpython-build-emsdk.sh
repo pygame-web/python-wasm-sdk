@@ -198,7 +198,7 @@ END
     sed -i 's|-sWASM_BIGINT||g' configure.ac
 
     # do not mess with wasm sysconfig name
-    if echo $PYBUILD|grep -q 13$
+    if echo $PYBUILD|grep -q 3\\.13$
     then
         GIL="--disable-gil"
         sed -i 's|{ABIFLAGS}t|{ABIFLAGS}|g' configure
