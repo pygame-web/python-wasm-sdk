@@ -158,7 +158,7 @@ getpid(void) {
 }
 
 
-static pid_t 
+static pid_t
 getppid(void) {
     char *val = getenv("WASIX_PPID");
     char *end = val + strlen(val);
@@ -183,7 +183,7 @@ geteuid(void) {
     return 1000;
 }
 
-static mode_t 
+static mode_t
 umask(mode_t mask) {
 	return 18;
 }
@@ -215,19 +215,22 @@ kill(pid_t pid, int sig) {
 
 typedef uint32_t socklen_t;
 
-
-static int
-fd_sock = 100;
-
-static int
-socket(int domain, int type, int protocol) {
-    return fd_sock++;
-}
-
 static int
 bind(int socket, void *address, socklen_t address_len) {
 	return 0;
 }
+
+
+
+#if defined(PYDK)
+
+    extern ssize_t recvfrom(int socket, void *buffer, size_t length, int flags, void *address, socklen_t *address_len);
+    extern int socket(int domain, int type, int protocol);
+    extern ssize_t sendto(int socket, const void *message, size_t length, int flags, void *dest_addr, socklen_t dest_len);
+    extern int connect(int socket, void *address, socklen_t address_len);
+
+
+#else
 
 static int
 connect(int socket, void *address, socklen_t address_len) {
@@ -238,11 +241,20 @@ static ssize_t
 sendto(int socket, const void *message, size_t length, int flags, void *dest_addr, socklen_t dest_len) {
 	return 0;
 }
+static int
+fd_sock = 100;
 
 static ssize_t
 recvfrom(int socket, void *buffer, size_t length, int flags, void *address, socklen_t *address_len) {
 	return 0;
 }
+
+static int
+socket(int domain, int type, int protocol) {
+    return fd_sock++;
+}
+
+#endif
 
 static int
 setsockopt(int socket, int level, int option_name, const void *option_value, socklen_t option_len) {

@@ -17,6 +17,7 @@ tar -cpPR \
     ${SDKROOT}/scripts/*sdk-fetch.sh \
     ${SDKROOT}/devices/* \
     ${SDKROOT}/prebuilt/* \
+    ${SDKROOT}/native \
      > /tmp/sdk/python${PYBUILD}-${TAG}-sdk-${CIVER}.tar
     lz4 -c --favor-decSpeed --best /tmp/sdk/python${PYBUILD}-${TAG}-sdk-${CIVER}.tar \
      > /tmp/sdk/python${PYBUILD}-${TAG}-sdk-${CIVER}.tar.lz4
