@@ -39,10 +39,10 @@ export CPOPTS="-Os -g0 -fPIC"
 
 if [ -f ${ROOT}/dev ]
 then
-    export COPTS="-O1 -g3 -fPIC"
+    export COPTS="-fPIC"
     export QUIET=""
 else
-    export COPTS="-Os -g0 -fPIC"
+    export COPTS="-fPIC"
     if ${VERBOSE:-false}
     then
         export QUIET=""
@@ -68,7 +68,7 @@ else
     export WASM_PURE=false
 fi
 
-
+EXTRABINS="/usr/local/bin /opt/bin"
 
 # ============ emscripten ==============
 
@@ -99,6 +99,7 @@ export WASISDK="${SDKROOT}/wasisdk"
 
 export WASMTIME_HOME=$WASISDK
 
+# EXTRABINS="$EXTRABINS $WASISDK/bin"
 
 # =============== Nimrod ====================
 
@@ -113,9 +114,29 @@ NIM_URL=https://github.com/nim-lang/Nim
 export NIM_VERSION NIM_URL
 export NIMSDK=${NIMSDK:-"${SDKROOT}/nimsdk"}
 
+# EXTRABINS="$EXTRABINS $NIMSDK/bin"
+
+# ================ go =====================
+
+export GOMODCACHE=$XDG_CACHE_HOME
+export GOPATH=$SDKROOT/go
+export GOROOT=$SDKROOT/go
+
+EXTRABINS="$EXTRABINS $GOROOT/bin"
+
+
+# ================ bun ====================
+export BUN_INSTALL=${SDKROOT}/bun
+
+EXTRABINS="$EXTRABINS $BUN_INSTALL/bin"
+
+# ================ aosp ===================
+
+AOSP_NDK=25.2.9519653
+
 
 PATH=/usr/bin:/bin
-for extrabin in /usr/local/bin /opt/bin
+for extrabin in $EXTRABINS
 do
     if echo $PATH|grep -q ":$extrabin"
     then
@@ -128,18 +149,9 @@ do
     fi
 done
 
-# ================ bun ====================
-export BUN_INSTALL="$HOME/.bun"
-export PATH=$BUN_INSTALL/bin:$PATH
-
-# ================ aosp ===================
-
-AOSP_NDK=25.2.9519653
-
-
 
 # this is python used for emsdk : ${SYS_PYTHON} -> ${EMSDK_PYTHON}
-for py in 10 9 8 7
+for py in 10 9 8
 do
     if command -v python${PYMAJOR}.${py} >/dev/null
     then

@@ -11,6 +11,7 @@ then
     export ARCH=wasisdk
     export WASISDK=${WASISDK:-"${SDKROOT}/${ARCH}"}
     export WASI_SDK_PREFIX="${WASISDK}/upstream"
+    export WASI_SDK_DIR=$WASI_SDK_PREFIX
     export WASI_SYSROOT="${WASI_SDK_PREFIX}/share/wasi-sysroot"
 
     export CMAKE_TOOLCHAIN_FILE=${WASISDK}/share/cmake/Modules/Platform/WASI.cmake

@@ -18,7 +18,7 @@ PYPATCH=true
 [ -f $HPY ] || REBUILD=true
 
 
-if echo $PYBUILD |grep -q 14$
+if echo $PYBUILD |grep -q 15$
 then
     if [ -d cpython${PYBUILD} ]
     then
@@ -42,16 +42,55 @@ then
     fi
 fi
 
+if echo $PYBUILD |grep -q 14$
+then
+    wget -c https://www.python.org/ftp/python/3.14.0/Python-3.14.0a0.tar.xz
+    tar xf Python-3.14.0a0.tar.xz
+    ln -s Python-3.14.0a0 cpython${PYBUILD}
+
+    mkdir $ROOT/devices/emsdk/usr/lib $ROOT/devices/$(arch)/usr/lib -p
+
+    if ${Py_GIL_DISABLED:-false}
+    then
+        ln -s $ROOT/devices/$(arch)/usr/lib/python3.14t  $ROOT/devices/$(arch)/usr/lib/python3.14
+        ln -s $ROOT/devices/emsdk/usr/lib/python3.14t  $ROOT/devices/emsdk/usr/lib/python3.14
+    fi
+
+    pushd cpython${PYBUILD}
+        patch -p1 <<END
+--- Python-3.13.0rc3/Objects/moduleobject.c	2024-10-01 04:03:08.000000000 +0200
++++ Python-3.13.0rc3.wasm/Objects/moduleobject.c	2024-10-02 13:16:33.030387509 +0200
+@@ -442,8 +442,8 @@
+ PyUnstable_Module_SetGIL(PyObject *module, void *gil)
+ {
+     if (!PyModule_Check(module)) {
+-        PyErr_BadInternalCall();
+-        return -1;
++        //PyErr_BadInternalCall();
++        return 0;
+     }
+     ((PyModuleObject *)module)->md_gil = gil;
+     return 0;
+END
+
+    popd
+
+fi
 
 if echo $PYBUILD |grep -q 13$
 then
-    wget -q -c https://www.python.org/ftp/python/3.13.0/Python-3.13.0rc3.tar.xz
-    tar xf Python-3.13.0rc3.tar.xz
-    ln -s Python-3.13.0rc3 cpython${PYBUILD}
+    wget -q -c https://www.python.org/ftp/python/3.13.0/Python-3.13.0.tar.xz
+    tar xf Python-3.13.0.tar.xz
+    ln -s Python-3.13.0 cpython${PYBUILD}
 
     mkdir $ROOT/devices/emsdk/usr/lib $ROOT/devices/$(arch)/usr/lib -p
-    ln -s $ROOT/devices/$(arch)/usr/lib/python3.13t  $ROOT/devices/$(arch)/usr/lib/python3.13
-    ln -s $ROOT/devices/emsdk/usr/lib/python3.13t  $ROOT/devices/emsdk/usr/lib/python3.13
+
+    if ${Py_GIL_DISABLED:-false}
+    then
+        ln -s $ROOT/devices/$(arch)/usr/lib/python3.13t  $ROOT/devices/$(arch)/usr/lib/python3.13
+        ln -s $ROOT/devices/emsdk/usr/lib/python3.13t  $ROOT/devices/emsdk/usr/lib/python3.13
+    fi
+
     pushd cpython${PYBUILD}
         patch -p1 <<END
 --- Python-3.13.0rc3/Objects/moduleobject.c	2024-10-01 04:03:08.000000000 +0200
@@ -75,9 +114,9 @@ fi
 
 if echo $PYBUILD |grep -q 12$
 then
-    wget -q -c https://www.python.org/ftp/python/3.12.6/Python-3.12.6.tar.xz
-    tar xf Python-3.12.6.tar.xz
-    ln -s Python-3.12.6 cpython${PYBUILD}
+    wget -q -c https://www.python.org/ftp/python/3.12.7/Python-3.12.7.tar.xz
+    tar xf Python-3.12.7.tar.xz
+    ln -s Python-3.12.7 cpython${PYBUILD}
 fi
 
 

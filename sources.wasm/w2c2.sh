@@ -6,6 +6,7 @@
 
 mkdir -p src native build/libdwarf  build/zstd
 
+DPIC="-DCMAKE_POSITION_INDEPENDENT_CODE=ON"
 
 pushd src
     [ -d libdwarf-code ] || git clone --recursive --no-tags --depth 1 --single-branch --branch main https://github.com/davea42/libdwarf-code
@@ -19,7 +20,7 @@ then
     echo "zstd already built"
 else
     pushd build/zstd
-        cmake -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_PREFIX=$HOST_PREFIX ../../src/zstd-1.5.6/build/cmake
+        cmake $DPIC -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_PREFIX=$HOST_PREFIX ../../src/zstd-1.5.6/build/cmake
         make -j $(nproc) && make install
     popd
 fi
@@ -29,14 +30,14 @@ then
     echo "libdarwf already built"
 else
     pushd build/libdwarf
-        cmake -DCMAKE_INSTALL_LIBDIR=lib -DENABLE_DECOMPRESSION=False -DCMAKE_INSTALL_PREFIX=$HOST_PREFIX ../../src/libdwarf-code
+        cmake $DPIC -DCMAKE_INSTALL_LIBDIR=lib -DENABLE_DECOMPRESSION=False -DCMAKE_INSTALL_PREFIX=$HOST_PREFIX ../../src/libdwarf-code
         make install
     popd
 fi
 
 pushd native
 
-    cmake -DCMAKE_INSTALL_PREFIX=$HOST_PREFIX ${SDKROOT}/src/w2c2 \
+    cmake $DPIC -DCMAKE_INSTALL_PREFIX=$HOST_PREFIX ${SDKROOT}/src/w2c2 \
      -DDWARF_FOUND=1 -DDWARF_LIBRARIES="-ldwarf -lzstd" -DDWARF_LIBRARY_DIRS=$HOST_PREFIX/lib -DDWARF_INCLUDE_DIRS=$HOST_PREFIX/include
     make
 popd

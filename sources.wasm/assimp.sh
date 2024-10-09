@@ -3,6 +3,8 @@
 
 . ${CONFIG:-config}
 
+. ${SDKROOT}/scripts/emsdk-fetch.sh
+
 
 cd ${ROOT}/src
 
@@ -35,12 +37,11 @@ then
         already built in $PREFIX/lib/libassimp.a
     "
 else
-    . ${SDKROOT}/scripts/emsdk-fetch.sh
-
     mkdir -p $ROOT/build/assimp
     pushd $ROOT/build/assimp
     emmake ${ROOT}/devices/$(arch)/usr/bin/cmake $ROOT/src/$ASSIMP -DCMAKE_INSTALL_PREFIX=$PREFIX -DBUILD_SHARED_LIBS=OFF
     emmake make install
     popd
-fi
 
+    [ -f $PREFIX/lib/libassimp.a ] || exit 46
+fi

@@ -197,29 +197,28 @@ END
     sed -i 's|-sWASM_BIGINT||g' configure
     sed -i 's|-sWASM_BIGINT||g' configure.ac
 
-    # do not mess with wasm sysconfig name
-    if echo $PYBUILD|grep -q 3\\.13$
+
+    if [ ${PYMINOR} -ge 13 ]
     then
-        GIL="--disable-gil"
         sed -i 's|{ABIFLAGS}t|{ABIFLAGS}|g' configure
         sed -i 's|{ABIFLAGS}t|{ABIFLAGS}|g' configure.ac
         sed -i 's|--wasi preview2||g' configure
         sed -i 's|--wasi preview2||g' configure.ac
-    else
-        GIL=""
+        EXTRA="--without-pydebug --without-trace-refs --without-dsymutil --without-pymalloc --without-strict-overflow"
     fi
 
     popd
 
-
     PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig" CONFIG_SITE=$ROOT/src/cpython${PYBUILD}/Tools/wasm/config.site-wasm32-pydk \
-    emconfigure $ROOT/src/cpython${PYBUILD}/configure -C --with-emscripten-target=browser $GIL \
+    EMCC_CFLAGS="-fpic" emconfigure $ROOT/src/cpython${PYBUILD}/configure -C --with-emscripten-target=browser $GIL \
      --cache-file=${PYTHONPYCACHEPREFIX}/config.cache \
      --enable-wasm-dynamic-linking $TESTSUITE\
      --host=$PYDK_PYTHON_HOST_PLATFORM \
      --build=$($ROOT/src/cpython${PYBUILD}/config.guess) \
      --prefix=$PREFIX \
-     --with-build-python=${PYTHON_FOR_BUILD}
+     --with-build-python=${PYTHON_FOR_BUILD} \
+     ${EXTRA_PYOPTS}
+
 
     mkdir -p ${PYTHONPYCACHEPREFIX}/empty
     touch ${PYTHONPYCACHEPREFIX}/empty/$($HPY -V|cut -f2 -d' ')
@@ -229,32 +228,25 @@ END
     # prevent an error in install when byte compiling is disabled.
     mkdir -p ${ROOT}/devices/emsdk/usr/lib/python${PYMAJOR}.${PYMINOR}/lib-dynload/__pycache__
 
-    if emmake make -j$NPROC WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/
+    emmake make -j$NPROC WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/ || exit 255
+    sed -i 's|   -lcrypto||g' Makefile
+    emmake make -j1 Modules/_ctypes/_ctypes.o
+    if emmake make WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/ install
     then
-        if emmake make WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/ install
-        then
-            echo "Fixing missing mimalloc for Free Threading 3.13+"
-            cp -rf $ROOT/src/cpython${PYBUILD}/Include/internal/mimalloc/mimalloc ${PREFIX}/include/python${PYBUILD}/internal/
-        else
-            exit 1
-        fi
+        echo "ok"
+        #cp -rf ${PREFIX}/usr/lib/python${PYMAJOR}.${PYMINOR}/* ${ROOT}/devices/$(arch)/usr/lib/python${PYMAJOR}.${PYMINOR}/
+        #rm -rf ${PREFIX}/lib/python${PYMAJOR}.${PYMINOR}
+        #ln -sf ${ROOT}/devices/$(arch)/usr/lib/python${PYMAJOR}.${PYMINOR} ${PREFIX}/lib/python${PYMAJOR}.${PYMINOR}
     else
-        sed -i 's|   -lcrypto||g' Makefile
-        emmake make -j1 Modules/_ctypes/_ctypes.o
-        if emmake make WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/ install
-        then
-            echo "ok"
-        else
-            echo "
+        echo "
 
      **** cpython wasm build failed ***
 
     emmake make WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/ install
 
         " 1>&2
+        exit 262
 
-            exit 2
-        fi
     fi
 
 
@@ -308,7 +300,6 @@ END
     fi
 fi
 
-mkdir -p $PYTHONPYCACHEPREFIX/sysconfig
 
 
 # FIXME: seems CI cannot locate that one with python3-wasm
@@ -408,24 +399,24 @@ chmod +x $HOST_PREFIX/bin/python3-wasm
 cp -f $HOST_PREFIX/bin/python3-wasm ${SDKROOT}/
 
 # TODO: FIXME:
-echo "386: cannot use python3-wasm as python3 for setup.py in pygame build" 1>&2
-ln -sf $HOST_PREFIX/bin/python${PYBUILD} $HOST_PREFIX/bin/python3
+#echo "386: cannot use python3-wasm as python3 for setup.py in pygame build" 1>&2
+#ln -sf $HOST_PREFIX/bin/python${PYBUILD} $HOST_PREFIX/bin/python3
 
-HPFX=./devices/$(arch)/usr/lib/python${PYBUILD}
-TPFX=./devices/emsdk/usr/lib/python${PYBUILD}
+#HPFX=./devices/$(arch)/usr/lib/python${PYBUILD}
+#TPFX=./devices/emsdk/usr/lib/python${PYBUILD}
 
-rm $TPFX/ensurepip/_bundled/setuptools-*.whl
+#rm $TPFX/ensurepip/_bundled/setuptools-*.whl
 
-for moveit in setuptools distutils _distutils _distutils_hack pkg_resources
-do
-    echo "
-    * migrating ${moveit}
-" 1>&2
-    cp -rf $HPFX/${moveit}   $TPFX/
-    cp -rf $HPFX/${moveit}-* $TPFX/
-    cp -rf $HPFX/site-package/${moveit}   $TPFX/site-package/
-    cp -rf $HPFX/site-package/${moveit}-* $TPFX/site-package/
-done
+#for moveit in setuptools distutils _distutils _distutils_hack pkg_resources
+#do
+#    echo "
+#    * migrating ${moveit}
+#" 1>&2
+#    cp -rf $HPFX/${moveit}   $TPFX/
+#    cp -rf $HPFX/${moveit}-* $TPFX/
+#    cp -rf $HPFX/site-package/${moveit}   $TPFX/site-package/
+#    cp -rf $HPFX/site-package/${moveit}-* $TPFX/site-package/
+#done
 
 
 

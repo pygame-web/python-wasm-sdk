@@ -5,30 +5,50 @@
 CYTHON_REL=${CYTHON_REL:-3.0.11}
 CYTHON_WHL=${CYTHON:-Cython-${CYTHON_REL}-py2.py3-none-any.whl}
 
+if echo $CYTHON_REL|grep -q 3\\.0\\.11$
+then
+    CYTHON_REL=3.0.11-1
+fi
+
+
 PIP="${SDKROOT}/python3-wasm -m pip"
+
+$HPIP install \
+ trove-classifiers pluggy pathspec packaging hatchling \
+ typing_extensions mypy_extensions pyproject_hooks pyproject-metadata \
+ build pyparsing packaging hatchling setuptools_scm meson-python \
+ idna urllib3 charset_normalizer certifi tomli requests flit pip
+
 
 # all needed for PEP722/723, hpy, cffi modules and wheel building
 
-for module in flit \
- typing_extensions mypy_extensions pyproject-metadata \
- build pyparsing packaging hatchling setuptools_scm meson-python \
- git+https://github.com/pygame-web/setuptools \
+for module in /data/git/flit/flit_core \
  git+https://github.com/pygame-web/wheel \
+ git+https://github.com/pygame-web/setuptools \
  git+https://github.com/python-cffi/cffi \
  git+https://github.com/pypa/installer
 do
-    $PIP install --no-build-isolation --force $module
-    if $HPIP install --upgrade --force "$module"
+    echo "
+
+  pre-installing $module
+_____________________________________________
+"  1>&2
+
+    # $PIP install --no-build-isolation $module
+    if $HPIP install --no-deps --no-index --no-build-isolation --force "$module"
     then
-        echo "  pre-installing $module"  1>&2
+        echo -n ok
     else
         echo "  TARGET FAILED on required module $module" 1>&2
-        exit 23
+        exit 39
     fi
 done
 
-if echo $PYBUILD|grep -q 3.13$
+
+
+if [ ${PYMINOR} -ge 13 ]
 then
+
     echo "
 
 
@@ -38,8 +58,8 @@ then
 
 
 "
-    $PIP install --upgrade --no-build-isolation git+https://github.com/pygame-web/cython.git
-    $HPIP install --upgrade --force git+https://github.com/pygame-web/cython.git
+    # $HPIP install setuptools
+    $HPIP install --upgrade --no-build-isolation --force git+https://github.com/pygame-web/cython.git
 else
     # cython get the latest release on gh install on both host python and build python
     pushd build
@@ -101,5 +121,6 @@ pushd src
 popd
 
 rm ${SDKROOT}/prebuilt/emsdk/common/site-packages/installer/_scripts/*exe
+
 
 

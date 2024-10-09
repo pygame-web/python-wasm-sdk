@@ -1,5 +1,7 @@
 #!/bin/bash
 
+. ${CONFIG:-config}
+
 . scripts/emsdk-fetch.sh
 
 cd ${ROOT}/src
@@ -53,24 +55,24 @@ then
     "
 else
     pushd $OPENSSL
-    emconfigure ./Configure linux-generic64 \
-      no-asm \
-      no-engine \
-      no-hw \
-      no-weak-ssl-ciphers \
-      no-dtls \
-      no-shared \
-      no-dso \
-      -DPEDANTIC \
-      --prefix="$PREFIX" --openssldir=/home/web_user
+        emconfigure ./Configure linux-generic64 \
+          no-asm \
+          no-engine \
+          no-hw \
+          no-weak-ssl-ciphers \
+          no-dtls \
+          no-shared \
+          no-dso \
+          -DPEDANTIC \
+          --prefix="$PREFIX" --openssldir=/tmp/web_user
 
-    sed -i 's|^CROSS_COMPILE.*$|CROSS_COMPILE=|g' Makefile
-    emmake make build_generated libssl.a libcrypto.a
-    cp -r include/openssl "$PREFIX/include"
-    ln -s $PREFIX/include/openssl $EMSDK/upstream/emscripten/cache/sysroot/include/
-    cp libcrypto.a libssl.a $PREFIX/lib/
-    cp libcrypto.a libssl.a $EMSDK/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/pic/
+        sed -i 's|^CROSS_COMPILE.*$|CROSS_COMPILE=|g' Makefile
+        emmake make build_generated libssl.a libcrypto.a
+        cp -r include/openssl "$PREFIX/include"
+        ln -s $PREFIX/include/openssl $EMSDK/upstream/emscripten/cache/sysroot/include/
+        cp libcrypto.a libssl.a $PREFIX/lib/
+        cp libcrypto.a libssl.a $EMSDK/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/pic/
     popd
-    [ -f $PREFIX/lib/libssl.a ] || exit 74
+    [ -f $PREFIX/lib/libssl.a ] || exit 76
 fi
 

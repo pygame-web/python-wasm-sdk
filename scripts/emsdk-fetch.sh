@@ -205,6 +205,7 @@ END
             embuilder --pic build $one
         done
 
+        export BUN_INSTALL=${SDKROOT}/bun
         curl -fsSL https://bun.sh/install | bash
 
         npm install --prefix $ROOT/emsdk/node/??.??.* -g pnpm@^9.0.0
@@ -236,6 +237,7 @@ unset PYTHONPATH
 
 # COMMON="-Wno-unsupported-floating-point-opt"
 COMMON="-Wno-limited-postlink-optimizations -Wno-unused-command-line-argument -Wno-unreachable-code-fallthrough -Wno-unused-function"
+COMMON="\$COMMON \$PYDK_CFLAGS"
 SHARED=""
 IS_SHARED=false
 PY_MODULE=false
@@ -453,9 +455,9 @@ else
     # do not pass WASM opts when -c/-o but always PIC
     if echo $@|grep -q MAIN_MODULE
     then
-        $EMSDK_PYTHON -E \$0.py $COPTS \$CPU \$CPU_EXTRA \$CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
+        $EMSDK_PYTHON -E \$0.py $COPTS -I$PREFIX/include \$CPU \$CPU_EXTRA \$CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
     else
-        $EMSDK_PYTHON -E \$0.py $COPTS \$CPU_EXTRA \$CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
+        $EMSDK_PYTHON -E \$0.py $COPTS -I$PREFIX/include \$CPU_EXTRA \$CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
     fi
 fi
 #else

@@ -1,0 +1,40 @@
+diff --git a/Python/sysmodule.c b/Python/sysmodule.c
+index c2de4ec..0bae03c 100644
+--- a/Python/sysmodule.c
++++ b/Python/sysmodule.c
+@@ -55,7 +55,7 @@ extern void *PyWin_DLLhModule;
+ extern const char *PyWin_DLLVersionString;
+ #endif
+ 
+-#ifdef __EMSCRIPTEN__
++#if 0
+ #  include <emscripten.h>
+ #endif
+ 
+@@ -3222,7 +3222,7 @@ make_impl_info(PyObject *version_info)
+     return NULL;
+ }
+ 
+-#ifdef __EMSCRIPTEN__
++#if 0
+ 
+ PyDoc_STRVAR(emscripten_info__doc__,
+ "sys._emscripten_info\n\
+@@ -3454,7 +3454,7 @@ _PySys_InitCore(PyThreadState *tstate, PyObject *sysdict)
+         goto type_init_failed;
+     }
+ 
+-#ifdef __EMSCRIPTEN__
++#if 0
+     if (EmscriptenInfoType == NULL) {
+         EmscriptenInfoType = PyStructSequence_NewType(&emscripten_info_desc);
+         if (EmscriptenInfoType == NULL) {
+@@ -3734,7 +3734,7 @@ _PySys_FiniTypes(PyInterpreterState *interp)
+ #endif
+     _PyStructSequence_FiniBuiltin(interp, &Hash_InfoType);
+     _PyStructSequence_FiniBuiltin(interp, &AsyncGenHooksType);
+-#ifdef __EMSCRIPTEN__
++#if 0
+     if (_Py_IsMainInterpreter(interp)) {
+         Py_CLEAR(EmscriptenInfoType);
+     }

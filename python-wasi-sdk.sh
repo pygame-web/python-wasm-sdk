@@ -46,7 +46,6 @@ else
     sudo chmod 777 ${SDKROOT}
 fi
 
-chmod +x ${SDKROOT}/scripts/*
 
 ORIGIN=$(pwd)
 
@@ -62,10 +61,15 @@ do
         echo "${SDKROOT}/dev found : using build cache"
     else
         echo "doing a clean build"
+        if [ -d ${SDKROOT}/go ]
+        then
+            chown -R u+wxr ${SDKROOT}/build ${SDKROOT}/go
+        fi
         rm -rf ${SDKROOT}/* ${SDKROOT}/.??*
     fi
 
     cp -Rf * ${SDKROOT}/
+    chmod +x ${SDKROOT}/scripts/*
 
     if cd ${SDKROOT}/
     then
@@ -82,11 +86,32 @@ do
 
         cd ${SDKROOT}
 
+
+        if [ ${PYMINOR} -ge 13 ]
+        then
+            GILOPT=true
+            if ${Py_GIL_DISABLED:-false}
+            then
+                GIL="--disable-gil --with-mimalloc --disable-experimental-jit"
+            else
+                Py_GIL_DISABLED=false
+                GIL="--without-mimalloc --disable-experimental-jit"
+            fi
+        else
+            GILOPT=false
+            GIL=""
+        fi
+
+        export GILOPT
+        export Py_GIL_DISABLED
+
+
         if [ -f $HPY ]
         then
             echo " re-using host python HPY=$HPY"
 
         else
+
             cd ${SDKROOT}
             . scripts/cpython-fetch.sh
 
@@ -135,40 +160,84 @@ END
 
             mkdir -p src build ${SDKROOT}/devices/emsdk ${SDKROOT}/prebuilt/emsdk
 
-            # use ./ or emsdk will pollute env
-            ./scripts/emsdk-fetch.sh
-
-            echo " ------------ building cpython wasm ${PYBUILD} ${CIVER} ----------------" 1>&2
-
-            if ./scripts/cpython-build-emsdk.sh > /dev/null
+            if [ -f /tmp/sdk/emsdk.tar ]
             then
-                echo " ---------- building cpython wasm plus ${PYBUILD} ${CIVER} -----------" 1>&2
-                if ./scripts/cpython-build-emsdk-deps.sh > /dev/null
+                echo "
+
+
+            ===========================================================================
+
+            Using emsdk cache from :
+
+            $(cat /tmp/sdk/emsdk.version)
+
+
+            ===========================================================================
+
+
+
+"
+                pushd /
+                tar xfp /tmp/sdk/emsdk.tar
+                mkdir -p ${SDKROOT}/src ${SDKROOT}/build
+                popd
+            fi
+
+            # use ./ or emsdk will pollute env
+            ./scripts/emsdk-fetch.sh > /dev/null
+
+            echo " ---------- building cpython wasm support ${PYBUILD} ${CIVER} -----------" 1>&2
+
+            if [ -f /tmp/sdk/emsdk.tar ]
+            then
+                echo " using cache "
+            else
+                if ./scripts/cpython-build-emsdk-deps.sh
                 then
+                    if [ -f /pp ]
+                    then
+                        pushd /
+                        tar -cpR $SDKROOT \
+ --exclude=${SDKROOT}/config \
+ --exclude=${SDKROOT}/*sh \
+ --exclude=${SDKROOT}/scripts/* \
+ --exclude=${SDKROOT}/build \
+ --exclude=${SDKROOT}/src \
+  > /tmp/sdk/emsdk.tar
 
-                    echo " --------- adding some usefull pkg ${PYBUILD} ${CIVER} ---------" 1>&2
-                    ./scripts/cpython-build-emsdk-prebuilt.sh
-
-
-                    echo "
-
-                    ==========================================================
-                                        stripping emsdk ${PYBUILD} ${CIVER}
-                    ==========================================================
-            " 1>&2
-                    rm -rf ${SDKROOT}/emsdk/upstream/emscripten/cache/ports*
-                    rm -rf ${SDKROOT}/emsdk/upstream/emscripten/cache/ports/sdl2/SDL-*
-                    rm -rf ${SDKROOT}/emsdk/upstream/emscripten/cache/ports
-                    rm -rf ${SDKROOT}/emsdk/upstream/emscripten/cache/ports-builds
-                    rm -rf ${SDKROOT}/emsdk/upstream/emscripten/tests
-
+                        date "+%d-%m-%4Y" > /tmp/sdk/emsdk.version
+                        popd
+                    fi
                 else
                     echo " cpython-build-emsdk-deps failed" 1>&2
-                    exit 124
+                    exit 182
                 fi
+            fi
+
+
+
+            echo " ------------ building cpython wasm ${PYBUILD} ${CIVER} ----------------"  1>&2
+            if ./scripts/cpython-build-emsdk.sh  > /dev/null
+            then
+
+                echo " --------- adding some usefull pkg ${PYBUILD} ${CIVER} ---------" 1>&2
+                ./scripts/cpython-build-emsdk-prebuilt.sh || exit 213
+
+                echo "
+
+                ==========================================================
+                                    stripping emsdk ${PYBUILD} ${CIVER}
+                ==========================================================        " 1>&2
+
+                rm -rf ${SDKROOT}/emsdk/upstream/emscripten/cache/ports*
+                rm -rf ${SDKROOT}/emsdk/upstream/emscripten/cache/ports/sdl2/SDL-*
+                rm -rf ${SDKROOT}/emsdk/upstream/emscripten/cache/ports
+                rm -rf ${SDKROOT}/emsdk/upstream/emscripten/cache/ports-builds
+                rm -rf ${SDKROOT}/emsdk/upstream/emscripten/tests
+
             else
                 echo " cpython-build-emsdk failed" 1>&2
-                exit 119
+                exit 207
             fi
 
         fi
