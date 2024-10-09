@@ -5,6 +5,7 @@
 . scripts/emsdk-fetch.sh
 
 cd ${ROOT}/src
+
 export OPENSSL="openssl-1.1.1w"
 export URL_OPENSSL=https://github.com/openssl/openssl/releases/download/OpenSSL_1_1_1w/openssl-1.1.1w.tar.gz
 
@@ -68,11 +69,12 @@ else
 
         sed -i 's|^CROSS_COMPILE.*$|CROSS_COMPILE=|g' Makefile
         emmake make build_generated libssl.a libcrypto.a
-        cp -r include/openssl "$PREFIX/include"
+        mkdir -p $PREFIX/include $PREFIX/lib/
+        cp -r include/openssl $PREFIX/include/
         ln -s $PREFIX/include/openssl $EMSDK/upstream/emscripten/cache/sysroot/include/
         cp libcrypto.a libssl.a $PREFIX/lib/
         cp libcrypto.a libssl.a $EMSDK/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/pic/
     popd
-    [ -f $PREFIX/lib/libssl.a ] || exit 76
+    [ -f $PREFIX/lib/libssl.a ] || exit 78
 fi
 
