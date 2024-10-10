@@ -16,13 +16,19 @@ PIP="${SDKROOT}/python3-wasm -m pip"
 $HPIP install \
  trove-classifiers pluggy pathspec packaging hatchling \
  typing_extensions mypy_extensions pyproject_hooks pyproject-metadata \
- build pyparsing packaging hatchling setuptools_scm meson-python \
+ build pyparsing packaging hatchling setuptools_scm \
+ docutils setuptools meson meson-python \
  idna urllib3 charset_normalizer certifi tomli requests flit pip
 
 
 # all needed for PEP722/723, hpy, cffi modules and wheel building
+# those may contain tiny fixes for wasm and/or current unreleased cpython.
 
-for module in /data/git/flit/flit_core \
+pushd src
+    git clone --no-tags --depth 1 --single-branch --branch main https://github.com/pygame-web/flit
+popd
+
+for module in src/flit/flit_core \
  git+https://github.com/pygame-web/wheel \
  git+https://github.com/pygame-web/setuptools \
  git+https://github.com/python-cffi/cffi \
@@ -59,12 +65,13 @@ then
 
 "
     # $HPIP install setuptools
-    $HPIP install --upgrade --no-build-isolation --force git+https://github.com/pygame-web/cython.git
+    # compiling cython is way too slow so just get it pure with NO_CYTHON_COMPILE=true
+    NO_CYTHON_COMPILE=true $HPIP install --upgrade --no-build-isolation --force git+https://github.com/pygame-web/cython.git
 else
     # cython get the latest release on gh install on both host python and build python
     pushd build
-    wget -q -c https://github.com/cython/cython/releases/download/${CYTHON_REL}/${CYTHON_WHL}
-    $HPIP install --upgrade $CYTHON_WHL
+        wget -q -c https://github.com/cython/cython/releases/download/${CYTHON_REL}/${CYTHON_WHL}
+        $HPIP install --upgrade $CYTHON_WHL
     popd
     $PIP install build/$CYTHON_WHL
 fi

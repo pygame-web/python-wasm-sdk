@@ -228,7 +228,7 @@ END
     # prevent an error in install when byte compiling is disabled.
     mkdir -p ${ROOT}/devices/emsdk/usr/lib/python${PYMAJOR}.${PYMINOR}/lib-dynload/__pycache__
 
-    emmake make -j$NPROC WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/ || exit 255
+    emmake make -j$(nproc) WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/ || exit 255
     sed -i 's|   -lcrypto||g' Makefile
     emmake make -j1 Modules/_ctypes/_ctypes.o
     if emmake make WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/ install

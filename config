@@ -117,7 +117,9 @@ export NIMSDK=${NIMSDK:-"${SDKROOT}/nimsdk"}
 # EXTRABINS="$EXTRABINS $NIMSDK/bin"
 
 # ================ go =====================
-
+export GOPRIVATE=*
+export GONOPROXY=*
+export GONOSUMDB=*
 export GOMODCACHE=$XDG_CACHE_HOME
 export GOPATH=$SDKROOT/go
 export GOROOT=$SDKROOT/go
