@@ -204,6 +204,7 @@ END
  --exclude=${SDKROOT}/config \
  --exclude=${SDKROOT}/*sh \
  --exclude=${SDKROOT}/scripts/* \
+ --exclude=${SDKROOT}/sources.* \
  --exclude=${SDKROOT}/build \
  --exclude=${SDKROOT}/src \
   > /tmp/sdk/emsdk.tar
