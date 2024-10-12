@@ -63,7 +63,7 @@ do
         echo "doing a clean build"
         if [ -d ${SDKROOT}/go ]
         then
-            chown -R u+wxr ${SDKROOT}/build ${SDKROOT}/go
+            chown -R u+rwx ${SDKROOT}/build ${SDKROOT}/go
         fi
         rm -rf ${SDKROOT}/* ${SDKROOT}/.??*
     fi
@@ -190,14 +190,17 @@ END
 
             if [ -f /tmp/sdk/emsdk.tar ]
             then
-                echo " using cache "
+                echo " using cached cpython-build-emsdk-deps"
             else
                 if ./scripts/cpython-build-emsdk-deps.sh
                 then
-                    if [ -f /pp ]
+                    if $CI
                     then
                         pushd /
                         tar -cpR $SDKROOT \
+ --exclude=${SDKROOT}/devices/*/usr/bin/*3.1* \
+ --exclude=${SDKROOT}/devices/*/usr/lib/python3.1? \
+ --exclude=${SDKROOT}/devices/*/usr/include/python3.1? \
  --exclude=${SDKROOT}/config \
  --exclude=${SDKROOT}/*sh \
  --exclude=${SDKROOT}/scripts/* \
@@ -210,18 +213,16 @@ END
                     fi
                 else
                     echo " cpython-build-emsdk-deps failed" 1>&2
-                    exit 182
+                    exit 213
                 fi
             fi
-
-
 
             echo " ------------ building cpython wasm ${PYBUILD} ${CIVER} ----------------"  1>&2
             if ./scripts/cpython-build-emsdk.sh  > /dev/null
             then
 
                 echo " --------- adding some usefull pkg ${PYBUILD} ${CIVER} ---------" 1>&2
-                ./scripts/cpython-build-emsdk-prebuilt.sh || exit 213
+                ./scripts/cpython-build-emsdk-prebuilt.sh || exit 223
 
                 echo "
 
@@ -237,7 +238,7 @@ END
 
             else
                 echo " cpython-build-emsdk failed" 1>&2
-                exit 207
+                exit 239
             fi
 
         fi

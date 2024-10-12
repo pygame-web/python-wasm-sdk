@@ -101,10 +101,10 @@ END
         fi
     fi
 
-
-    if CC=clang CXX=clang++ CFLAGS="-fPIC" CPPFLAGS="-fPIC" \
-     ${ROOT}/src/cpython${PYBUILD}/configure \
-     --prefix=$HOST_PREFIX $PYOPTS $GIL
+#  CFLAGS="-fPIC" CPPFLAGS="-fPIC"
+    CNF="${ROOT}/src/cpython${PYBUILD}/configure \
+     --prefix=$HOST_PREFIX $PYOPTS $GIL"
+    if CC=clang CXX=clang++ $CNF
     then
         if make -j$(nproc)
         then
@@ -113,11 +113,15 @@ END
                 echo "CPython $PYTHON_FOR_BUILD ready" 1>&2
             else
                 echo "CPython $PYTHON_FOR_BUILD failed to install" 1>&2
-                exit 135
+                exit 117
             fi
         else
-            echo "failed to build $PYTHON_FOR_BUILD"  1>&2
-            exit 139
+            echo "
+failed to build $PYTHON_FOR_BUILD
+
+CC=clang CXX=clang++ $CNF
+"  1>&2
+            exit 125
         fi
     else
         echo "
@@ -125,6 +129,9 @@ END
     ERROR: could not configure cpython
 
     reminder: you need clang libffi-dev and usual cpython requirements.
+
+CC=clang CXX=clang++ $CNF
+
 ==========================================================================
     " 1>&2
         exit 149

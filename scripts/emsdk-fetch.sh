@@ -65,12 +65,7 @@ fi
                         #wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/18941.diff
                         #patch -p1 < 18941.diff
                     fi
-                popd
 
-#                wget https://raw.githubusercontent.com/paradust7/minetest-wasm/main/emsdk_emcc.patch
-#                patch -p1 < emsdk_emcc.patch
-
-                pushd upstream/emscripten
                     echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/21472 glfw3: gl level version major/minor hints"
                     wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/21472.diff
                     patch -p1 < 21472.diff
@@ -95,6 +90,10 @@ fi
                     #patch -p1 < 22605.diff
                 popd
 
+
+
+#                wget https://raw.githubusercontent.com/paradust7/minetest-wasm/main/emsdk_emcc.patch
+#                patch -p1 < emsdk_emcc.patch
 
 
                 # https://github.com/paradust7/minetest-wasm/blob/main/emsdk_dirperms.patch
@@ -215,256 +214,18 @@ END
         cat > emsdk/upstream/emscripten/emcc <<END
 #!/bin/bash
 
-EMCC_TRACE=\${EMCC_TRACE:-false}
-if \$EMCC_TRACE
+if \${EMCC_TRACE:-false}
 then
-echo "
-$@" >> $SDKROOT/emcc.log
-
+    echo "
+\$0 \$@" >> $SDKROOT/emcc.log
 fi
 
 unset _EMCC_CCACHE
-
-#if [ -z "\$_EMCC_CCACHE" ]
-#then
-
 unset _PYTHON_SYSCONFIGDATA_NAME
 unset PYTHONHOME
 unset PYTHONPATH
 
-# -Wwarn-absolute-paths
-# --valid-abspath ${SDKROOT}
-
-# COMMON="-Wno-unsupported-floating-point-opt"
-COMMON="-Wno-limited-postlink-optimizations -Wno-unused-command-line-argument -Wno-unreachable-code-fallthrough -Wno-unused-function"
-COMMON="\$COMMON \$PYDK_CFLAGS"
-SHARED=""
-IS_SHARED=false
-PY_MODULE=false
-MVP=\${MVP:true}
-WASM_PURE=\${WASM_PURE:true}
-
-
-if \$MVP
-then
-
-    # turn of wasm ex (https://github.com/emscripten-core/emscripten/pull/20536)
-    # -fno-wasm-exceptions -sEMSCRIPTEN_LONGJMP=0
-
-
-    # -mcpu=generic would activate those https://reviews.llvm.org/D125728
-    # https://github.com/emscripten-core/emscripten/pull/17689
-
-    # -fPIC not allowed with -mno-mutable-globals
-    # -mno-sign-ext not allowed with pthread
-
-    #WASMOPTS="-fno-wasm-exceptions -sSUPPORT_LONGJMP=emscripten"
-    #CPU="-mnontrapping-fptoint -mno-reference-types -mno-sign-ext -m32"
-
-    CPU="-D_FILE_OFFSET_BITS=64 -sSUPPORT_LONGJMP=emscripten -mnontrapping-fptoint -mno-reference-types -mno-sign-ext -m32"
-
-else
-    CPU="-D_FILE_OFFSET_BITS=64 -mcpu=bleeding-edge -m64"
-fi
-
-# try to keep 32 but with 64 iface (bitint)
-WASMEXTRA="$WASM_EXTRA \$WASMOPTS"
-
-
-LINKING=\${LINKING:-false}
-
-if echo "\$@ "|grep -q "\\.so "
-then
-    LINKING=true
-fi
-
-
-declare -A seen=( )
-
-for arg do
-    shift
-
-    if [ "\$arg" = "-v" ]
-    then
-        $EMSDK_PYTHON -E \$0.py -v
-        exit 0
-    fi
-
-    if [ "\$arg" = "--version" ]
-    then
-        $EMSDK_PYTHON -E \$0.py --version
-        exit 0
-    fi
-
-    if \$LINKING
-    then
-        # prevent duplicates objects/archives files on cmdline when linking shared
-        if echo \$arg|grep -q \\\\.o\$
-        then
-            [[ \${seen[\$arg]} ]] && continue
-        fi
-        if echo \$arg|grep -q \\\\.a\$
-        then
-            [[ \${seen[\$arg]} ]] && continue
-        fi
-        if echo \$arg|grep -q ^-l
-        then
-            [[ \${seen[\$arg]} ]] && continue
-        fi
-        seen[\$arg]=1
-    fi
-
-    arg_is_bad=false
-
-    for badarg in "-Wl,--as-needed" "-Wl,--eh-frame-hdr" "-Wl,-znoexecstack" "-Wl,-znow" "-Wl,-zrelro" "-Wl,-zrelro,-znow"
-    do
-        if [ "\$arg" = "\$badarg" ]
-        then
-            arg_is_bad=true
-            break
-        fi
-    done
-
-    if \$arg_is_bad
-    then
-        continue
-    fi
-
-    if [ "\$arg" = "-c" ]
-    then
-        CPU_EXTRA=\$WASM_EXTRA
-    fi
-
-    if [ "\$arg" = "-o" ]
-    then
-        CPU_EXTRA=\$WASM_EXTRA
-    fi
-
-    if [ "\$arg" = "-fallow-argument-mismatch" ]
-    then
-        continue
-    fi
-
-    if [ "\$arg" = "-lutil" ]
-    then
-        continue
-    fi
-
-    if [ "\$arg" = "-O3" ]
-    then
-        continue
-    fi
-
-    if [ "\$arg" = "-g" ]
-    then
-        continue
-    fi
-
-    if [ "\$arg" = "-lgcc" ]
-    then
-        continue
-    fi
-
-    if [ "\$arg" = "-lgcc_s" ]
-    then
-        continue
-    fi
-
-    if [ "\$arg" = "-nomvp" ]
-    then
-        MVP=false
-        continue
-    fi
-
-    if [ "\$arg" = "-pthread" ]
-    then
-        if echo \$CPU|grep -q mno-sign-ext
-        then
-            continue
-        fi
-    fi
-
-
-    # that is for some very bad setup.py behaviour regarding cross compiling.
-    # should not be needed ..
-    [ "\$arg" = "-I/usr/include" ] && continue
-    [ "\$arg" = "-I/usr/include/SDL2" ] && continue
-    [ "\$arg" = "-L/usr/lib64" ]	&& continue
-    [ "\$arg" = "-L/usr/lib" ]   && continue
-    [ "\$arg" = "-latomic" ]   && continue
-
-    if [ "\$arg" = "-shared" ]
-    then
-        IS_SHARED=true
-        SHARED="\$SHARED -sSIDE_MODULE"
-    fi
-
-    if echo "\$arg"|grep -q wasm32-emscripten.so\$
-    then
-        PY_MODULE=true
-        SHARED_TARGET=\$arg
-    else
-        if echo "\$arg"|grep -q abi3.so\$
-        then
-            PY_MODULE=true
-            SHARED_TARGET=\$arg
-        fi
-    fi
-
-    if \$PY_MODULE
-    then
-        if \$IS_SHARED
-        then
-            true
-        else
-            IS_SHARED=true
-            SHARED="\$SHARED -shared -sSIDE_MODULE"
-        fi
-    else
-        if \$IS_SHARED
-        then
-            if echo "\$arg"|grep \\\\.so\$
-            then
-                PY_MODULE=true
-                SHARED_TARGET=\$arg
-                SHARED="-sSIDE_MODULE"
-            fi
-        fi
-    fi
-
-    set -- "\$@" "\$arg"
-done
-
-if \$IS_SHARED
-then
-    # always pass CPU opts when linking
-    $EMSDK_PYTHON -E \$0.py \$SHARED $COPTS \$CPU \$WASM_EXTRA \$LDFLAGS -sSIDE_MODULE -gsource-map --source-map-base / "\$@" \$COMMON
-    if \$MVP
-    then
-        if \$WASM_PURE
-        then
-            SOTMP=\$(mktemp).so
-            mv \$SHARED_TARGET \$SOTMP
-            # --memory64-lowering --signext-lowering
-            $SDKROOT/emsdk/upstream/bin/wasm-emscripten-finalize -mvp \$SOTMP -o \$SHARED_TARGET
-            [ -f \$SHARED_TARGET.map ] && rm \$SHARED_TARGET.map
-            rm \$SOTMP
-        fi
-    fi
-else
-    # do not pass WASM opts when -c/-o but always PIC
-    if echo $@|grep -q MAIN_MODULE
-    then
-        $EMSDK_PYTHON -E \$0.py $COPTS -I$PREFIX/include \$CPU \$CPU_EXTRA \$CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
-    else
-        $EMSDK_PYTHON -E \$0.py $COPTS -I$PREFIX/include \$CPU_EXTRA \$CPPFLAGS -DBUILD_STATIC "\$@" \$COMMON
-    fi
-fi
-#else
-#  unset _EMCC_CCACHE
-#  exec ccache "\$0" "\$@"
-#fi
-
+$EMSDK_PYTHON -E $SDKROOT/emsdk-cc \$0.py "\$@"
 END
 
         rm emsdk/upstream/emscripten/em++

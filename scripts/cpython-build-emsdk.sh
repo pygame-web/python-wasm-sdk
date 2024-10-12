@@ -188,7 +188,7 @@ END
 
     pushd $ROOT/src/cpython${PYBUILD}
     # fix double linking
-    sed -i 's|   -lcrypto||g' Makefile.pre.in
+    # sed -i 's|   -lcrypto||g' Makefile.pre.in
 
 # REALLY FIXME: appeared only after 3.1.49bi
     sed -i 's|#error|//#error|g' $ROOT/src/cpython${PYBUILD}/Include/pyport.h
@@ -228,9 +228,27 @@ END
     # prevent an error in install when byte compiling is disabled.
     mkdir -p ${ROOT}/devices/emsdk/usr/lib/python${PYMAJOR}.${PYMINOR}/lib-dynload/__pycache__
 
-    emmake make -j$(nproc) WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/ || exit 255
-    sed -i 's|   -lcrypto||g' Makefile
-    emmake make -j1 Modules/_ctypes/_ctypes.o
+
+    sed -i 's|-lpthread|-lcrypto|g' Makefile
+
+
+    echo "=========== cpython build ================" 1>&2
+    if  emmake make -j$(nproc) WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/
+    then
+        echo -n
+    else
+        echo "
+
+     **** cpython wasm build failed ***
+
+    emmake make WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/
+
+        " 1>&2
+        exit 244
+    fi
+    #emmake make -j1 Modules/_ctypes/_ctypes.o
+
+    echo "=========== cpython install ================" 1>&2
     if emmake make WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/ install
     then
         echo "ok"
@@ -240,12 +258,12 @@ END
     else
         echo "
 
-     **** cpython wasm build failed ***
+     **** cpython wasm install failed ***
 
     emmake make WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/ install
 
         " 1>&2
-        exit 262
+        exit 263
 
     fi
 

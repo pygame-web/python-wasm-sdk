@@ -71,15 +71,9 @@ fi
 EXTRABINS="/usr/local/bin /opt/bin"
 
 # ============ emscripten ==============
-
-# stable
-# export EMFLAVOUR=${EMFLAVOUR:3.1.65}
-
-# embind broke in 3.1.48-tot (coro suspend/resume)
-# embding more broken in 3.1.51
-
+# stable==latest dev==tot
 export EMFLAVOUR=${EMFLAVOUR:latest}
-
+export EMSDK_QUIET=1
 
 
 #temp fix for oom on CI (Error: Process completed with exit code 143.)
