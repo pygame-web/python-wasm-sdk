@@ -3,8 +3,9 @@
 # X11 include dest /opt/python-wasm-sdk/./emsdk/upstream/emscripten/cache/sysroot/include/X11
 
 
-
 . ${CONFIG:-config}
+
+. scripts/emsdk-fetch.sh
 
 
 cd ${ROOT}/src
@@ -31,8 +32,6 @@ then
         already built in $PREFIX/lib/libX11.a
     "
 else
-    . ${SDKROOT}/scripts/emsdk-fetch.sh
-
 
     #    mkdir -p $ROOT/build/${PKG}
     cp -rf $ROOT/src/${PKG} $ROOT/build/
@@ -94,15 +93,18 @@ index d7379a0..e1968b4 100644
   * Drawing types.
 END
 
+    patch -p1 < ${SDKROOT}/sources.extra/microwindows.diff
+
+
 # FIXME: use pkg config !!!
 
-    EMCC_CFLAGS="-I${SDKROOT}/emsdk/upstream/emscripten/cache/sysroot/include/freetype2" \
-     CC=emcc CXX=emc++ emmake make -C src NX11=Y NANOX=Y MICROWIN=N ARCH=EMSCRIPTEN LINK_APP_INTO_SERVER=Y NANOXDEMO=N ERASEMOVE=1
+    EMCC_CFLAGS="-I${EMSDK}/upstream/emscripten/cache/sysroot/include/freetype2" \
+     CC=emcc CXX=emc++ emmake make -C src NX11=Y NANOX=Y MICROWIN=N ARCH=EMSCRIPTEN LINK_APP_INTO_SERVER=Y NANOXDEMO=N ERASEMOVE=1 || exit 99
 
 
     if [ -f /pp ]
     then
-        emcc -sASYNCIFY -o xhello.html -I./src/nx11/X11-local ./src/contrib/nx11-test/xhello.c -L./src/lib -lNX11 -lnano-X -lz -lfreetype -lSDL2; mv xhello.* /srv/www/html/wasm/x11/
+        emcc -sASYNCIFY -o xhello.html -I./src/nx11/X11-local ./src/contrib/nx11-test/xhello.c -L./src/lib -lNX11 -lnano-X -lfreetype -lz -lSDL2; mv xhello.* /srv/www/html/wasm/x11/
     fi
     cp ./src/lib/{libNX11.a,libnano-X.a} $PREFIX/lib/
     cp -r ./src/nx11/X11-local/X11 $PREFIX/include/

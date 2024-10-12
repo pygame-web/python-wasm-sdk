@@ -1,0 +1,254 @@
+diff --git a/src/Makefile.rules b/src/Makefile.rules
+index 1a6faa1..6f71950 100644
+--- a/src/Makefile.rules
++++ b/src/Makefile.rules
+@@ -514,9 +514,7 @@ ifneq ($(LIBNAMESO),)		# stop circular dependecy when no LIBNAMESO in current Ma
+ $(MW_DIR_LIB)/$(LIBNAMESO): $(MW_DIR_LIB)/$(LIBNAME) $(OBJS) $(CXXOBJS)
+ 	@echo "Creating shared library $(patsubst $(MW_DIR_LIB)/%,%,$@) ..."
+ ifeq ($(ARCH), MACOSX)
+-	$(CC) -shared -fpic -undefined dynamic_lookup -o $@ $(LDFLAGS) $(OBJS) $(CXXOBJS)
+-else
+-	$(CC) -shared -o $@ -Wl,--whole-archive $(OBJS) $(CXXOBJS) -Wl,--no-whole-archive
++	$(CC) -shared -fpic -o $@ $(OBJS) $(CXXOBJS)
+ endif
+ endif
+ endif
+diff --git a/src/demos/mwin/Makefile b/src/demos/mwin/Makefile
+index 05c0470..7f32224 100644
+--- a/src/demos/mwin/Makefile
++++ b/src/demos/mwin/Makefile
+@@ -115,7 +115,7 @@ ifeq ($(MICROWINMULTIAPP), Y)
+   ifeq ($(ARCH), MACOSX)
+ 	$(CC) -shared -fpic -undefined dynamic_lookup $< -o $@.so
+   else
+-	$(CC) -shared -o $@.so -Wl,--whole-archive $< -Wl,--no-whole-archive
++	$(CC) -shared -fpic -o $@.so $<
+   endif
+ else # !MICROWINMULTIAPP
+ 	$(CC) $(CFLAGS) $(LDFLAGS) $< -o $@ $(MWINLIBS) $(LDFLAGS)
+@@ -127,7 +127,7 @@ ifeq ($(MICROWINMULTIAPP), Y)
+   ifeq ($(ARCH), MACOSX)
+ 	$(CC) -shared -fpic -undefined dynamic_lookup $< $(MINEIMAGES) -o $@.so
+   else
+-	$(CC) -shared -o $@.so -Wl,--whole-archive $< $(MINEIMAGES) -Wl,--no-whole-archive
++	$(CC) -shared -fpic -o $@.so $< $(MINEIMAGES)
+   endif
+ else
+ 	$(CC) $(CFLAGS) $(LDFLAGS) $< $(MINEIMAGES) -o $@ $(MWINLIBS) $(LDFLAGS)
+diff --git a/src/engine/font_freetype2.c b/src/engine/font_freetype2.c
+index 7e0efae..20e64d0 100644
+--- a/src/engine/font_freetype2.c
++++ b/src/engine/font_freetype2.c
+@@ -54,10 +54,12 @@ void winfillrect(PSD psd, int x, int y, int w, int h);
+ /* FreeType 2.x                                                             */
+ /* **************************************************************************/
+ #include <ft2build.h>
+-#include FT_FREETYPE_H
+-#include FT_TRIGONOMETRY_H
+-#include FT_GLYPH_H
+-#include FT_OUTLINE_H
++#include <freetype/config/ftheader.h>
++#include <freetype/freetype.h>
++#include <freetype/fttrigon.h>
++#include <freetype/ftglyph.h>
++#include <freetype/ftoutln.h>
++
+ 
+ #if HAVE_HARFBUZZ_SUPPORT
+ /* HarfBuzz 0.9.x */
+@@ -153,10 +155,10 @@ void winfillrect(PSD psd, int x, int y, int w, int h);
+ #endif
+ 
+ #if HAVE_FREETYPE_2_CACHE
+-# include FT_CACHE_H
+-# include FT_CACHE_SMALL_BITMAPS_H
++# include <freetype/ftcache.h>
++//# include FT_CACHE_SMALL_BITMAPS_H
+ # if HAVE_FREETYPE_2_CMAP_CACHE
+-#  include FT_CACHE_CHARMAP_H
++//#  include FT_CACHE_CHARMAP_H
+ # endif
+ #endif
+ 
+@@ -208,7 +210,7 @@ typedef struct {
+ 	hb_font_t *hb_font;
+ 	hb_script_t hb_script;
+ 	int use_harfbuzz;
+-#endif	
++#endif
+ #else
+ 	FT_Face face;
+ #endif
+@@ -327,7 +329,7 @@ freetype2_face_requester(FTC_FaceID face_id, FT_Library library,
+ 	if (fontdata->isBuffer) {
+ 		unsigned char * buffer = fontdata->data.buffer.data;
+ 		unsigned length = fontdata->data.buffer.length;
+-		/* DPRINTF("Font magic = '%c%c%c%c', len = %u @ freetype2_face_requester\n", 
++		/* DPRINTF("Font magic = '%c%c%c%c', len = %u @ freetype2_face_requester\n",
+ 		   (char)buffer[0], (char)buffer[1], (char)buffer[2], (char)buffer[3], length); */
+ 		assert(buffer);
+ 		rr = FT_New_Memory_Face(library, buffer, length, 0, aface);
+@@ -338,7 +340,7 @@ freetype2_face_requester(FTC_FaceID face_id, FT_Library library,
+ 		rr = FT_New_Face(library, filename, 0, aface);
+ 
+ 	}
+-	
++
+ 	return rr;
+ }
+ #endif
+@@ -587,7 +589,7 @@ freetype2_createfontfrombuffer(const unsigned char *buffer, unsigned size,
+ 		faceid->data.buffer.data = buffercopy;
+ 		faceid->refcount = 1;
+ 
+-		/*DPRINTF("Font magic = '%c%c%c%c', len = %u @ freetype2_createfontfrombuffer\n", 
++		/*DPRINTF("Font magic = '%c%c%c%c', len = %u @ freetype2_createfontfrombuffer\n",
+ 		  (char)buffercopy[0], (char)buffercopy[1], (char)buffercopy[2], (char)buffercopy[3], size); */
+ 
+ 		pf = freetype2_createfont_internal(faceid, NULL, height, width);
+@@ -863,7 +865,7 @@ freetype2_setfontsize(PMWFONT pfont, MWCOORD height, MWCOORD width)
+ 	/* We want real pixel sizes ... not points ... */
+ 	FT_Set_Pixel_Sizes(pf->face, pixel_width, pixel_height);
+ #endif
+-	
++
+ 	return oldsize;
+ }
+ 
+@@ -994,7 +996,7 @@ freetype2_get_glyph_size(PMWFREETYPE2FONT pf, FT_Face face, int glyph_index,
+ 
+ 	assert (pf);
+ 	assert (face);
+-	
++
+ #if HAVE_FREETYPE_2_CACHE
+ 	if (CAN_USE_FT2_CACHE(pf))
+ 	{
+@@ -1003,9 +1005,9 @@ freetype2_get_glyph_size(PMWFREETYPE2FONT pf, FT_Face face, int glyph_index,
+ 		error = FTC_SBitCache_Lookup(freetype2_cache_sbit, &pf->imagedesc, glyph_index, &sbit, NULL);
+ 		if (error)
+ 			return error;
+-		
++
+ 		/*DPRINTF("sbit->top = %d, sbit->height = %d\n", sbit->top, sbit->height);*/
+-		
++
+ 		if (padvance)
+ 			*padvance = sbit->xadvance;
+ 		if (pascent)
+@@ -1027,20 +1029,20 @@ freetype2_get_glyph_size(PMWFREETYPE2FONT pf, FT_Face face, int glyph_index,
+ 		{
+ 			FT_Glyph glyph;
+ 			FT_BBox bbox;
+-			
++
+ 			error = FT_Get_Glyph(face->glyph, &glyph);
+ 			if (error)
+ 				return error;
+-			
++
+ 			FT_Glyph_Get_CBox(glyph, ft_glyph_bbox_pixels, &bbox);
+ 			FT_Done_Glyph(glyph);
+-			
++
+ 			if (pascent)
+ 				*pascent = bbox.yMax;
+ 			if (pdescent)
+ 				*pdescent = -bbox.yMin;
+ 		}
+-		
++
+ 		return 0;
+ 	}
+ }
+@@ -1205,7 +1207,7 @@ freetype2_drawtext(PMWFONT pfont, PSD psd, MWCOORD ax, MWCOORD ay,
+ #if HAVE_HARFBUZZ_SUPPORT
+ 	hb_glyph_info_t *glyph_info = NULL;
+ #endif // HAVE_HARFBUZZ_SUPPORT
+-	
++
+ 	assert(pf);
+ 	assert(text);
+ 	assert(psd); // note in STANDALONE case, 'app_t' is passed as psd, must not inspect pointer!
+@@ -1333,7 +1335,7 @@ freetype2_drawtext(PMWFONT pfont, PSD psd, MWCOORD ax, MWCOORD ay,
+ 			MWCOORD fnt_h, fnt_w, fnt_b;
+ #if STANDALONE
+ 			/* fill to gr_background color*/
+-			MWPIXELVAL gr_save = winsetfgcolor(psd, gr_background);	
++			MWPIXELVAL gr_save = winsetfgcolor(psd, gr_background);
+ #else
+ 			MWPIXELVAL gr_save = gr_background;
+ 			gr_foreground = gr_background;
+@@ -1356,7 +1358,7 @@ freetype2_drawtext(PMWFONT pfont, PSD psd, MWCOORD ax, MWCOORD ay,
+ 			if(pf->use_harfbuzz)
+ 				curchar = glyph_info[i].codepoint;
+ 			else
+-#endif // HAVE_HARFBUZZ_SUPPORT		  
++#endif // HAVE_HARFBUZZ_SUPPORT
+ 			curchar = LOOKUP_CHAR(pf, face, str[i]);
+ 
+ 			if (use_kerning && last_glyph_code && curchar) {
+@@ -1437,7 +1439,7 @@ freetype2_drawtext(PMWFONT pfont, PSD psd, MWCOORD ax, MWCOORD ay,
+ 			MWCOORD fnt_h, fnt_w, fnt_b;
+ #if STANDALONE
+ 			/* fill to gr_background color*/
+-			MWPIXELVAL gr_save = winsetfgcolor(psd, gr_background);	
++			MWPIXELVAL gr_save = winsetfgcolor(psd, gr_background);
+ #else
+ 			MWPIXELVAL gr_save = gr_background;
+ 			gr_foreground = gr_background;
+@@ -1458,7 +1460,7 @@ freetype2_drawtext(PMWFONT pfont, PSD psd, MWCOORD ax, MWCOORD ay,
+ 			if(pf->use_harfbuzz)
+ 				curchar = glyph_info[i].codepoint;
+ 			else
+-#endif // HAVE_HARFBUZZ_SUPPORT		  
++#endif // HAVE_HARFBUZZ_SUPPORT
+ 			curchar = LOOKUP_CHAR(pf, face, str[i]);
+ 
+ 			if (use_kerning && last_glyph_code && curchar) {
+@@ -1588,7 +1590,7 @@ freetype2_gettextsize_rotated(PMWFREETYPE2FONT pf, const void *text, int cc,
+ #if HAVE_HARFBUZZ_SUPPORT
+ 	hb_glyph_info_t *glyph_info = NULL;
+ #endif
+-	
++
+ #if HAVE_FREETYPE_2_CACHE
+ #if HAVE_FREETYPE_VERSION_AFTER_OR_EQUAL(2,3,9)
+ 	pf->scaler.face_id = pf->imagedesc.face_id;
+@@ -1647,7 +1649,7 @@ freetype2_gettextsize_rotated(PMWFREETYPE2FONT pf, const void *text, int cc,
+ 		if(pf->use_harfbuzz)
+ 			curchar = glyph_info[i].codepoint;
+ 		else
+-#endif 
++#endif
+ 		curchar = LOOKUP_CHAR(pf, face, str[i]);
+ 
+ 		if (use_kerning && last_glyph_code && curchar) {
+@@ -1750,7 +1752,7 @@ freetype2_gettextsize_fast(PMWFREETYPE2FONT pf, const void *text, int char_count
+ #if HAVE_HARFBUZZ_SUPPORT
+ 	hb_glyph_info_t *glyph_info = NULL;
+ #endif
+-	
++
+ #if HAVE_FREETYPE_2_CACHE
+ #if HAVE_FREETYPE_VERSION_AFTER_OR_EQUAL(2,3,9)
+ 	pf->scaler.face_id = pf->imagedesc.face_id;
+@@ -1808,7 +1810,7 @@ freetype2_gettextsize_fast(PMWFREETYPE2FONT pf, const void *text, int char_count
+ 		if(pf->use_harfbuzz)
+ 			cur_glyph_code = glyph_info[char_index].codepoint;
+ 		else
+-#endif	  
++#endif
+ 		cur_glyph_code = LOOKUP_CHAR(pf, face, str[char_index]);
+ 
+ 		if (use_kerning && last_glyph_code && cur_glyph_code) {
+diff --git a/src/fonts/em-fonts/rgb.txt b/src/fonts/em-fonts/rgb.txt
+index ef411f8..a7aaf20 120000
+--- a/src/fonts/em-fonts/rgb.txt
++++ b/src/fonts/em-fonts/rgb.txt
+@@ -1 +1 @@
+-../../nx11/fonts/rgb.txt
+\ No newline at end of file
++../../fonts/rgb.txt
+\ No newline at end of file
+
