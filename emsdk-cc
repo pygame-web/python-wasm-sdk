@@ -61,6 +61,14 @@ SHARED_TARGET = SHARED = ""
 
 MVP = env("MVP", true)
 
+if env("EMMAKEN_JUST_CONFIGURE", false):
+    CONFIGURE=True
+elif env("CONFIG_SITE", false):
+    CONFIGURE=True
+else:
+    CONFIGURE= env("CONFIGURE", false)
+
+
 if MVP:
     # turn of wasm ex (https://github.com/emscripten-core/emscripten/pull/20536)
     # -fno-wasm-exceptions -sEMSCRIPTEN_LONGJMP=0
@@ -93,6 +101,8 @@ else:
 WASM_EXTRA = env("WASM_EXTRA", "") + " " + env("WASM_OPTS", "")
 
 COPTS = env("COPTS", "-fPIC")
+
+
 MAIN_MODULE = LINKING = False
 EXE = ""
 MODE = ""
@@ -173,6 +183,7 @@ for argc, arg in enumerate(sys.argv):
 
 os.environ.pop("_EMCC_CCACHE", "")
 
+
 """
     if [ "\$arg" = "-lutil" ]
     then
@@ -201,27 +212,55 @@ os.environ.pop("_EMCC_CCACHE", "")
 """
 
 final = [EXEC]
+
+# a.out test misses fpic
+if CONFIGURE and len(out)==1:
+    SKIP = out[0] == 'conftest.c'
+    sys.argv.insert(0,"-fPIC")
+
+
 if SKIP:
     final.extend(sys.argv)
 else:
+    if EXE.endswith('.cjs'):
+        def make_exe(*argv,**kw):
+            global CONFIGURE
+            if os.path.isfile(EXE) and not CONFIGURE:
+                with open(EXE,'r') as file:
+                    bin = file.read()
+                with open(EXE,"w") as file:
+                    file.write("#!/usr/bin/env node\n")
+                    file.write(bin)
+                os.chmod(EXE, 0o766)
+
+        final.append('-sENVIRONMENT=node')
+        final.append('-sNODERAWFS')
+        final.append("-L/lib/wasm32-emscripten/pic")
+        __import__("atexit").register(make_exe)
+
+
     if IS_SHARED:
         final.extend(arglist(SHARED, COPTS))
         final.extend(CPU)
-        final.extend(arglist(WASM_EXTRA, env("LDFLAGS", ""), "-gsource-map --source-map-base /"))
+        #, "-gsource-map --source-map-base /"))
+        final.extend(arglist(WASM_EXTRA, env("LDFLAGS", "")))
 
     # do not pass WASM opts when -c/-o but always PIC
     elif MAIN_MODULE:
         final.extend(arglist(SHARED, COPTS))
         final.extend(CPU)
-        final.extend(arglist(env("CPU_EXTRA", ""), env("CPPFLAGS", ""), "-DBUILD_STATIC -gsource-map --source-map-base /"))
+        #  -gsource-map --source-map-base /
+        final.extend(arglist(env("CPU_EXTRA", ""), env("CPPFLAGS", ""), "-DBUILD_STATIC"))
     else:
         final.extend(arglist(SHARED, COPTS, env("CPU_EXTRA", ""), env("CPPFLAGS", ""), "-DBUILD_STATIC"))
     final.extend(out)
     final.extend(COMMON)
 
+
+
 if env("EMCC_TRACE", false):
-    dbg(
-    f"""
+    def dump():
+        dbg(f"""
 
  {COMMON=}
 
@@ -238,6 +277,10 @@ if env("EMCC_TRACE", false):
  {final=}
 
  """)
+    dump()
+    if os.path.isfile('conftest.c'):
+        __import__("shutil").copy("conftest.c", os.environ["SDKROOT"]+"/emcc.c")
+
 
 sys.path.insert(0, str(Path(EXEC).parent))
 sys.argv.clear()
@@ -245,4 +288,7 @@ while len(final):
     arg = final.pop(0)
     #arg = arg.replace('"', '\\"')
     sys.argv.append(arg)
+
 exec(open(EXEC, "r").read(), globals(), globals())
+
+
