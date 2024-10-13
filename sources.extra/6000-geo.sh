@@ -49,7 +49,7 @@ else
 
     mkdir -p $ROOT/build/libgeos
     pushd $ROOT/build/libgeos
-    emcmake cmake -DCMAKE_INSTALL_PREFIX:PATH=$PREFIX ${ROOT}/src/libgeos
+    emcmake cmake -DCMAKE_POSITION_INDEPENDENT_CODE=True -DCMAKE_INSTALL_PREFIX:PATH=$PREFIX ${ROOT}/src/libgeos
     emmake make -j $(nproc) install
     popd
 fi

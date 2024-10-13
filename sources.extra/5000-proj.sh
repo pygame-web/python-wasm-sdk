@@ -30,8 +30,9 @@ else
     mkdir -p $ROOT/build/libproj
 
     pushd $ROOT/build/libproj
-        EMCC_CFLAGS="-sDISABLE_EXCEPTION_CATCHING=1" emcmake cmake ../../src/libproj \
-         -DCMAKE_INSTALL_PREFIX=$PREFIX -DENABLE_TIFF=NO -DENABLE_CURL=NO -DUSE_EXTERNAL_GTEST=NO -DBUILD_PROJSYNC=no
+        EMCC_CFLAGS="-sDISABLE_EXCEPTION_CATCHING=1" emcmake cmake  -DCMAKE_POSITION_INDEPENDENT_CODE=True \
+         -DCMAKE_INSTALL_PREFIX=$PREFIX -DENABLE_TIFF=NO -DENABLE_CURL=NO -DUSE_EXTERNAL_GTEST=NO -DBUILD_PROJSYNC=no \
+         ../../src/libproj
         EMCC_CFLAGS="-sDISABLE_EXCEPTION_CATCHING=1" emmake make -j $(nproc) install
     popd
 

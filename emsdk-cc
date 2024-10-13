@@ -62,11 +62,11 @@ SHARED_TARGET = SHARED = ""
 MVP = env("MVP", true)
 
 if env("EMMAKEN_JUST_CONFIGURE", false):
-    CONFIGURE=True
+    CONFIGURE = True
 elif env("CONFIG_SITE", false):
-    CONFIGURE=True
+    CONFIGURE = True
 else:
-    CONFIGURE= env("CONFIGURE", false)
+    CONFIGURE = env("CONFIGURE", false)
 
 
 if MVP:
@@ -82,6 +82,9 @@ if MVP:
     # WASMOPTS="-fno-wasm-exceptions -sSUPPORT_LONGJMP=emscripten"
     # CPU="-mnontrapping-fptoint -mno-reference-types -mno-sign-ext -m32"
 
+    # bulk and main/side
+    # https://github.com/emscripten-core/emscripten/issues/22161
+
     CPU = arglist(
         """
         -D_FILE_OFFSET_BITS=64
@@ -91,6 +94,15 @@ if MVP:
         -mno-reference-types
         -mno-sign-ext
         -m32
+        -mno-extended-const
+        -mno-atomics
+        -mno-tail-call
+        -mno-fp16
+        -mno-multivalue
+        -mno-relaxed-simd
+        -mno-simd128
+        -mno-multimemory
+        -mno-exception-handling
         """
     )
 else:
@@ -100,7 +112,7 @@ else:
 # try to keep 32 but maybe with 64 iface (bigint)
 WASM_EXTRA = env("WASM_EXTRA", "") + " " + env("WASM_OPTS", "")
 
-COPTS = env("COPTS", "-fPIC")
+COPTS = env("COPTS", "-O0 -g3")
 
 
 MAIN_MODULE = LINKING = False
@@ -116,12 +128,11 @@ for argc, arg in enumerate(sys.argv):
         SKIP = True
         break
 
-    if arg.startswith('CMakeFiles/'):
+    if arg.startswith("CMakeFiles/"):
         SKIP = True
         break
 
-
-    if arg.find("MAIN_MODULE"):
+    if arg.find("MAIN_MODULE") > 0 or EXE.endswith(".cjs") or EXE.endswith(".js"):
         MAIN_MODULE = True
 
     if arg.lower() in ("-fpic", "-latomic"):
@@ -130,7 +141,13 @@ for argc, arg in enumerate(sys.argv):
     if arg in ("-Wl,--as-needed", "-Wl,--eh-frame-hdr", "-Wl,-znoexecstack", "-Wl,-znow", "-Wl,-zrelro", "-Wl,-zrelro,-znow"):
         continue
 
-    if arg in ("-O3", "-g", "-lgcc", "-lgcc_s", "-fallow-argument-mismatch"):
+    if arg in ("-O1", "-O2", "-O3"):
+        continue
+
+    if arg in ("-g", "-g2", "-g3", "-g4"):
+        continue
+
+    if arg in ("-lgcc", "-lgcc_s", "-fallow-argument-mismatch"):
         continue
 
     if arg == "-pthread":
@@ -138,35 +155,35 @@ for argc, arg in enumerate(sys.argv):
             continue
 
     if arg in ("-o", "-c"):
-        CPU_EXTRA = WASM_EXTRA
         MODE = arg
         MODE_POS = argc
         if arg == "-c":
             COMPILE = True
-        # TODO maybe add node runner and compile to .cjs
+        # TODO maybe add node runner for a .cjs
         elif arg == "-o":
-            EXE_POS = argc + 1
-            EXE = sys.argv[EXE_POS]
+            if IS_SHARED:
+                EXE_POS = argc + 1
+                SHARED_TARGET = sys.argv[EXE_POS]
+            else:
+                EXE_POS = argc + 1
+                EXE = sys.argv[EXE_POS]
 
-    elif arg.endswith(".so") or arg == "-shared":
+    elif arg.endswith(".so") or arg == "-shared" or arg.find("SIDE_MODULE") > 0:
         LINKING = True
+        IS_SHARED = True
         if arg == "-shared":
-            IS_SHARED = True
-        elif arg.find("wasm32-emscripten.so") > 0 or arg.find("abi3.so") > 0:
-            IS_SHARED = True
-            PY_MODULE = true
+            pass
+        elif arg.endswith(".so"):
+            if arg.find("wasm32-emscripten.so") > 0 or arg.find("abi3.so") > 0:
+                PY_MODULE = true
             SHARED_TARGET = arg
-
-        if IS_SHARED:
             out.append(arg)
-            SHARED = "-sSIDE_MODULE"
-            if not SHARED in out:
-                out.insert(0, SHARED)
-                out.append(f"-L{os.environ['PREFIX']}/lib")
-            continue
+
+        SHARED = f"-shared -sSIDE_MODULE=1 -L{os.environ['PREFIX']}/lib"
+        continue
 
     # prevent duplicates objects/archives files on cmdline when linking
-    if LINKING or MODE=="-o":
+    if LINKING or MODE == "-o":
         if arg.endswith(".a") or arg.endswith(".o") or arg.startswith("-l"):
             if arg in out:
                 continue
@@ -185,12 +202,6 @@ os.environ.pop("_EMCC_CCACHE", "")
 
 
 """
-    if [ "\$arg" = "-lutil" ]
-    then
-        continue
-    fi
-
-
     if [ "\$arg" = "-nomvp" ]
     then
         MVP=false
@@ -214,53 +225,56 @@ os.environ.pop("_EMCC_CCACHE", "")
 final = [EXEC]
 
 # a.out test misses fpic
-if CONFIGURE and len(out)==1:
-    SKIP = out[0] == 'conftest.c'
-    sys.argv.insert(0,"-fPIC")
+if CONFIGURE and len(out) == 1:
+    SKIP = out[0] == "conftest.c"
+    sys.argv.insert(0, "-fPIC")
+    sys.argv.extend(CPU)
 
 
 if SKIP:
     final.extend(sys.argv)
 else:
-    if EXE.endswith('.cjs'):
-        def make_exe(*argv,**kw):
+    if EXE.endswith(".cjs") or EXE.endswith(".js"):
+
+        def make_exe(*argv, **kw):
             global CONFIGURE
             if os.path.isfile(EXE) and not CONFIGURE:
-                with open(EXE,'r') as file:
+                with open(EXE, "r") as file:
                     bin = file.read()
-                with open(EXE,"w") as file:
+                with open(EXE, "w") as file:
                     file.write("#!/usr/bin/env node\n")
                     file.write(bin)
                 os.chmod(EXE, 0o766)
 
-        final.append('-sENVIRONMENT=node')
-        final.append('-sNODERAWFS')
-        final.append("-L/lib/wasm32-emscripten/pic")
+        final.append("-sENVIRONMENT=node")
+        final.append("-sNODERAWFS")
         __import__("atexit").register(make_exe)
 
+    # do not pass WASM opts when -c/-o but always PIC and opt level
+    final.extend(arglist("-fPIC", SHARED, COPTS))
 
-    if IS_SHARED:
-        final.extend(arglist(SHARED, COPTS))
-        final.extend(CPU)
-        #, "-gsource-map --source-map-base /"))
+    # prevent use of extended instr
+    final.extend(CPU)
+
+    if IS_SHARED or LINKING:
+        # , "-gsource-map --source-map-base /"))
         final.extend(arglist(WASM_EXTRA, env("LDFLAGS", "")))
-
-    # do not pass WASM opts when -c/-o but always PIC
-    elif MAIN_MODULE:
-        final.extend(arglist(SHARED, COPTS))
-        final.extend(CPU)
-        #  -gsource-map --source-map-base /
-        final.extend(arglist(env("CPU_EXTRA", ""), env("CPPFLAGS", ""), "-DBUILD_STATIC"))
     else:
-        final.extend(arglist(SHARED, COPTS, env("CPU_EXTRA", ""), env("CPPFLAGS", ""), "-DBUILD_STATIC"))
+        if MAIN_MODULE:
+            # TODO: module level
+            #  -gsource-map --source-map-base /
+            pass
+        final.extend(arglist(WASM_EXTRA, "-DBUILD_STATIC"))
+
     final.extend(out)
     final.extend(COMMON)
 
 
-
 if env("EMCC_TRACE", false):
+
     def dump():
-        dbg(f"""
+        dbg(
+            f"""
 
  {COMMON=}
 
@@ -276,19 +290,20 @@ if env("EMCC_TRACE", false):
 
  {final=}
 
- """)
+ """
+        )
+
     dump()
-    if os.path.isfile('conftest.c'):
-        __import__("shutil").copy("conftest.c", os.environ["SDKROOT"]+"/emcc.c")
+    if os.path.isfile("conftest.c"):
+        __import__("shutil").copy("conftest.c", os.environ["SDKROOT"] + "/emcc.c")
 
 
 sys.path.insert(0, str(Path(EXEC).parent))
 sys.argv.clear()
 while len(final):
     arg = final.pop(0)
-    #arg = arg.replace('"', '\\"')
+    # add debug filters here.
+
     sys.argv.append(arg)
 
 exec(open(EXEC, "r").read(), globals(), globals())
-
-

@@ -159,7 +159,7 @@ else
 
     cat >> $ROOT/src/cpython${PYBUILD}/Tools/wasm/config.site-wasm32-pydk << END
 
-
+ac_cv_exeext=.cjs
 have_libffi=yes
 ac_cv_func_dlopen=yes
 ac_cv_lib_ffi_ffi_call=yes
