@@ -10,6 +10,10 @@ def dbg(*argv, **kw):
     return print(*argv, **kw)
 
 
+SDKROOT = Path(os.environ.get("SDKROOT","/opt/python-wasm-sdk"))
+EMSDK = Path(os.environ.get("EMSDK","/opt/python-wasm-sdk/emsdk"))
+PREFIX = Path(os.environ.get("PREFIX","/opt/python-wasm-sdk/devices/emsdk/usr"))
+
 sys.argv.pop(0)
 
 EXEC = sys.argv.pop(0)
@@ -174,7 +178,6 @@ for argc, arg in enumerate(sys.argv):
                 EXE = sys.argv[EXE_POS]
 
     elif arg.endswith(".so") or arg == "-shared" or arg.find("SIDE_MODULE") > 0:
-        LINKING = True
         IS_SHARED = True
         if arg == "-shared":
             pass
@@ -186,6 +189,9 @@ for argc, arg in enumerate(sys.argv):
 
         SHARED = f"-shared -sSIDE_MODULE=1 -L{os.environ['PREFIX']}/lib"
         continue
+
+    if arg.startswith("-l"):
+         LINKING = True
 
     # prevent duplicates objects/archives files on cmdline when linking
     if LINKING or MODE == "-o":
@@ -264,8 +270,10 @@ else:
 
     if IS_SHARED or LINKING:
         # , "-gsource-map --source-map-base /"))
+        final.append(f"-L{PREFIX}/lib")
         final.extend(arglist(WASM_EXTRA, env("LDFLAGS", "")))
     else:
+        final.append(f"-I{PREFIX}/include")
         if MAIN_MODULE:
             # TODO: module level
             #  -gsource-map --source-map-base /
@@ -276,12 +284,15 @@ else:
     final.extend(COMMON)
 
 
-if env("EMCC_TRACE", false):
 
+sys.path.insert(0, str(Path(EXEC).parent))
+sys.argv.clear()
+
+EMCC_TRACE = env("EMCC_TRACE", false)
+if EMCC_TRACE:
+    DEBUG_PATTERN = env("DEBUG_PATTERN", "main")
     def dump():
-        dbg(
-            f"""
-
+        dbg(f"""
  {COMMON=}
 
  {CPU=}
@@ -296,20 +307,25 @@ if env("EMCC_TRACE", false):
 
  {final=}
 
+ {' '.join(sys.argv)}
  """
-        )
+    )
 
-    dump()
+    while len(final):
+        arg = final.pop(0)
+        # add debug filters here.
+
+        sys.argv.append(arg)
+
+
     if os.path.isfile("conftest.c"):
-        __import__("shutil").copy("conftest.c", os.environ["SDKROOT"] + "/emcc.c")
+        __import__("shutil").copy("conftest.c", SDKROOT / "emcc.c")
+        if DEBUG_PATTERN not in (False,True):
+            with open("conftest.c","r") as file:
+                if file.read().find(DEBUG_PATTERN)>0:
+                    dump()
 
-
-sys.path.insert(0, str(Path(EXEC).parent))
-sys.argv.clear()
-while len(final):
-    arg = final.pop(0)
-    # add debug filters here.
-
-    sys.argv.append(arg)
+else:
+    sys.argv.extend(final)
 
 exec(open(EXEC, "r").read(), globals(), globals())
