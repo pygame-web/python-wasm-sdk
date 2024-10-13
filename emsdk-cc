@@ -122,6 +122,8 @@ MODE = ""
 SKIP = False
 COMPILE = False
 
+USE_RAWFS = True
+
 out = []
 for argc, arg in enumerate(sys.argv):
     if arg in ("-v", "--version"):
@@ -131,6 +133,9 @@ for argc, arg in enumerate(sys.argv):
     if arg.startswith("CMakeFiles/"):
         SKIP = True
         break
+
+    if arg.startswith('--preload-file') or arg.startswith('--embed-file'):
+        USE_RAWFS = False
 
     if arg.find("MAIN_MODULE") > 0 or EXE.endswith(".cjs") or EXE.endswith(".js"):
         MAIN_MODULE = True
@@ -247,7 +252,8 @@ else:
                 os.chmod(EXE, 0o766)
 
         final.append("-sENVIRONMENT=node")
-        final.append("-sNODERAWFS")
+        if USE_RAWFS:
+            final.append("-sNODERAWFS")
         __import__("atexit").register(make_exe)
 
     # do not pass WASM opts when -c/-o but always PIC and opt level

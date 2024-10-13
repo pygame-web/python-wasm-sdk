@@ -225,6 +225,14 @@ END
                 echo " --------- adding some usefull pkg ${PYBUILD} ${CIVER} ---------" 1>&2
                 ./scripts/cpython-build-emsdk-prebuilt.sh || exit 223
 
+
+                # experimental stuff
+                chmod +x sources.plus/*.sh
+                for extra in sources.plus/*.sh
+                do
+                    ./$extra
+                done
+
                 echo "
 
                 ==========================================================
