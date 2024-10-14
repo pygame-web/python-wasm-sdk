@@ -141,8 +141,13 @@ for argc, arg in enumerate(sys.argv):
     if arg.startswith('--preload-file') or arg.startswith('--embed-file'):
         USE_RAWFS = False
 
-    if arg.find("MAIN_MODULE") > 0 or EXE.endswith(".cjs") or EXE.endswith(".js"):
+    if arg.find("MAIN_MODULE") > 0:
         MAIN_MODULE = True
+    elif EXE.endswith(".cjs") or EXE.endswith(".js") or EXE.endswith(".html"):
+        MAIN_MODULE = True
+
+    if arg == "-sENVIRONMENT=web":
+        EXE = False
 
     if arg.lower() in ("-fpic", "-latomic"):
         continue
@@ -170,11 +175,10 @@ for argc, arg in enumerate(sys.argv):
             COMPILE = True
         # TODO maybe add node runner for a .cjs
         elif arg == "-o":
+            EXE_POS = argc + 1
             if IS_SHARED:
-                EXE_POS = argc + 1
                 SHARED_TARGET = sys.argv[EXE_POS]
-            else:
-                EXE_POS = argc + 1
+            elif EXE=="":
                 EXE = sys.argv[EXE_POS]
 
     elif arg.endswith(".so") or arg == "-shared" or arg.find("SIDE_MODULE") > 0:
@@ -247,10 +251,12 @@ if SKIP:
 else:
     # should not happen
     if EXE:
-        if EXE.endswith('.o') and '-c' not in out:
+        if EXE.endswith('.o')  and '-c' not in out:
             final.append('-c')
             EXE = False
             MAIN_MODULE = False
+        elif EXE.endswith('.html'):
+            EXE = False
 
     if EXE:
         if EXE.endswith(".cjs") or EXE.endswith(".js"):
