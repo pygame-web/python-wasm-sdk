@@ -245,21 +245,41 @@ if CONFIGURE and len(out) == 1:
 if SKIP:
     final.extend(sys.argv)
 else:
-    if EXE.endswith(".cjs") or EXE.endswith(".js"):
+    # should not happen
+    if EXE:
+        if EXE.endswith('.o') and '-c' not in out:
+            final.append('-c')
+            EXE = False
+            MAIN_MODULE = False
 
-        def make_exe(*argv, **kw):
-            global CONFIGURE
-            if os.path.isfile(EXE) and not CONFIGURE:
-                with open(EXE, "r") as file:
-                    bin = file.read()
-                with open(EXE, "w") as file:
-                    file.write("#!/usr/bin/env node\n")
-                    file.write(bin)
-                os.chmod(EXE, 0o766)
+    if EXE:
+        if EXE.endswith(".cjs") or EXE.endswith(".js"):
+            def make_exe(*argv, **kw):
+                global CONFIGURE
+                if os.path.isfile(EXE) and not CONFIGURE:
+                    with open(EXE, "r") as file:
+                        bin = file.read()
+                    with open(EXE, "w") as file:
+                        file.write("#!/usr/bin/env node\n")
+                        file.write(bin)
+                    os.chmod(EXE, 0o766)
+        # the build system is old and exe has no suffix from cmake or configure
+        else:
+            def make_exe(*argv, **kw):
+                global CONFIGURE
+                if os.path.isfile(EXE) and os.path.isfile(EXE+'.wasm') and not CONFIGURE:
+                    os.rename(EXE, EXE+".cjs")
+                    with open(EXE, "w") as file:
+                        file.write("#!/usr/bin/env bash\n")
+                        file.write('node $0.cjs "$@"\n')
+                    os.chmod(EXE, 0o766)
 
         final.append("-sENVIRONMENT=node")
+        final.append("-sEXIT_RUNTIME")
         if USE_RAWFS:
+            #final.append("-sASYNCIFY")
             final.append("-sNODERAWFS")
+
         __import__("atexit").register(make_exe)
 
     # do not pass WASM opts when -c/-o but always PIC and opt level
