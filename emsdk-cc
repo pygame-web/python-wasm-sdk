@@ -127,6 +127,7 @@ SKIP = False
 COMPILE = False
 
 USE_RAWFS = True
+CMAKE = False
 
 out = []
 for argc, arg in enumerate(sys.argv):
@@ -135,8 +136,9 @@ for argc, arg in enumerate(sys.argv):
         break
 
     if arg.startswith("CMakeFiles/"):
-        SKIP = True
-        break
+#        SKIP = True
+#        break
+        CMAKE = True
 
     if arg.startswith('--preload-file') or arg.startswith('--embed-file'):
         USE_RAWFS = False
@@ -198,7 +200,7 @@ for argc, arg in enumerate(sys.argv):
          LINKING = True
 
     # prevent duplicates objects/archives files on cmdline when linking
-    if LINKING or MODE == "-o":
+    if not CMAKE and (LINKING or MODE == "-o"):
         if arg.endswith(".a") or arg.endswith(".o") or arg.startswith("-l"):
             if arg in out:
                 continue
