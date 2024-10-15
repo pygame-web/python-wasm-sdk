@@ -9,9 +9,9 @@ then
     echo ok
 else
     pushd ${ROOT}/src
-        wget -c https://github.com/OSGeo/gdal/releases/download/v3.9.1/gdal-3.9.1.tar.gz
-        tar xfz gdal-3.9.1.tar.gz
-        mv gdal-3.9.1 libgdal
+        wget -c https://github.com/OSGeo/gdal/releases/download/v3.9.3/gdal-3.9.3.tar.gz
+        tar xfz gdal-3.9.3.tar.gz
+        mv gdal-3.9.3 libgdal
         pushd libgdal
             if $DO_PATCH
             then

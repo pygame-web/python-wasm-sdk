@@ -281,7 +281,11 @@ else:
                     os.chmod(EXE, 0o766)
 
         final.append("-sENVIRONMENT=node")
-        final.append("-sEXIT_RUNTIME")
+
+        # error: explicitly setting EXIT_RUNTIME not compatible with STANDALONE_WASM.
+        #  EXIT_RUNTIME will always be True for programs (with a main function) and False for reactors (not main function).
+        #final.append("-sEXIT_RUNTIME")
+
         if USE_RAWFS:
             #final.append("-sASYNCIFY")
             final.append("-sNODERAWFS")

@@ -202,7 +202,8 @@ END
  --exclude=${SDKROOT}/devices/*/usr/lib/python3.1? \
  --exclude=${SDKROOT}/devices/*/usr/include/python3.1? \
  --exclude=${SDKROOT}/config \
- --exclude=${SDKROOT}/*sh \
+ --exclude=${SDKROOT}/python-was?-sdk.sh \
+ --exclude=${SDKROOT}/python3-was? \
  --exclude=${SDKROOT}/scripts/* \
  --exclude=${SDKROOT}/sources.* \
  --exclude=${SDKROOT}/build \
