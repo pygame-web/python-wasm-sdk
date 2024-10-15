@@ -197,7 +197,7 @@ END
                     if $CI
                     then
                         pushd /
-                        tar -cpR $SDKROOT \
+                        tar  \
  --exclude=${SDKROOT}/devices/*/usr/bin/*3.1* \
  --exclude=${SDKROOT}/devices/*/usr/lib/python3.1? \
  --exclude=${SDKROOT}/devices/*/usr/include/python3.1? \
@@ -207,7 +207,7 @@ END
  --exclude=${SDKROOT}/sources.* \
  --exclude=${SDKROOT}/build \
  --exclude=${SDKROOT}/src \
-  > /tmp/sdk/emsdk.tar
+ -cpR $SDKROOT > /tmp/sdk/emsdk.tar
 
                         date "+%d-%m-%4Y" > /tmp/sdk/emsdk.version
                         popd
@@ -240,9 +240,6 @@ END
                 ==========================================================        " 1>&2
 
                 rm -rf ${SDKROOT}/emsdk/upstream/emscripten/cache/ports*
-                rm -rf ${SDKROOT}/emsdk/upstream/emscripten/cache/ports/sdl2/SDL-*
-                rm -rf ${SDKROOT}/emsdk/upstream/emscripten/cache/ports
-                rm -rf ${SDKROOT}/emsdk/upstream/emscripten/cache/ports-builds
                 rm -rf ${SDKROOT}/emsdk/upstream/emscripten/tests
 
             else
@@ -296,7 +293,10 @@ END
 
         # pack extra build scripts
         pushd /
-            tar -cpPRz ${SDKROOT}/scripts/emsdk-extra.sh ${SDKROOT}/sources.extra/* > /tmp/sdk/sdk-extra.tar.gz
+            tar -cpPRz \
+             ${SDKROOT}/scripts/emsdk-extra.sh \
+             ${SDKROOT}/scripts/emsdk-fetch.sh \
+             ${SDKROOT}/sources.extra/* > /tmp/sdk/sdk-extra.tar.gz
 
             # pack sdl as minimal prebuilt tar, and use lz4 compression on it
             . ${SDKROOT}/scripts/pack-sdk.sh

@@ -2,8 +2,9 @@
 
 if [[ -z ${EMSDK+z} ]]
 then
-
-    . ${CONFIG:-config}
+    pushd ${SDKROOT}
+        . ${CONFIG:-config}
+    popd
 
     if [ -d emsdk ]
     then
@@ -21,7 +22,6 @@ then
                 #git checkout 91f8563a9d1a4a0ec03bbb2be23485367d85a091
                 ./emsdk install ${EMFLAVOUR:-latest}
                 ./emsdk activate ${EMFLAVOUR:-latest}
-
 
                 pushd upstream/emscripten
                     echo "FIXME: applying stdio* are not const"
@@ -172,7 +172,7 @@ END
 
     export EMSDK_PYTHON=$SYS_PYTHON
 
-    if [ -f emsdk/.complete ]
+    if [ -f $EMSDK/.complete ]
     then
         echo "
         * emsdk prereq ok

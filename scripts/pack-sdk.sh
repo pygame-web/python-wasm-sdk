@@ -11,7 +11,7 @@ pushd /
 mkdir -p /tmp/sdk
 tar -cpPR \
     ${SDKROOT}/config \
-    ${SDKROOT}/*-cc \
+    ${SDKROOT}/emsdk-cc \
     ${SDKROOT}/python3-was? \
     ${SDKROOT}/wasm32-*-shell.sh \
     ${SDKROOT}/*sdk \
