@@ -366,8 +366,10 @@ then
     # emsdk_env already parsed
     echo -n
 else
-    . ${SDKROOT}/config
-    . ${SDKROOT}/emsdk/emsdk_env.sh
+    pushd ${SDKROOT}
+    . config
+    . emsdk/emsdk_env.sh
+    popd
     export PATH=$SDKROOT/emsdk/upstream/emscripten:$SDKROOT/emsdk/upstream/emscripten/system/bin:\$PATH
     export PKG_CONFIG_SYSROOT_DIR="${SDKROOT}/devices/emsdk"
     export PKG_CONFIG_LIBDIR="${SDKROOT}/emsdk/upstream/emscripten/system/lib/pkgconfig"

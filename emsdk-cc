@@ -10,9 +10,9 @@ def dbg(*argv, **kw):
     return print(*argv, **kw)
 
 
-SDKROOT = Path(os.environ.get("SDKROOT","/opt/python-wasm-sdk"))
-EMSDK = Path(os.environ.get("EMSDK","/opt/python-wasm-sdk/emsdk"))
-PREFIX = Path(os.environ.get("PREFIX","/opt/python-wasm-sdk/devices/emsdk/usr"))
+SDKROOT = Path(os.environ.get("SDKROOT", "/opt/python-wasm-sdk"))
+EMSDK = Path(os.environ.get("EMSDK", "/opt/python-wasm-sdk/emsdk"))
+PREFIX = Path(os.environ.get("PREFIX", "/opt/python-wasm-sdk/devices/emsdk/usr"))
 
 sys.argv.pop(0)
 
@@ -120,8 +120,12 @@ COPTS = env("COPTS", "-O0 -g3")
 
 
 MAIN_MODULE = LINKING = False
-EXE = ""
+
+EXE = False
+HTML = False
+
 MODE = ""
+AOUT = ""
 
 SKIP = False
 COMPILE = False
@@ -136,20 +140,17 @@ for argc, arg in enumerate(sys.argv):
         break
 
     if arg.startswith("CMakeFiles/"):
-#        SKIP = True
-#        break
         CMAKE = True
 
-    if arg.startswith('--preload-file') or arg.startswith('--embed-file'):
+    if arg.startswith("--preload-file") or arg.startswith("--embed-file"):
         USE_RAWFS = False
 
     if arg.find("MAIN_MODULE") > 0:
         MAIN_MODULE = True
-    elif EXE.endswith(".cjs") or EXE.endswith(".js") or EXE.endswith(".html"):
-        MAIN_MODULE = True
 
     if arg == "-sENVIRONMENT=web":
         EXE = False
+        HTML = True
 
     if arg.lower() in ("-fpic", "-latomic"):
         continue
@@ -177,11 +178,11 @@ for argc, arg in enumerate(sys.argv):
             COMPILE = True
         # TODO maybe add node runner for a .cjs
         elif arg == "-o":
-            EXE_POS = argc + 1
+            out_pos = argc + 1
             if IS_SHARED:
-                SHARED_TARGET = sys.argv[EXE_POS]
-            elif EXE=="":
-                EXE = sys.argv[EXE_POS]
+                SHARED_TARGET = sys.argv[out_pos]
+            elif not AOUT:
+                AOUT = sys.argv[out_pos]
 
     elif arg.endswith(".so") or arg == "-shared" or arg.find("SIDE_MODULE") > 0:
         IS_SHARED = True
@@ -197,15 +198,18 @@ for argc, arg in enumerate(sys.argv):
         continue
 
     if arg.startswith("-l"):
-         LINKING = True
+        LINKING = True
 
-    # prevent duplicates objects/archives files on cmdline when linking
-    if not CMAKE and (LINKING or MODE == "-o"):
-        if arg.endswith(".a") or arg.endswith(".o") or arg.startswith("-l"):
-            if arg in out:
-                continue
+    # duplicates can happen on cmake but they are expected to be handled correctly so skip
+    if not CMAKE:
+        # prevent duplicates objects/archives files on cmdline when linking
+        if LINKING or MODE == "-o":
+            if arg.endswith(".a") or arg.endswith(".o") or arg.startswith("-l"):
+                if arg in out:
+                    continue
 
-    # that is for some very bad setup.py behaviour regarding cross compiling.
+    # FAILSAFE
+    # that is for some very bad known setup.py behaviour regarding cross compiling and some old codebases.
     # should not be needed ..
     if arg.startswith("-I/usr/"):
         continue
@@ -251,48 +255,76 @@ if CONFIGURE and len(out) == 1:
 if SKIP:
     final.extend(sys.argv)
 else:
-    # should not happen
-    if EXE:
-        if EXE.endswith('.o')  and '-c' not in out:
-            final.append('-c')
+    if AOUT:
+        # should not happen
+        if AOUT.endswith(".o") and "-c" not in out:
+            final.append("-c")
             EXE = False
             MAIN_MODULE = False
-        elif EXE.endswith('.html'):
+        elif AOUT.endswith(".html"):
+            MAIN_MODULE = True
             EXE = False
+            HTML = True
 
+        # emscripten aware build
+        elif AOUT.endswith(".cjs") or AOUT.endswith(".js"):
+            MAIN_MODULE = True
+            EXE = True
+        # a.out, could be a standalone from config/cmake
+        elif not CONFIGURE and not CMAKE and "-c" not in out:
+            EXE = True
+        else:
+            EXE = False
     if EXE:
-        if EXE.endswith(".cjs") or EXE.endswith(".js"):
+        if AOUT.endswith(".cjs") or AOUT.endswith(".js"):
+
             def make_exe(*argv, **kw):
-                global CONFIGURE
-                if os.path.isfile(EXE) and not CONFIGURE:
-                    with open(EXE, "r") as file:
-                        bin = file.read()
-                    with open(EXE, "w") as file:
-                        file.write("#!/usr/bin/env node\n")
-                        file.write(bin)
-                    os.chmod(EXE, 0o766)
+                global AOUT, CONFIGURE
+                if os.path.isfile(AOUT) and not CONFIGURE:
+                    try:
+                        with open(AOUT, "r") as file:
+                            bin = file.read()
+                        with open(AOUT, "w") as file:
+                            file.write("#!/usr/bin/env node\n")
+                            file.write(bin)
+                        os.chmod(AOUT, 0o766)
+                    except Exception as e:
+                        dbg("ERROR: 292", e)
+
         # the build system is old and exe has no suffix from cmake or configure
         else:
+
             def make_exe(*argv, **kw):
-                global CONFIGURE
-                if os.path.isfile(EXE) and os.path.isfile(EXE+'.wasm') and not CONFIGURE:
-                    os.rename(EXE, EXE+".cjs")
-                    with open(EXE, "w") as file:
-                        file.write("#!/usr/bin/env bash\n")
-                        file.write('node $0.cjs "$@"\n')
-                    os.chmod(EXE, 0o766)
+                global AOUT, CONFIGURE
+                if os.path.isfile(AOUT) and os.path.isfile(AOUT + ".wasm") and not CONFIGURE:
+                    os.rename(AOUT, AOUT + ".cjs")
+                    try:
+                        with open(AOUT, "w") as file:
+                            file.write("#!/usr/bin/env bash\n")
+                            file.write('node $0.cjs "$@"\n')
+                    except Exception as e:
+                        dbg("ERROR: 306", e)
+                        os.rename(AOUT + ".cjs", AOUT)
+                        return
+                    try:
+                        os.chmod(AOUT, 0o766)
+                    except Exception as e:
+                        dbg("ERROR: 312", e)
 
         final.append("-sENVIRONMENT=node")
 
         # error: explicitly setting EXIT_RUNTIME not compatible with STANDALONE_WASM.
         #  EXIT_RUNTIME will always be True for programs (with a main function) and False for reactors (not main function).
-        #final.append("-sEXIT_RUNTIME")
+        # final.append("-sEXIT_RUNTIME")
 
         if USE_RAWFS:
-            #final.append("-sASYNCIFY")
+            # final.append("-sASYNCIFY")
             final.append("-sNODERAWFS")
 
         __import__("atexit").register(make_exe)
+    elif HTML:
+        if "-sENVIRONMENT=web" not in out:
+            final.append("-sENVIRONMENT=web")
 
     # do not pass WASM opts when -c/-o but always PIC and opt level
     final.extend(arglist("-fPIC", SHARED, COPTS))
@@ -316,15 +348,16 @@ else:
     final.extend(COMMON)
 
 
-
 sys.path.insert(0, str(Path(EXEC).parent))
 sys.argv.clear()
 
 EMCC_TRACE = env("EMCC_TRACE", false)
 if EMCC_TRACE:
     DEBUG_PATTERN = env("DEBUG_PATTERN", "main")
+
     def dump():
-        dbg(f"""
+        dbg(
+            f"""
  {COMMON=}
 
  {CPU=}
@@ -341,7 +374,7 @@ if EMCC_TRACE:
 
  {' '.join(sys.argv)}
  """
-    )
+        )
 
     while len(final):
         arg = final.pop(0)
@@ -349,12 +382,12 @@ if EMCC_TRACE:
 
         sys.argv.append(arg)
 
-
+    # for debugging configure, cmake has its own very detailed log.
     if os.path.isfile("conftest.c"):
         __import__("shutil").copy("conftest.c", SDKROOT / "emcc.c")
-        if DEBUG_PATTERN not in (False,True):
-            with open("conftest.c","r") as file:
-                if file.read().find(DEBUG_PATTERN)>0:
+        if DEBUG_PATTERN not in (False, True):
+            with open("conftest.c", "r") as file:
+                if file.read().find(DEBUG_PATTERN) > 0:
                     dump()
 
 else:
