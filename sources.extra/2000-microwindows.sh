@@ -26,7 +26,7 @@ else
 fi
 
 
-if [ -f $PREFIX/lib/libX11.a ]
+if [ -f $PREFIX/lib/libNX11.a ]
 then
     echo "
         already built in $PREFIX/lib/libX11.a

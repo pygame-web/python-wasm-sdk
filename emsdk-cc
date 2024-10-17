@@ -139,7 +139,7 @@ for argc, arg in enumerate(sys.argv):
         SKIP = True
         break
 
-    if arg.startswith("CMakeFiles/"):
+    if arg.startswith("CMakeFiles/") or arg.startswith("@CMakeFiles/"):
         CMAKE = True
 
     if arg.startswith("--preload-file") or arg.startswith("--embed-file"):
@@ -151,6 +151,10 @@ for argc, arg in enumerate(sys.argv):
     if arg == "-sENVIRONMENT=web":
         EXE = False
         HTML = True
+
+    # only html may not exit runtime.
+    if not HTML and arg.find("EXIT_RUNTIME") > 0:
+        continue
 
     if arg.lower() in ("-fpic", "-latomic"):
         continue
@@ -256,8 +260,10 @@ if SKIP:
     final.extend(sys.argv)
 else:
     if AOUT:
+        if CMAKE or CONFIGURE:
+            EXE = False
         # should not happen
-        if AOUT.endswith(".o") and "-c" not in out:
+        elif AOUT.endswith(".o") and "-c" not in out:
             final.append("-c")
             EXE = False
             MAIN_MODULE = False
@@ -265,16 +271,16 @@ else:
             MAIN_MODULE = True
             EXE = False
             HTML = True
-
         # emscripten aware build
         elif AOUT.endswith(".cjs") or AOUT.endswith(".js"):
             MAIN_MODULE = True
             EXE = True
-        # a.out, could be a standalone from config/cmake
-        elif not CONFIGURE and not CMAKE and "-c" not in out:
+        # a.out case
+        elif "-c" not in out:
             EXE = True
         else:
             EXE = False
+
     if EXE:
         if AOUT.endswith(".cjs") or AOUT.endswith(".js"):
 
