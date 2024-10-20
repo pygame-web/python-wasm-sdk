@@ -281,7 +281,7 @@ else:
         else:
             EXE = False
 
-    if EXE:
+    if EXE and not (HTML or USE_RAWFS):
         if AOUT.endswith(".cjs") or AOUT.endswith(".js"):
 
             def make_exe(*argv, **kw):
@@ -332,7 +332,7 @@ else:
         if "-sENVIRONMENT=web" not in out:
             final.append("-sENVIRONMENT=web")
 
-    # do not pass WASM opts when -c/-o but always PIC and opt level
+    # do not pass WASM opts when -c + -o but always PIC and opt level
     final.extend(arglist("-fPIC", SHARED, COPTS))
 
     # prevent use of extended instr
@@ -395,6 +395,8 @@ if EMCC_TRACE:
             with open("conftest.c", "r") as file:
                 if file.read().find(DEBUG_PATTERN) > 0:
                     dump()
+    if DEBUG_PATTERN=="*":
+        dump()
 
 else:
     sys.argv.extend(final)
