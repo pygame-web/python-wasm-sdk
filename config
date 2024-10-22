@@ -120,6 +120,11 @@ export GOROOT=$SDKROOT/go
 
 EXTRABINS="$EXTRABINS $GOROOT/bin"
 
+# ============== wasmer  =================
+# curl https://get.wasmer.io -sSfL | sh
+
+export WASMER_DIR==/opt/python-wasm-sdk/wasmer
+
 
 # ================ bun ====================
 export BUN_INSTALL=${SDKROOT}/bun
