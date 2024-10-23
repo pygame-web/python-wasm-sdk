@@ -116,7 +116,7 @@ else:
 # try to keep 32 but maybe with 64 iface (bigint)
 WASM_EXTRA = env("WASM_EXTRA", "") + " " + env("WASM_OPTS", "")
 
-COPTS = env("COPTS", "-O0 -g3")
+COPTS = env("COPTS", "-O0")
 
 
 MAIN_MODULE = LINKING = False
@@ -132,6 +132,8 @@ COMPILE = False
 
 USE_RAWFS = True
 CMAKE = False
+RUSTC = False
+
 
 out = []
 for argc, arg in enumerate(sys.argv):
@@ -162,11 +164,6 @@ for argc, arg in enumerate(sys.argv):
     if arg in ("-Wl,--as-needed", "-Wl,--eh-frame-hdr", "-Wl,-znoexecstack", "-Wl,-znow", "-Wl,-zrelro", "-Wl,-zrelro,-znow"):
         continue
 
-    if arg in ("-O1", "-O2", "-O3"):
-        continue
-
-    if arg in ("-g", "-g2", "-g3", "-g4"):
-        continue
 
     if arg in ("-lgcc", "-lgcc_s", "-fallow-argument-mismatch"):
         continue
@@ -175,7 +172,55 @@ for argc, arg in enumerate(sys.argv):
         if MVP:
             continue
 
-    if arg in ("-o", "-c"):
+    if arg in ("-O1", "-O2", "-O3", "-Os", "-Oz"):
+        continue
+
+    if arg in ("-g", "-g0", "-g1", "-g2", "-g3", "-g4"):
+        continue
+
+
+    # FAILSAFE
+    # that is for some very bad known setup.py behaviour regarding cross compiling and some old codebases.
+    # should not be needed ..
+    if arg.startswith("-I/"):
+        if arg.startswith("-I/usr/"):
+            continue
+        # remove dups
+        if arg in out:
+            continue
+
+    if arg.startswith("-L/"):
+        if arg.startswith("-L/usr/"):
+            continue
+        # remove dups
+        if arg in out:
+            continue
+
+
+# https://github.com/emscripten-core/emscripten/issues/22742
+# https://github.com/hoodmane/emscripten/commit/34144634026c91a73bd3e1db85627132d3a37a6d
+
+    if arg.find("ASSERTIONS") > 0:
+        continue
+
+
+    if IS_SHARED:
+        if arg == '-lc':
+            #continue
+            pass
+
+
+    # rustc has an habit of "-l" "c" instead of "-lc"
+    if arg.startswith("-l"):
+        if len(arg)>2:
+            LINKING = True
+            # prevent duplicate lib when linking
+            if arg in out:
+                continue
+        else:
+            RUSTC = True
+
+    elif arg in ("-o", "-c"):
         MODE = arg
         MODE_POS = argc
         if arg == "-c":
@@ -201,25 +246,14 @@ for argc, arg in enumerate(sys.argv):
         SHARED = f"-shared -sSIDE_MODULE=1 -L{os.environ['PREFIX']}/lib"
         continue
 
-    if arg.startswith("-l"):
-        LINKING = True
 
-    # duplicates can happen on cmake but they are expected to be handled correctly so skip
-    if not CMAKE:
+    # duplicates can happen on cmake/rustc but they are expected to be here for a reason so skip them
+    if not (CMAKE or RUSTC):
         # prevent duplicates objects/archives files on cmdline when linking
         if LINKING or MODE == "-o":
-            if arg.endswith(".a") or arg.endswith(".o") or arg.startswith("-l"):
+            if arg.endswith(".a") or arg.endswith(".o"):
                 if arg in out:
                     continue
-
-    # FAILSAFE
-    # that is for some very bad known setup.py behaviour regarding cross compiling and some old codebases.
-    # should not be needed ..
-    if arg.startswith("-I/usr/"):
-        continue
-
-    if arg.startswith("-L/usr/"):
-        continue
 
     out.append(arg)
 
