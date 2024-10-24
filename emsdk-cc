@@ -17,6 +17,7 @@ PREFIX = Path(os.environ.get("PREFIX", "/opt/python-wasm-sdk/devices/emsdk/usr")
 sys.argv.pop(0)
 
 EXEC = sys.argv.pop(0)
+EXEC = f"{EMSDK}/upstream/emscripten/emcc.py"
 
 args = sys.argv
 
@@ -91,13 +92,13 @@ if MVP:
 
     CPU = arglist(
         """
+        -m32
         -D_FILE_OFFSET_BITS=64
         -sSUPPORT_LONGJMP=emscripten
         -mno-bulk-memory
         -mnontrapping-fptoint
         -mno-reference-types
         -mno-sign-ext
-        -m32
         -mno-extended-const
         -mno-atomics
         -mno-tail-call
@@ -261,22 +262,22 @@ os.environ.pop("_EMCC_CCACHE", "")
 
 
 """
-    if [ "\$arg" = "-nomvp" ]
+    if [ "$arg" = "-nomvp" ]
     then
         MVP=false
         continue
     fi
 
-    if \$MVP
+    if $MVP
     then
-        if \$WASM_PURE
+        if $WASM_PURE
         then
-            SOTMP=\$(mktemp).so
-            mv \$SHARED_TARGET \$SOTMP
+            SOTMP=$(mktemp).so
+            mv $SHARED_TARGET $SOTMP
             # --memory64-lowering --signext-lowering
-            $SDKROOT/emsdk/upstream/bin/wasm-emscripten-finalize -mvp \$SOTMP -o \$SHARED_TARGET
-            [ -f \$SHARED_TARGET.map ] && rm \$SHARED_TARGET.map
-            rm \$SOTMP
+            $SDKROOT/emsdk/upstream/bin/wasm-emscripten-finalize -mvp $SOTMP -o $SHARED_TARGET
+            [ -f $SHARED_TARGET.map ] && rm $SHARED_TARGET.map
+            rm $SOTMP
         fi
     fi
 """
