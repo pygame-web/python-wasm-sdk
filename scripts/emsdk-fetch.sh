@@ -217,19 +217,20 @@ END
 EMCC_TRACE=\${EMCC_TRACE:-false}
 if \$EMCC_TRACE
 then
-echo "
-$@" >> $SDKROOT/emcc.log
-
+    echo "
+\$0 \$@" >> $SDKROOT/emcc.log
 fi
 
 unset _EMCC_CCACHE
-
-#if [ -z "\$_EMCC_CCACHE" ]
-#then
-
 unset _PYTHON_SYSCONFIGDATA_NAME
 unset PYTHONHOME
 unset PYTHONPATH
+if \${PYDK_CC:-false}
+then
+    $EMSDK_PYTHON -E $SDKROOT/emsdk-cc \$0.py "\$@"
+    exit \$?
+fi
+
 
 # -Wwarn-absolute-paths
 # --valid-abspath ${SDKROOT}

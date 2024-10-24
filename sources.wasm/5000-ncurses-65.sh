@@ -12,7 +12,7 @@ NCOPTS="--enable-ext-colors --enable-ext-mouse --prefix=$PREFIX --disable-echo -
  --with-pkg-config-libdir=$PREFIX/lib/pkgconfig \
  --with-termlib --enable-termcap --disable-database"
 
-
+export PYDK_CC=true
 export NCURSES=${NCURSES:-"ncurses-6.5"}
 export URL_NCURSES=${URL_NCURSES:-"https://invisible-mirror.net/archives/ncurses/$NCURSES.tar.gz"}
 

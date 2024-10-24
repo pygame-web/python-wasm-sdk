@@ -16,8 +16,11 @@ PREFIX = Path(os.environ.get("PREFIX", "/opt/python-wasm-sdk/devices/emsdk/usr")
 
 sys.argv.pop(0)
 
-EXEC = sys.argv.pop(0)
-EXEC = f"{EMSDK}/upstream/emscripten/emcc.py"
+# point to emscripten cc
+if not sys.argv[0].endswith('.py'):
+    EXEC = f"{EMSDK}/upstream/emscripten/emcc.py"
+else:
+    EXEC = sys.argv.pop(0)
 
 args = sys.argv
 
@@ -316,7 +319,10 @@ else:
         else:
             EXE = False
 
-    if EXE and not (HTML or USE_RAWFS):
+    # potentially executable running via js
+    # TODO: handle js runtimes other than shipped node.
+    # TODO: full node path
+    if (EXE and USE_RAWFS) and not HTML:
         if AOUT.endswith(".cjs") or AOUT.endswith(".js"):
 
             def make_exe(*argv, **kw):

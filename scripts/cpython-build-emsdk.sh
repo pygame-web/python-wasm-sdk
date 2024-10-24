@@ -209,8 +209,11 @@ END
 
     popd
 
+    chmod +x ${SDKROOT}/emsdk-cc
+
+    export PYDK_CC=true
     PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig" CONFIG_SITE=$ROOT/src/cpython${PYBUILD}/Tools/wasm/config.site-wasm32-pydk \
-    EMCC_CFLAGS="-fpic" emconfigure $ROOT/src/cpython${PYBUILD}/configure -C --with-emscripten-target=browser $GIL \
+     emconfigure $ROOT/src/cpython${PYBUILD}/configure -C --with-emscripten-target=browser $GIL \
      --cache-file=${PYTHONPYCACHEPREFIX}/config.cache \
      --enable-wasm-dynamic-linking $TESTSUITE\
      --host=$PYDK_PYTHON_HOST_PLATFORM \
@@ -218,7 +221,6 @@ END
      --prefix=$PREFIX \
      --with-build-python=${PYTHON_FOR_BUILD} \
      ${EXTRA_PYOPTS}
-
 
     mkdir -p ${PYTHONPYCACHEPREFIX}/empty
     touch ${PYTHONPYCACHEPREFIX}/empty/$($HPY -V|cut -f2 -d' ')
@@ -318,7 +320,7 @@ END
     fi
 fi
 
-
+unset PYDK_CC
 
 # FIXME: seems CI cannot locate that one with python3-wasm
 
