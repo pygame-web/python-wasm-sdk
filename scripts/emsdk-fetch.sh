@@ -2,6 +2,7 @@
 
 if [[ -z ${EMSDK+z} ]]
 then
+    pushd ${SDKROOT:-/opt/python-wasm-sdk}
 
     . ${CONFIG:-config}
 
@@ -258,9 +259,9 @@ then
     # -mno-sign-ext not allowed with pthread
 
     #WASMOPTS="-fno-wasm-exceptions -sSUPPORT_LONGJMP=emscripten"
-    #CPU="-mnontrapping-fptoint -mno-reference-types -mno-sign-ext -m32"
+    #CPU="-mnontrapping-fptoint -mno-reference-types -mno-sign-ext  -m32"
 
-    CPU="-D_FILE_OFFSET_BITS=64 -sSUPPORT_LONGJMP=emscripten -mnontrapping-fptoint -mno-reference-types -mno-sign-ext -m32"
+    CPU="-D_FILE_OFFSET_BITS=64 -sSUPPORT_LONGJMP=emscripten -mnontrapping-fptoint -mno-reference-types -mno-sign-ext -mno-bulk-memory -m32"
 
 else
     CPU="-D_FILE_OFFSET_BITS=64 -mcpu=bleeding-edge -m64"
@@ -558,7 +559,7 @@ END
     export EM_IGNORE_SANITY=1
 
     export SYSROOT=$EMSDK/upstream/emscripten/cache/sysroot
-
+    popd
 else
     echo "emsdk: config already set !" 1>&2
 fi
