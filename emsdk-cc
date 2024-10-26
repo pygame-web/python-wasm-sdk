@@ -17,7 +17,7 @@ PREFIX = Path(os.environ.get("PREFIX", "/opt/python-wasm-sdk/devices/emsdk/usr")
 sys.argv.pop(0)
 
 # point to emscripten cc
-if not sys.argv[0].endswith('.py'):
+if not sys.argv[0].endswith(".py"):
     EXEC = f"{EMSDK}/upstream/emscripten/emcc.py"
 else:
     EXEC = sys.argv.pop(0)
@@ -93,6 +93,8 @@ if MVP:
     # bulk and main/side
     # https://github.com/emscripten-core/emscripten/issues/22161
 
+    #        -mno-bulk-memory
+
     CPU = arglist(
         """
         -m32
@@ -140,6 +142,16 @@ RUSTC = False
 
 
 out = []
+
+# fix rust calling
+for argc, arg in enumerate(sys.argv):
+    if arg in ("-l", "-L", "-I"):
+        sys.argv[argc] += sys.argv[argc + 1]
+        sys.argv[argc + 1] = ""
+
+while "" in sys.argv:
+    sys.argv.remove("")
+
 for argc, arg in enumerate(sys.argv):
     if arg in ("-v", "--version"):
         SKIP = True
@@ -168,7 +180,6 @@ for argc, arg in enumerate(sys.argv):
     if arg in ("-Wl,--as-needed", "-Wl,--eh-frame-hdr", "-Wl,-znoexecstack", "-Wl,-znow", "-Wl,-zrelro", "-Wl,-zrelro,-znow"):
         continue
 
-
     if arg in ("-lgcc", "-lgcc_s", "-fallow-argument-mismatch"):
         continue
 
@@ -179,9 +190,8 @@ for argc, arg in enumerate(sys.argv):
     if arg in ("-O1", "-O2", "-O3", "-Os", "-Oz"):
         continue
 
-    if arg in ("-g", "-g0", "-g1", "-g2", "-g3", "-g4"):
+    if arg in ("-g0", "-g1", "-g2", "-g3", "-g4"):
         continue
-
 
     # FAILSAFE
     # that is for some very bad known setup.py behaviour regarding cross compiling and some old codebases.
@@ -189,34 +199,22 @@ for argc, arg in enumerate(sys.argv):
     if arg.startswith("-I/"):
         if arg.startswith("-I/usr/"):
             continue
-        # remove dups
-        if arg in out:
-            continue
 
     if arg.startswith("-L/"):
         if arg.startswith("-L/usr/"):
             continue
-        # remove dups
-        if arg in out:
-            continue
 
-
-# https://github.com/emscripten-core/emscripten/issues/22742
-# https://github.com/hoodmane/emscripten/commit/34144634026c91a73bd3e1db85627132d3a37a6d
+    # https://github.com/emscripten-core/emscripten/issues/22742
+    # https://github.com/hoodmane/emscripten/commit/34144634026c91a73bd3e1db85627132d3a37a6d
+    if arg == "-lc":
+        continue
 
     if arg.find("ASSERTIONS") > 0:
         continue
 
-
-    if IS_SHARED:
-        if arg == '-lc':
-            #continue
-            pass
-
-
     # rustc has an habit of "-l" "c" instead of "-lc"
     if arg.startswith("-l"):
-        if len(arg)>2:
+        if len(arg) > 2:
             LINKING = True
             # prevent duplicate lib when linking
             if arg in out:
@@ -249,7 +247,6 @@ for argc, arg in enumerate(sys.argv):
 
         SHARED = f"-shared -sSIDE_MODULE=1 -L{os.environ['PREFIX']}/lib"
         continue
-
 
     # duplicates can happen on cmake/rustc but they are expected to be here for a reason so skip them
     if not (CMAKE or RUSTC):
@@ -436,7 +433,7 @@ if EMCC_TRACE:
             with open("conftest.c", "r") as file:
                 if file.read().find(DEBUG_PATTERN) > 0:
                     dump()
-    if DEBUG_PATTERN=="*":
+    if DEBUG_PATTERN == "*":
         dump()
 
 else:

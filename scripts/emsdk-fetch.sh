@@ -261,7 +261,9 @@ then
     #WASMOPTS="-fno-wasm-exceptions -sSUPPORT_LONGJMP=emscripten"
     #CPU="-mnontrapping-fptoint -mno-reference-types -mno-sign-ext  -m32"
 
-    CPU="-D_FILE_OFFSET_BITS=64 -sSUPPORT_LONGJMP=emscripten -mnontrapping-fptoint -mno-reference-types -mno-sign-ext -mno-bulk-memory -m32"
+#  -mno-bulk-memory <= this is problematic 2024-10-26
+
+    CPU="-D_FILE_OFFSET_BITS=64 -sSUPPORT_LONGJMP=emscripten -mno-bulk-memory -mnontrapping-fptoint -mno-reference-types -mno-sign-ext -m32"
 
 else
     CPU="-D_FILE_OFFSET_BITS=64 -mcpu=bleeding-edge -m64"
