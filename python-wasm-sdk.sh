@@ -194,7 +194,8 @@ END
             else
                 if ./scripts/cpython-build-emsdk-deps.sh
                 then
-                    if $CI
+#                    if $CI
+                    if false
                     then
                         pushd /
                         tar  \
@@ -292,6 +293,7 @@ END
             ${SDKROOT}/python-nim-sdk.sh
         fi
 
+        mkdir -p /tmp/sdk
         # pack extra build scripts
         pushd /
             tar -cpPRz \
