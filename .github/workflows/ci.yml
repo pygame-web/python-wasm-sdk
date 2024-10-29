@@ -48,10 +48,6 @@ jobs:
         chmod +x ./python-wasm-sdk.sh
         bash -c "./python-wasm-sdk.sh"
 
-    - name: Clean up
-      run: |
-        [ -f /tmp/sdk/emsdk.tar ] && rm /tmp/sdk/emsdk.tar
-
     - name: Upload sdk to Github artifacts
       uses: actions/upload-artifact@v3.1.1
       with:

@@ -160,7 +160,7 @@ END
 
             mkdir -p src build ${SDKROOT}/devices/emsdk ${SDKROOT}/prebuilt/emsdk
 
-            if [ -f /tmp/sdk/emsdk.tar ]
+            if [ -f /tmp/emsdk.tar ]
             then
                 echo "
 
@@ -178,7 +178,7 @@ END
 
 "
                 pushd /
-                tar xfp /tmp/sdk/emsdk.tar
+                tar xfp /tmp/emsdk.tar
                 mkdir -p ${SDKROOT}/src ${SDKROOT}/build
                 popd
             fi
@@ -188,7 +188,7 @@ END
 
             echo " ---------- building cpython wasm support ${PYBUILD} ${CIVER} -----------" 1>&2
 
-            if [ -f /tmp/sdk/emsdk.tar ]
+            if [ -f /tmp/emsdk.tar ]
             then
                 echo " using cached cpython-build-emsdk-deps"
             else
@@ -209,7 +209,7 @@ END
  --exclude=${SDKROOT}/sources.* \
  --exclude=${SDKROOT}/build \
  --exclude=${SDKROOT}/src \
- -cpR $SDKROOT > /tmp/sdk/emsdk.tar
+ -cpR $SDKROOT > /tmp/emsdk.tar
 
                         date "+%d-%m-%4Y" > /tmp/sdk/emsdk.version
                         popd
