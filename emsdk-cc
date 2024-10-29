@@ -122,8 +122,8 @@ else:
 # try to keep 32 but maybe with 64 iface (bigint)
 WASM_EXTRA = env("WASM_EXTRA", "") + " " + env("WASM_OPTS", "")
 
-COPTS = env("COPTS", "-O1")
-
+# the only sane default for now
+COPTS = env("COPTS", "-O2 -g3")
 
 MAIN_MODULE = LINKING = STATIC = False
 
@@ -145,6 +145,9 @@ out = []
 
 # fix rust calling
 for argc, arg in enumerate(sys.argv):
+
+    # clean up rustc way of passing args.
+
     if arg in ("-l", "-L", "-I"):
         sys.argv[argc] += sys.argv[argc + 1]
         sys.argv[argc + 1] = ""
@@ -176,6 +179,13 @@ for argc, arg in enumerate(sys.argv):
         SKIP = True
         break
 
+    # THEY ARE NOT SAFE TO CHANGE !
+    if arg in ("-O0", "-O1", "-O2", "-O3", "-Os", "-Oz"):
+        continue
+    if arg in ("-g0", "-g1", "-g2", "-g3", "-g4"):
+        continue
+
+
     if not MAIN_MODULE:
         # https://github.com/emscripten-core/emscripten/issues/22742
         # https://github.com/hoodmane/emscripten/commit/34144634026c91a73bd3e1db85627132d3a37a6d
@@ -198,13 +208,6 @@ for argc, arg in enumerate(sys.argv):
     if arg == "-pthread":
         if MVP:
             continue
-
-    if arg in ("-O0", "-O1", "-O2", "-O3", "-Os", "-Oz"):
-        continue
-
-    # keep g3
-    if arg in ("-g0", "-g1", "-g2", "-g4"):
-        continue
 
     # FAILSAFE
     # that is for some very bad known setup.py behaviour regarding cross compiling and some old codebases.

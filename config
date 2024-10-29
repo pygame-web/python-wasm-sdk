@@ -37,20 +37,6 @@ export HPIP="${HPY} -mpip"
 export CPOPTS="-Os -g0 -fPIC"
 
 
-if [ -f ${ROOT}/dev ]
-then
-    export COPTS="-fPIC"
-    export QUIET=""
-else
-    export COPTS="-fPIC"
-    if ${VERBOSE:-false}
-    then
-        export QUIET=""
-    else
-        export QUIET="2>&1 > $PYTHONPYCACHEPREFIX/.log"
-    fi
-fi
-
 # base wasm features pure is "mvp" , "bi" is bigint
 
 if [ -f /mvp ]
