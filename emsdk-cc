@@ -122,10 +122,10 @@ else:
 # try to keep 32 but maybe with 64 iface (bigint)
 WASM_EXTRA = env("WASM_EXTRA", "") + " " + env("WASM_OPTS", "")
 
-COPTS = env("COPTS", "-O0")
+COPTS = env("COPTS", "-O1")
 
 
-MAIN_MODULE = LINKING = False
+MAIN_MODULE = LINKING = STATIC = False
 
 EXE = False
 HTML = False
@@ -148,15 +148,12 @@ for argc, arg in enumerate(sys.argv):
     if arg in ("-l", "-L", "-I"):
         sys.argv[argc] += sys.argv[argc + 1]
         sys.argv[argc + 1] = ""
+        RUSTC = True
 
 while "" in sys.argv:
     sys.argv.remove("")
 
 for argc, arg in enumerate(sys.argv):
-    if arg in ("-v", "--version"):
-        SKIP = True
-        break
-
     if arg.startswith("CMakeFiles/") or arg.startswith("@CMakeFiles/"):
         CMAKE = True
 
@@ -166,9 +163,24 @@ for argc, arg in enumerate(sys.argv):
     if arg.find("MAIN_MODULE") > 0:
         MAIN_MODULE = True
 
+    if arg == '-static':
+        STATIC = True
+
     if arg == "-sENVIRONMENT=web":
         EXE = False
         HTML = True
+
+
+for argc, arg in enumerate(sys.argv):
+    if arg in ("-v", "--version"):
+        SKIP = True
+        break
+
+    if not MAIN_MODULE:
+        # https://github.com/emscripten-core/emscripten/issues/22742
+        # https://github.com/hoodmane/emscripten/commit/34144634026c91a73bd3e1db85627132d3a37a6d
+        if arg == "-lc":
+            continue
 
     # only html may not exit runtime.
     if not HTML and arg.find("EXIT_RUNTIME") > 0:
@@ -187,10 +199,11 @@ for argc, arg in enumerate(sys.argv):
         if MVP:
             continue
 
-    if arg in ("-O1", "-O2", "-O3", "-Os", "-Oz"):
+    if arg in ("-O0", "-O1", "-O2", "-O3", "-Os", "-Oz"):
         continue
 
-    if arg in ("-g0", "-g1", "-g2", "-g3", "-g4"):
+    # keep g3
+    if arg in ("-g0", "-g1", "-g2", "-g4"):
         continue
 
     # FAILSAFE
@@ -204,11 +217,6 @@ for argc, arg in enumerate(sys.argv):
         if arg.startswith("-L/usr/"):
             continue
 
-    # https://github.com/emscripten-core/emscripten/issues/22742
-    # https://github.com/hoodmane/emscripten/commit/34144634026c91a73bd3e1db85627132d3a37a6d
-    if arg == "-lc":
-        continue
-
     if arg.find("ASSERTIONS") > 0:
         continue
 
@@ -219,8 +227,6 @@ for argc, arg in enumerate(sys.argv):
             # prevent duplicate lib when linking
             if arg in out:
                 continue
-        else:
-            RUSTC = True
 
     elif arg in ("-o", "-c"):
         MODE = arg
@@ -235,18 +241,19 @@ for argc, arg in enumerate(sys.argv):
             elif not AOUT:
                 AOUT = sys.argv[out_pos]
 
-    elif arg.endswith(".so") or arg == "-shared" or arg.find("SIDE_MODULE") > 0:
-        IS_SHARED = True
-        if arg == "-shared":
-            pass
-        elif arg.endswith(".so"):
-            if arg.find("wasm32-emscripten.so") > 0 or arg.find("abi3.so") > 0:
-                PY_MODULE = true
-            SHARED_TARGET = arg
-            out.append(arg)
+    elif not STATIC:
+        if arg.endswith(".so") or arg == "-shared" or arg.find("SIDE_MODULE") > 0:
+            IS_SHARED = True
+            if arg == "-shared":
+                pass
+            elif arg.endswith(".so"):
+                if arg.find("wasm32-emscripten.so") > 0 or arg.find("abi3.so") > 0:
+                    PY_MODULE = true
+                SHARED_TARGET = arg
+                out.append(arg)
 
-        SHARED = f"-shared -sSIDE_MODULE=1 -L{os.environ['PREFIX']}/lib"
-        continue
+            SHARED = f"-shared -sASSERTIONS=0 -sSIDE_MODULE=1 -L{os.environ['PREFIX']}/lib"
+            continue
 
     # duplicates can happen on cmake/rustc but they are expected to be here for a reason so skip them
     if not (CMAKE or RUSTC):
@@ -261,26 +268,19 @@ for argc, arg in enumerate(sys.argv):
 os.environ.pop("_EMCC_CCACHE", "")
 
 
-"""
-    if [ "$arg" = "-nomvp" ]
-    then
-        MVP=false
-        continue
-    fi
+# if $MVP
+# then
+#    if $WASM_PURE
+#    then
+#        SOTMP=$(mktemp).so
+#        mv $SHARED_TARGET $SOTMP
+#        # --memory64-lowering --signext-lowering
+#        $SDKROOT/emsdk/upstream/bin/wasm-emscripten-finalize -mvp $SOTMP -o $SHARED_TARGET
+#        [ -f $SHARED_TARGET.map ] && rm $SHARED_TARGET.map
+#        rm $SOTMP
+#    fi
+# fi
 
-    if $MVP
-    then
-        if $WASM_PURE
-        then
-            SOTMP=$(mktemp).so
-            mv $SHARED_TARGET $SOTMP
-            # --memory64-lowering --signext-lowering
-            $SDKROOT/emsdk/upstream/bin/wasm-emscripten-finalize -mvp $SOTMP -o $SHARED_TARGET
-            [ -f $SHARED_TARGET.map ] && rm $SHARED_TARGET.map
-            rm $SOTMP
-        fi
-    fi
-"""
 
 final = [EXEC]
 
@@ -288,6 +288,7 @@ final = [EXEC]
 if CONFIGURE and len(out) == 1:
     SKIP = out[0] == "conftest.c"
     sys.argv.insert(0, "-fPIC")
+    sys.argv.insert(0, "-sASSERTIONS=0")
     sys.argv.extend(CPU)
 
 
@@ -370,7 +371,7 @@ else:
         if "-sENVIRONMENT=web" not in out:
             final.append("-sENVIRONMENT=web")
 
-    # do not pass WASM opts when -c + -o but always PIC and opt level
+    # maybe not pass all WASM opts when -c + -o but always PIC and opt level
     final.extend(arglist("-fPIC", SHARED, COPTS))
 
     # prevent use of extended instr

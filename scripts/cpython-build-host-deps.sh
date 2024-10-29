@@ -23,4 +23,4 @@ $HPIP install --upgrade pip
 $HPIP install --upgrade setuptools
 
 # install early to build some host tools like w2c2
-$HPIP install --upgrade cmake
+$HPIP install --upgrade --force cmake

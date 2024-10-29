@@ -226,7 +226,8 @@ unset _EMCC_CCACHE
 unset _PYTHON_SYSCONFIGDATA_NAME
 unset PYTHONHOME
 unset PYTHONPATH
-if \${PYDK_CC:-false}
+# if \${PYDK_CC:-false}
+if true
 then
     $EMSDK_PYTHON -E $SDKROOT/emsdk-cc \$0.py "\$@"
     exit \$?
