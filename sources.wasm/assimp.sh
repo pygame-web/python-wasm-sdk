@@ -39,8 +39,8 @@ then
 else
     mkdir -p $ROOT/build/assimp
     pushd $ROOT/build/assimp
-    emmake ${ROOT}/devices/$(arch)/usr/bin/cmake $ROOT/src/$ASSIMP -DCMAKE_INSTALL_PREFIX=$PREFIX -DBUILD_SHARED_LIBS=OFF
-    emmake make install
+    emcmake ${ROOT}/devices/$(arch)/usr/bin/cmake $ROOT/src/$ASSIMP -DCMAKE_INSTALL_PREFIX=$PREFIX -DBUILD_SHARED_LIBS=OFF
+    PYDK_CFLAGS="-Wno-nontrivial-memaccess" emmake make install
     popd
 
     [ -f $PREFIX/lib/libassimp.a ] || exit 46
