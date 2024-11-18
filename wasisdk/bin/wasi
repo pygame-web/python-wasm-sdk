@@ -1,8 +1,9 @@
-#!/bin/bash
+#!/usr/bin/python3
 
 # https://stackoverflow.com/questions/20530105/how-to-specify-a-custom-stdlib-directory-for-llvm
 # https://stackoverflow.com/questions/60712261/how-to-prevent-osx-gcc-to-always-search-usr-local-include
 
+"""
 if ${CONFIGURE:-false}
 then
     CXX_LIBS=
@@ -56,4 +57,73 @@ else
         $CC "${@}" ${WASI_LNK} -Wno-unused-function
     fi
 fi
+"""
+
+
+import sys
+import os
+from pathlib import Path
+
+
+def dbg(*argv, **kw):
+    kw.setdefault("file", sys.stderr)
+    return print(*argv, **kw)
+
+SDKROOT = Path(os.environ.get("SDKROOT", "/opt/python-wasm-sdk"))
+WASISDK = Path(os.environ.get("WASISDK", "/opt/python-wasm-sdk/emsdk"))
+WASI_SDK_PREFIX=Path(os.environ.get("WASI_SDK_PREFIX", "/opt/python-wasm-sdk/wasisdk/upstream"))
+PREFIX = Path(os.environ.get("PREFIX", "/opt/python-wasm-sdk/devices/wasisdk/usr"))
+
+dbg(sys.argv)
+exe = sys.argv.pop(0)
+
+
+if exe.endswith('c++'):
+    mode = "++"
+    args= ["clang++"]
+    fixargs = True
+elif exe.endswith('cpp'):
+    mode = "-cpp"
+    args = ["clang-cpp"]
+    args.extend(sys.argv)
+    fixargs = False
+else:
+    mode = ""
+    args = ["clang"]
+    fixargs = True
+
+
+if fixargs:
+    args.extend( "-fPIC -fno-rtti -fno-exceptions -z stack-size=131072".split(' ') )
+
+    for arg in sys.argv:
+
+        if arg in ("-v", "--version"):
+            dbg(*sys.argv)
+            args=[exe]
+            args.extend(sys.argv)
+            break
+
+        if arg == '-Wl,--start-group':
+            continue
+        if arg == '-Wl,--end-group':
+            continue
+
+        args.append(arg)
+    else:
+
+        if 0:
+            dbg("="*80)
+            dbg(*sys.argv)
+            dbg("="*80)
+            dbg(*args)
+            dbg("_"*80)
+
+        args.extend("-lwasi-emulated-getpid -lwasi-emulated-mman -lwasi-emulated-signal -lwasi-emulated-process-clocks".split(' '))
+        args.extend("-D_GNU_SOURCE -D_WASI_EMULATED_MMAN -D_WASI_EMULATED_SIGNAL -D_WASI_EMULATED_PROCESS_CLOCKS -D_WASI_EMULATED_GETPID".split(' '))
+        args.extend("-Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-command-line-argument -Wno-unsupported-floating-point-opt -Wno-nullability-completeness".split(' '))
+
+exe = f"{WASI_SDK_PREFIX}/bin/clang{mode}"
+#dbg(exe,len(args),*args)
+os.execv(exe, args)
 

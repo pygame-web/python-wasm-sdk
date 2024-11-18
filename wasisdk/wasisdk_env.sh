@@ -15,6 +15,8 @@ then
     export WASI_SYSROOT="${WASI_SDK_PREFIX}/share/wasi-sysroot"
 
     export CMAKE_TOOLCHAIN_FILE=${WASISDK}/share/cmake/Modules/Platform/WASI.cmake
+    #export CMAKE_TOOLCHAIN_FILE=${WASI_SDK_DIR}/share/cmake/Platform/WASI.cmake
+
     export CMAKE_INSTALL_PREFIX="${SDKROOT}/devices/${ARCH}/usr"
     export PREFIX=$CMAKE_INSTALL_PREFIX
 
