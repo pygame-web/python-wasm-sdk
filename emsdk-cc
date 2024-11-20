@@ -245,7 +245,11 @@ for argc, arg in enumerate(sys.argv):
                 AOUT = sys.argv[out_pos]
 
     elif not STATIC:
-        if arg.endswith(".so") or arg == "-shared" or arg.find("SIDE_MODULE") > 0:
+        if arg.endswith(".so") and arg.startswith("/usr/lib"):
+            arg = f"-l{arg.rsplit('/',1)[-1][3:-3]}"
+            if arg in ('-lportmidi','-lporttime'):
+                continue
+        elif arg.endswith(".so") or arg == "-shared" or arg.find("SIDE_MODULE") > 0:
             IS_SHARED = True
             if arg == "-shared":
                 pass
@@ -393,7 +397,7 @@ else:
             # TODO: module level
             #  -gsource-map --source-map-base /
             pass
-        final.extend(arglist(WASM_EXTRA, "-DBUILD_STATIC"))
+        final.extend(arglist(WASM_EXTRA, "-DPYDK_STATIC"))
 
     final.extend(out)
     final.extend(COMMON)

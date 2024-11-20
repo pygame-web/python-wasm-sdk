@@ -301,7 +301,7 @@ END
     if [ -d $PREFIX/lib/python${PYBUILD}/lib-dynload ]
     then
         # move them to MEMFS
-        mv $PREFIX/lib/python${PYBUILD}/lib-dynload/* ${SDKROOT}/prebuilt/emsdk/${PYBUILD}/lib-dynload/
+        mv $PREFIX/lib/python${PYBUILD}/lib-dynload/* ${SDKROOT}/prebuilt/${TARGET}/${PYBUILD}/lib-dynload/
 
         echo "         =============== FIXME: _ctype dynamic build ==============="
         rm ${SDKROOT}/prebuilt/emsdk/${PYBUILD}/lib-dynload/_ctypes.*
@@ -334,7 +334,7 @@ sed -i 's|-g0|-g3|g' ${MODSYSCONFIG}
 
 # this one is required for `python3-wasm -mbuild` venv
 ln ${MODSYSCONFIG} ${SDKROOT}/devices/$(arch)/usr/lib/python${PYBUILD}/
-
+ln ${MODSYSCONFIG} ${SDKROOT}/devices/${TARGET}/usr/lib/python${PYBUILD}/
 
 cat > ${PYTHONPYCACHEPREFIX}/.nanorc <<END
 set tabsize 4
@@ -372,7 +372,7 @@ else
     . config
     . emsdk/emsdk_env.sh
     popd
-    export PATH=$SDKROOT/emsdk/upstream/emscripten:$SDKROOT/emsdk/upstream/emscripten/system/bin:\$PATH
+    export PATH=$SDKROOT/${TARGET}/upstream/emscripten:$SDKROOT/${TARGET}/upstream/emscripten/system/bin:\$PATH
     # export PKG_CONFIG_SYSROOT_DIR="${SDKROOT}/devices/emsdk"
     export PKG_CONFIG_LIBDIR="${SDKROOT}/emsdk/upstream/emscripten/system/lib/pkgconfig"
     export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig:${HOST_PREFIX}/lib/pkgconfig"
@@ -405,7 +405,7 @@ export PYTHONHOME=$PREFIX
 # but still can load dynload and setuptools
 
 PYTHONPATH=${HOST_PREFIX}/lib/python\${PYBUILD}/site-packages:\$PYTHONPATH
-export PYTHONPATH=${SDKROOT}/prebuilt/emsdk/\${PYBUILD}:${HOST_PREFIX}/lib/python\${PYBUILD}/lib-dynload:\$PYTHONPATH
+export PYTHONPATH=${SDKROOT}/prebuilt/${TARGET}/\${PYBUILD}:${HOST_PREFIX}/lib/python\${PYBUILD}/lib-dynload:\$PYTHONPATH
 
 # just in case
 export _PYTHON_HOST_PLATFORM=${PYDK_PYTHON_HOST_PLATFORM}

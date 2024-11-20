@@ -149,11 +149,15 @@ rm ${SDKROOT}/prebuilt/emsdk/common/site-packages/installer/_scripts/*exe
 
 
 
+# SDL2 is prebuilt in emsdk but lacks pkg config *.pc, wasi has them
 
+if $WASI
+then
+    echo -n
+else
+    SYSROOT=${SDKROOT}/emsdk/upstream/emscripten/cache/sysroot
 
-# SDL2 is prebuilt in emsdk but lacks SDL2.pc
-
-cat > ${PREFIX}/lib/pkgconfig/sdl2.pc <<END
+    cat > ${PREFIX}/lib/pkgconfig/sdl2.pc <<END
 # sdl pkg-config source file
 
 prefix=${PREFIX}
@@ -167,12 +171,25 @@ Version: 2.31.0
 Requires.private:
 Conflicts:
 Libs: -L\${libdir} -lSDL2 -lm
-Cflags: -I\${includedir} -I\${includedir}/SDL2
+Cflags: -I\${includedir} -I\${includedir}/SDL2 -I${SYSROOT}/include/SDL2 -I${SYSROOT}/include/freetype2"
 END
 
+    cat > ${PREFIX}/lib/pkgconfig/SDL2_mixer.pc <<END
+prefix=${PREFIX}/usr
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: SDL2_mixer
+Description: mixer library for Simple DirectMedia Layer
+Version: 2.8.0
+Requires: sdl2 >= 2.0.9
+Libs: -L\${libdir} -lSDL2_mixer
+Cflags: -I\${includedir}/SDL2
+Requires.private:
+Libs.private:
 
 
-
-
+fi
 
 
