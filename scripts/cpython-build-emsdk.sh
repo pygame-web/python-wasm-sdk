@@ -393,9 +393,9 @@ cat > $HOST_PREFIX/bin/python3-wasm <<END
 
 # most important
 export CC=emcc
-export _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__emscripten_debug
+export _PYTHON_SYSCONFIGDATA_NAME=\${_PYTHON_SYSCONFIGDATA_NAME:-_sysconfigdata__emscripten_debug}
 
-# it's just for interactive python testing of modules.
+# reserved for interactive python testing of modules.
 export PYTHONSTARTUP=$ROOT/support/__EMSCRIPTEN__.py
 
 # so include dirs are good
@@ -407,40 +407,16 @@ export PYTHONHOME=$PREFIX
 PYTHONPATH=${HOST_PREFIX}/lib/python\${PYBUILD}/site-packages:\$PYTHONPATH
 export PYTHONPATH=${SDKROOT}/prebuilt/${TARGET}/\${PYBUILD}:${HOST_PREFIX}/lib/python\${PYBUILD}/lib-dynload:\$PYTHONPATH
 
-# just in case
 export _PYTHON_HOST_PLATFORM=${PYDK_PYTHON_HOST_PLATFORM}
 export PYTHON_FOR_BUILD=${HOST_PREFIX}/bin/python\${PYBUILD}
 
-${HOST_PREFIX}/bin/python\${PYBUILD} -u -B "\$@"
+\${PYTHON_FOR_BUILD} -u -B "\$@"
 END
 
 chmod +x $HOST_PREFIX/bin/python3-wasm
 
 
-
 cp -f $HOST_PREFIX/bin/python3-wasm ${SDKROOT}/
-
-# TODO: FIXME:
-#echo "386: cannot use python3-wasm as python3 for setup.py in pygame build" 1>&2
-#ln -sf $HOST_PREFIX/bin/python${PYBUILD} $HOST_PREFIX/bin/python3
-
-#HPFX=./devices/$(arch)/usr/lib/python${PYBUILD}
-#TPFX=./devices/emsdk/usr/lib/python${PYBUILD}
-
-#rm $TPFX/ensurepip/_bundled/setuptools-*.whl
-
-#for moveit in setuptools distutils _distutils _distutils_hack pkg_resources
-#do
-#    echo "
-#    * migrating ${moveit}
-#" 1>&2
-#    cp -rf $HPFX/${moveit}   $TPFX/
-#    cp -rf $HPFX/${moveit}-* $TPFX/
-#    cp -rf $HPFX/site-package/${moveit}   $TPFX/site-package/
-#    cp -rf $HPFX/site-package/${moveit}-* $TPFX/site-package/
-#done
-
-
 
 unset PYTHON_FOR_BUILD
 unset EMCC_CFLAGS

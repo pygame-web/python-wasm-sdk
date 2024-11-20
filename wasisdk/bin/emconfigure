@@ -1,0 +1,2 @@
+#!/bin/bash
+CONFIGURE=true $@ --host $(arch) --target=wasm32-unknown-wasi --with-template=wasi
