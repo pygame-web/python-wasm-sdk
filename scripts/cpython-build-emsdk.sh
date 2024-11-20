@@ -373,7 +373,7 @@ else
     . emsdk/emsdk_env.sh
     popd
     export PATH=$SDKROOT/emsdk/upstream/emscripten:$SDKROOT/emsdk/upstream/emscripten/system/bin:\$PATH
-    export PKG_CONFIG_SYSROOT_DIR="${SDKROOT}/devices/emsdk"
+    # export PKG_CONFIG_SYSROOT_DIR="${SDKROOT}/devices/emsdk"
     export PKG_CONFIG_LIBDIR="${SDKROOT}/emsdk/upstream/emscripten/system/lib/pkgconfig"
     export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig:${HOST_PREFIX}/lib/pkgconfig"
     export NODE=\$(find \$EMSDK|grep /bin/node\$)

@@ -3,127 +3,189 @@
 # https://stackoverflow.com/questions/20530105/how-to-specify-a-custom-stdlib-directory-for-llvm
 # https://stackoverflow.com/questions/60712261/how-to-prevent-osx-gcc-to-always-search-usr-local-include
 
-"""
-if ${CONFIGURE:-false}
-then
-    CXX_LIBS=
-    WASI_LNK=
-    CPP=clang-cpp
-    CXX=clang++
-    CC=clang
-else
-    WASI_CFG="--sysroot=${WASI_SDK_PREFIX}/share/wasi-sysroot -iwithsysroot /include/c++/v1"
-
-    # -I${WASISDK}/hotfix using upstream/share/wasi-sysroot/include/wasm32-wasi instead
-
-    if echo "${@}"|grep -q \\-fno-builtin
-    then
-        WASI_PATCH=""
-    else
-        WASI_PATCH="-include ${WASISDK}/hotfix/patch.h -isystem ${WASISDK}/hotfix"
-    fi
-
-    WASI_DEF="-D_GNU_SOURCE -D_WASI_EMULATED_MMAN -D_WASI_EMULATED_SIGNAL -D_WASI_EMULATED_PROCESS_CLOCKS -D_WASI_EMULATED_GETPID"
-
-    # wasi assembly
-    WASI_ALL="${WASI_CFG} ${WASI_PATCH} ${WASI_DEF} -fPIC -fno-rtti -fno-exceptions -z stack-size=131072"
-
-    WASI_ALL="$WASI_ALL -Wno-unused-but-set-variable -Wno-unused-command-line-argument -Wno-unsupported-floating-point-opt -Wno-nullability-completeness"
-
-    # wasi linking
-    WASI_LNK="-lwasi-emulated-getpid -lwasi-emulated-mman -lwasi-emulated-signal -lwasi-emulated-process-clocks"
-
-    export CC="${WASI_SDK_PREFIX}/bin/clang ${WASI_ALL} ${WASI_CFLAGS}"
-    export CXX="${WASI_SDK_PREFIX}/bin/clang++ ${WASI_ALL}"
-    export CPP="${WASI_SDK_PREFIX}/bin/clang-cpp ${WASI_CFG} ${WASI_DEF}"
-fi
-
-if echo ${0}|grep -q c++$
-then
-    if echo "${@}"|grep -q shared
-    then
-        echo "WASI SHARED: ${@}"
-        # unsupported ATM
-        $CXX "$@" ${CXX_LIBS} ${WASI_LNK}
-    else
-        $CXX "$@" ${CXX_LIBS} ${WASI_LNK}
-    fi
-else
-    # preprocessor or c compiler
-    if echo ${0}|grep -q cpp$
-    then
-        $CPP "${@}"
-    else
-        $CC "${@}" ${WASI_LNK} -Wno-unused-function
-    fi
-fi
-"""
-
-
 import sys
 import os
 from pathlib import Path
 
+false = False
+true = True
 
 def dbg(*argv, **kw):
     kw.setdefault("file", sys.stderr)
     return print(*argv, **kw)
 
-SDKROOT = Path(os.environ.get("SDKROOT", "/opt/python-wasm-sdk"))
-WASISDK = Path(os.environ.get("WASISDK", "/opt/python-wasm-sdk/emsdk"))
-WASI_SDK_PREFIX=Path(os.environ.get("WASI_SDK_PREFIX", "/opt/python-wasm-sdk/wasisdk/upstream"))
-PREFIX = Path(os.environ.get("PREFIX", "/opt/python-wasm-sdk/devices/wasisdk/usr"))
+def env(k, default):
+    if default is false:
+        default = "false"
+    if default is true:
+        default = "true"
 
-dbg(sys.argv)
+    v = os.environ.get(k, default)
+    if v == "false":
+        return False
+    if v == "true":
+        return True
+    return v.strip()
+
+SDKROOT = Path(os.environ.get("SDKROOT", "/opt/python-wasm-sdk"))
+WASISDK = Path(os.environ.get("WASISDK", f"{SDKROOT}/emsdk"))
+WASI_SDK_PREFIX = Path(os.environ.get("WASI_SDK_PREFIX", f"{SDKROOT}/wasisdk/upstream"))
+PREFIX = Path(os.environ.get("PREFIX", f"{SDKROOT}/devices/wasisdk/usr"))
+
+# dbg(sys.argv)
+
 exe = sys.argv.pop(0)
 
 
-if exe.endswith('c++'):
+WASI_CFG = "--sysroot=${WASI_SDK_PREFIX}/share/wasi-sysroot -iwithsysroot /include/c++/v1"
+WASI_PATCH = f"-include {WASISDK}/hotfix/patch.h -isystem {WASISDK}/hotfix"
+WASI_DEF = "-D_GNU_SOURCE -D_WASI_EMULATED_MMAN -D_WASI_EMULATED_SIGNAL -D_WASI_EMULATED_PROCESS_CLOCKS -D_WASI_EMULATED_GETPID"
+
+WASI_CFLAGS = os.getenv("WASI_CFLAGS", "")
+
+if env("CONFIG_SITE", false):
+    CONFIGURE = True
+else:
+    CONFIGURE = env("CONFIGURE", false)
+
+
+if not CONFIGURE:
+    if WASI_CFLAGS:
+        WASI_DEF = f"{WASI_DEF} {WASI_CFLAGS}"
+
+
+if exe.endswith("c++"):
     mode = "++"
-    args= ["clang++"]
+    out = ["clang++"]
     fixargs = True
-elif exe.endswith('cpp'):
+elif exe.endswith("cpp"):
     mode = "-cpp"
-    args = ["clang-cpp"]
-    args.extend(sys.argv)
+    out = ["clang-cpp"]
+    out.extend(WASI_DEF.split(" "))
+    out.extend(sys.argv)
     fixargs = False
 else:
     mode = ""
-    args = ["clang"]
+    out = ["clang"]
     fixargs = True
 
 
 if fixargs:
-    args.extend( "-fPIC -fno-rtti -fno-exceptions -z stack-size=131072".split(' ') )
+
+    NINJA = env("NINJA", false)
+    CMAKE = False
+    RUSTC = False
+    LINKING = False
+    COMPILE = False
+    MODE = ""
+
+    # fix rust calling
+    for argc, arg in enumerate(sys.argv):
+
+        # clean up rustc way of passing out.
+
+        if arg in ("-l", "-L", "-I"):
+            sys.argv[argc] += sys.argv[argc + 1]
+            sys.argv[argc + 1] = ""
+            RUSTC = True
+
+    while "" in sys.argv:
+        sys.argv.remove("")
 
     for arg in sys.argv:
 
         if arg in ("-v", "--version"):
             dbg(*sys.argv)
-            args=[exe]
-            args.extend(sys.argv)
+            out = [exe]
+            out.extend(sys.argv)
             break
 
-        if arg == '-Wl,--start-group':
+        if arg.startswith("CMakeFiles/") or arg.startswith("@CMakeFiles/"):
+            CMAKE = True
+
+        if not CONFIGURE:
+            if arg == "-pthread":
+                continue
+            if arg == "-latomic":
+                continue
+            if arg == "-fno-builtin":
+                WASI_PATCH = ""
+        else:
+            WASI_PATCH = ""
+
+        if arg == "-Wl,--start-group":
             continue
-        if arg == '-Wl,--end-group':
+        if arg == "-Wl,--end-group":
             continue
 
-        args.append(arg)
+
+        # rustc has an habit of "-l" "c" instead of "-lc"
+        if arg.startswith("-l"):
+            if len(arg) > 2:
+                LINKING = True
+                # prevent duplicate lib when linking
+                if arg in out:
+                    continue
+
+        # FAILSAFE
+        # that is for some very bad known setup.py behaviour regarding cross compiling and some old codebases.
+        # should not be needed ..
+        if arg.startswith("-I/"):
+            if arg.startswith("-I/usr/"):
+                continue
+
+        elif arg.startswith("-L/") or arg.startswith("-l"):
+            if not LINKING:
+                out.append(f"-L{os.environ['PREFIX']}/lib")
+                LINKING = True
+            if arg.startswith("-L/usr/"):
+                continue
+
+        elif arg in ("-o", "-c"):
+            MODE = arg
+            MODE_POS = argc
+            if arg == "-c":
+                COMPILE = True
+        elif arg == "-shared":
+            if not LINKING:
+                out.append(f"-L{os.environ['PREFIX']}/lib")
+                LINKING = True
+
+        # duplicates can happen on cmake/rustc but they are expected to be here for a reason so skip them
+        if not (CMAKE or NINJA or RUSTC):
+            # prevent duplicates objects/archives files on cmdline when linking
+            if LINKING or MODE == "-o":
+                if arg.endswith(".a") or arg.endswith(".o"):
+                    if arg in out:
+                        continue
+
+        out.append(arg)
     else:
 
         if 0:
-            dbg("="*80)
+            dbg("=" * 80)
             dbg(*sys.argv)
-            dbg("="*80)
-            dbg(*args)
-            dbg("_"*80)
+            dbg("=" * 80)
+            dbg(*out)
+            dbg("_" * 80)
 
-        args.extend("-lwasi-emulated-getpid -lwasi-emulated-mman -lwasi-emulated-signal -lwasi-emulated-process-clocks".split(' '))
-        args.extend("-D_GNU_SOURCE -D_WASI_EMULATED_MMAN -D_WASI_EMULATED_SIGNAL -D_WASI_EMULATED_PROCESS_CLOCKS -D_WASI_EMULATED_GETPID".split(' '))
-        args.extend("-Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-command-line-argument -Wno-unsupported-floating-point-opt -Wno-nullability-completeness".split(' '))
+        WASI_CFG = "--sysroot=${WASI_SDK_PREFIX}/share/wasi-sysroot -iwithsysroot /include/c++/v1"
 
-exe = f"{WASI_SDK_PREFIX}/bin/clang{mode}"
-#dbg(exe,len(args),*args)
-os.execv(exe, args)
+        if WASI_PATCH:
+            out.extend(WASI_PATCH.split(" "))
+        out.extend("-lwasi-emulated-getpid -lwasi-emulated-mman -lwasi-emulated-signal -lwasi-emulated-process-clocks".split(" "))
+        out.extend(WASI_DEF.split(" "))
 
+        out.extend("-fPIC -fno-rtti -fno-exceptions -z stack-size=131072".split(" "))
+        if not CONFIGURE:
+            out.extend(
+                "-Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-command-line-argument -Wno-unsupported-floating-point-opt -Wno-nullability-completeness".split(
+                    " "
+                )
+            )
+            # pg
+            out.append("-Wno-missing-prototypes")
+            # hotpatch
+            out.append("-Wno-unused-function")
+
+os.execv(f"{WASI_SDK_PREFIX}/bin/clang{mode}", out)

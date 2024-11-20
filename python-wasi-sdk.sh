@@ -4,15 +4,38 @@ reset
 # TODO: check how dbg tools work with default settings
 # https://developer.chrome.com/blog/wasm-debugging-2020/
 
+if command -v python3
+then
+    SYS_PYTHON=$(command -v python3)
+else
+    SYS_PYTHON=$(command -v python)
+fi
 
-. /etc/lsb-release
-DISTRIB="${DISTRIB_ID}-${DISTRIB_RELEASE}"
+DISTRIB_RELEASE="any"
 
-SDKROOT=${SDKROOT:-/opt/python-wasm-sdk}
+# is it linux enough ?
+if [ -f /etc/lsb-release ]
+then
+    . /etc/lsb-release
+    export PLATFORM=linux
+else
+    # or not
+    export DISTRIB_ID=$($SYS_PYTHON -E -c "print(__import__('sys').platform)")
+    echo no /etc/lsb-release found, please identify platform '$DISTRIB_ID'
+    DISTRIB="${DISTRIB_ID}-${DISTRIB_RELEASE}"
+    exit 1
+fi
 
-export SDKROOT
+export DISTRIB="${DISTRIB_ID}-${DISTRIB_RELEASE}"
+
+export SDKROOT=${SDKROOT:-/tmp/sdk}
+
+# default is behave like a CI
+export CI={CI:-true}
+
+# maybe have ci flavours later
 export CIVER=${CIVER:-$DISTRIB}
-export CI=true
+
 
 if echo $0|grep -q python-wasm-sdk\.sh
 then
@@ -24,19 +47,18 @@ else
     emsdk=false
     BUILDS=3.13
     wasisdk=true
-    nimsdk=true
+    gosdk=${gosdk:-false}
+    rustsdk=${rustdsk:-false}
+    nimsdk=${nimsdk:-false}
 fi
 
-if $wasisdk
-then
-    echo " * adding wasi-sdk to wasm-sdk"
-fi
-
-if $nimsdk
-then
-    echo " * adding nim-sdk to wasm-sdk"
-fi
-
+for lang in wasisdk gosdk rustsdk nimsdk
+do
+    if ${!lang:-false}
+    then
+        echo " * adding ${lang} to wasm-sdk"
+    fi
+done
 
 if [ -d ${SDKROOT} ]
 then
@@ -148,8 +170,11 @@ END
         then
             echo "keeping installed wasmtime and wasi binaries"
         else
-            #wget https://github.com/bytecodealliance/wasmtime/releases/download/v22.0.0/wasmtime-v22.0.0-x86_64-linux.tar.xz \
-            wget https://github.com/bytecodealliance/wasmtime/releases/download/v23.0.2/wasmtime-v23.0.2-$(arch)-linux.tar.xz \
+            #wget https://github.com/bytecodealliance/wasmtime/releases/download/v22.0.0/wasmtime-v22.0.0-x86_64-linux.tar.xz
+
+# TODO: window only has a zip archive, better use wasmtime-py instead.
+
+            wget https://github.com/bytecodealliance/wasmtime/releases/download/v26.0.1/wasmtime-v26.0.1-$(arch)-$(PLATFORM).tar.xz \
              -O-|xzcat|tar xfv -
             mv -vf $(find wasmtime*|grep /wasmtime$) ${SDKROOT}/devices/$(arch)/usr/bin
         fi
@@ -290,7 +315,7 @@ END
 
         if $nimsdk
         then
-            ${SDKROOT}/python-nim-sdk.sh
+            ${SDKROOT}/lang/nimsdk.sh
         fi
 
         mkdir -p /tmp/sdk

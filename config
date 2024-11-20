@@ -85,8 +85,10 @@ export WASMTIME_HOME=$WASISDK
 
 # stable
 NIM_VERSION=nim-2.0.8
-NIM_URL=https://nim-lang.org/download/${NIM_VERSION}-linux_x64.tar.xz
 
+# testing
+NIM_VERSION=nim-2.2.0
+NIM_URL=https://nim-lang.org/download/${NIM_VERSION}-linux_x64.tar.xz
 
 NIM_VERSION=nim-git
 NIM_URL=https://github.com/nim-lang/Nim
@@ -95,6 +97,12 @@ export NIM_VERSION NIM_URL
 export NIMSDK=${NIMSDK:-"${SDKROOT}/nimsdk"}
 
 # EXTRABINS="$EXTRABINS $NIMSDK/bin"
+
+# =============== rust ====================
+export CARGO_HOME=${CARGO_HOME:-${SDKROOT}}/rust
+export RUSTUP_HOME=${RUSTUP_HOME:-${SDKROOT}}/rust
+mkdir -p ${CARGO_HOME}/bin
+EXTRABINS="$EXTRABINS $CARGO_HOME/bin"
 
 # ================ go =====================
 export GOPRIVATE=*
@@ -122,6 +130,11 @@ EXTRABINS="$EXTRABINS $BUN_INSTALL/bin"
 AOSP_NDK=25.2.9519653
 
 
+# ===========     panda3d =================
+
+export PANDA_PRC_DIR=${SDKROOT}/support
+
+
 PATH=/usr/bin:/bin
 for extrabin in $EXTRABINS
 do
@@ -138,19 +151,18 @@ done
 
 
 # this is python used for emsdk : ${SYS_PYTHON} -> ${EMSDK_PYTHON}
+# sane default
+export SYS_PYTHON=$(command -v python${PYMAJOR})
 for py in 10 9 8
 do
     if command -v python${PYMAJOR}.${py} >/dev/null
     then
         export SYS_PYTHON=$(command -v python${PYMAJOR}.${py})
         break
-    else
-        # sane default
-        export SYS_PYTHON=$(command -v python${PYMAJOR})
     fi
 done
 
-export GITGET="git clone --recursive --no-tags --depth 1 --single-branch --branch"
+export CLONE="git clone --recursive --no-tags --depth 1 --single-branch --branch"
 export LD_LIBRARY_PATH="${HOST_PREFIX}/lib:$LD_LIBRARY_PATH"
 export PATH="${HOST_PREFIX}/bin:$PATH"
 fi

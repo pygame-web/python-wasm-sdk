@@ -513,7 +513,7 @@ END
     # EM_PKG_CONFIG_PATH ?
     # https://emscripten.org/docs/compiling/Building-Projects.html#pkg-config
 
-    export PKG_CONFIG_SYSROOT_DIR="${SDKROOT}/devices/emsdk"
+    # export PKG_CONFIG_SYSROOT_DIR="${SDKROOT}/devices/emsdk"
     export PKG_CONFIG_LIBDIR="${SDKROOT}/emsdk/upstream/emscripten/system/lib/pkgconfig"
     export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig:${HOST_PREFIX}/lib/pkgconfig"
     export EM_PKG_CONFIG_PATH=$PKG_CONFIG_PATH

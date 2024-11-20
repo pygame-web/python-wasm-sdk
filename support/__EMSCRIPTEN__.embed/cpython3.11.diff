@@ -53,7 +53,7 @@
 -#ifdef MS_WINDOWS
 -int
 -wmain(int argc, wchar_t **argv)
-+#if __PYDK__
++#if defined(PYDK)
 +#include "pycore_call.h"          // _PyObject_CallNoArgs()
 +#include "pycore_initconfig.h"    // _PyArgv
 +#include "pycore_interp.h"        // _PyInterpreterState.sysdict
@@ -123,7 +123,7 @@
      return Py_BytesMain(argc, argv);
  }
 -#endif
-+#endif //#if __PYDK__
++#endif // PYDK
 --- Python-3.11.5/Python/sysmodule.c	2023-08-24 14:09:18.000000000 +0200
 +++ Python-3.11.5-wasm/Python/sysmodule.c	2023-09-09 22:33:10.196291366 +0200
 @@ -49,7 +49,7 @@

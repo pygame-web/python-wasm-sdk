@@ -80,6 +80,24 @@ fi
 # cannot use wasi ninja yet
 $HPIP install --force ninja
 
+# patch ninja for jobs limit and wrapper detection
+# https://github.com/ninja-build/ninja/issues/1482
+
+cat > ${HOST_PREFIX}/bin/ninja <<END
+#!${HOST_PREFIX}/bin/python${PYBUILD}
+# -*- coding: utf-8 -*-
+import re
+import sys
+sys.argv.insert(1,'1')
+sys.argv.insert(1,'-j')
+import os
+os.environ['NINJA']="1"
+from ninja import ninja
+if __name__ == '__main__':
+    sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?\$', '', sys.argv[0])
+    sys.exit(ninja())
+END
+
 echo "
     *   cpython-build-emsdk-prebuilt pip==$PIP   *
 " 1>&2
@@ -128,6 +146,33 @@ pushd src
 popd
 
 rm ${SDKROOT}/prebuilt/emsdk/common/site-packages/installer/_scripts/*exe
+
+
+
+
+
+# SDL2 is prebuilt in emsdk but lacks SDL2.pc
+
+cat > ${PREFIX}/lib/pkgconfig/sdl2.pc <<END
+# sdl pkg-config source file
+
+prefix=${PREFIX}
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: sdl2
+Description: Simple DirectMedia Layer is a cross-platform multimedia library designed to provide low level access to audio, keyboard, mouse, joystick, 3D hardware via OpenGL, and 2D v>
+Version: 2.31.0
+Requires.private:
+Conflicts:
+Libs: -L\${libdir} -lSDL2 -lm
+Cflags: -I\${includedir} -I\${includedir}/SDL2
+END
+
+
+
+
 
 
 

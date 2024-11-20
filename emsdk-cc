@@ -139,7 +139,7 @@ COMPILE = False
 USE_RAWFS = True
 CMAKE = False
 RUSTC = False
-
+NINJA = env("NINJA", false)
 
 out = []
 
@@ -259,12 +259,15 @@ for argc, arg in enumerate(sys.argv):
             continue
 
     # duplicates can happen on cmake/rustc but they are expected to be here for a reason so skip them
-    if not (CMAKE or RUSTC):
+    if not (CMAKE or NINJA or RUSTC):
         # prevent duplicates objects/archives files on cmdline when linking
         if LINKING or MODE == "-o":
             if arg.endswith(".a") or arg.endswith(".o"):
                 if arg in out:
                     continue
+
+    # fix sysroot is not default to PIC
+    arg = arg.replace("/lib/wasm32-emscripten/lib","/lib/wasm32-emscripten/pic/lib")
 
     out.append(arg)
 

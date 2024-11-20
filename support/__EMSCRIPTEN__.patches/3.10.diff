@@ -24343,7 +24343,7 @@
 -#ifdef MS_WINDOWS
 -int
 -wmain(int argc, wchar_t **argv)
-+#if __PYDK__
++#if defined(PYDK)
 +#include "pycore_call.h"          // _PyObject_CallNoArgs()
 +#include "pycore_initconfig.h"    // _PyArgv
 +#include "pycore_interp.h"        // _PyInterpreterState.sysdict
@@ -24413,7 +24413,7 @@
      return Py_BytesMain(argc, argv);
  }
 -#endif
-+#endif //#if __PYDK__
++#endif // PYDK
 --- Python-3.10.5/Python/dup2.c	2022-06-06 13:53:30.000000000 +0200
 +++ Python-3.10.5-pydk/Python/dup2.c	2022-06-15 16:46:36.808060910 +0200
 @@ -16,16 +16,27 @@

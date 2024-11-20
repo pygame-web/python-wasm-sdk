@@ -63,8 +63,8 @@ END
 #        sed -i 's| -Wl,--stack-first -Wl,--initial-memory=10485760| --stack-first --initial-memory=10485760|g' $PYSRC/configure
 
         LDSHARED="${SDKROOT}/wasisdk/upstream/bin/wasm-ld --no-entry" CONFIG_SITE=$PYSRC/Tools/wasm/config.site-wasm32-wasisdk \
-        $PYSRC/configure -C \
-        --with-c-locale-coercion --without-pymalloc --disable-ipv6  --disable-gil --with-ensurepip=no \
+        $PYSRC/configure -C $GIL \
+        --with-c-locale-coercion --without-pymalloc --disable-ipv6  --with-ensurepip=no \
         --prefix=${PREFIX} \
         --host=wasm32-unknown-wasi --with-suffix=.wasm \
         --build=$($PYSRC/config.guess) \
