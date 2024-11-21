@@ -188,7 +188,7 @@ Libs: -L\${libdir} -lSDL2_mixer
 Cflags: -I\${includedir}/SDL2
 Requires.private:
 Libs.private:
-
+END
 
 fi
 
