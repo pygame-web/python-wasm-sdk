@@ -348,6 +348,9 @@ include_dirs = $PREFIX/include
 NUMPY
 
 
+
+
+
 . scripts/make-shells.sh
 
 # C/C++/cmake shell
@@ -381,9 +384,10 @@ fi
 
 export SYS_PYTHON=${SYS_PYTHON}
 export EMSDK_PYTHON=${SYS_PYTHON}
-export _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__emscripten_
+export _PYTHON_SYSCONFIGDATA_NAME=\${_PYTHON_SYSCONFIGDATA_NAME:-_sysconfigdata__emscripten_debug}
 
 END
+
 
 # python shell
 cat > $HOST_PREFIX/bin/python3-wasm <<END

@@ -175,7 +175,7 @@ END
             # wget https://github.com/bytecodealliance/wasmtime/releases/download/v26.0.1/wasmtime-v26.0.1-$(arch)-$(PLATFORM).tar.xz \
 # TODO: window only has a zip archive, better use wasmtime-py instead.
 
-            wget https://github.com/bytecodealliance/wasmtime/releases/download/v27.0.0/wasmtime-v27.0.0-$(arch)-$(PLATFORM).tar.xz \
+            wget https://github.com/bytecodealliance/wasmtime/releases/download/v27.0.0/wasmtime-v27.0.0-$(arch)-${PLATFORM}.tar.xz \
              -O-|xzcat|tar xfv -
             mv -vf $(find wasmtime*|grep /wasmtime$) ${SDKROOT}/devices/$(arch)/usr/bin
         fi
@@ -299,7 +299,7 @@ END
             > ${SDKROOT}/wasm32-${TARGET}-shell.sh
 
             CPU=wasm32 TARGET=$TARGET \
-             PYDK_PYTHON_HOST_PLATFORM=wasm32-${TARGET} \
+             PYDK_SYSCONFIG_PLATFORM=wasm32-${TARGET} \
              PREFIX=/opt/python-wasm-sdk/devices/wasisdk/usr \
              ./scripts/make-shells.sh
 

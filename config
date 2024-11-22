@@ -67,6 +67,7 @@ export EMSDK_NUM_CORES=1
 
 # for shared modules
 export PYDK_PYTHON_HOST_PLATFORM=wasm32-${WASM_FLAVOUR}-emscripten
+export PYDK_SYSCONFIG_PLATFORM=$(echo -n $PYDK_PYTHON_HOST_PLATFORM|cut -d- -f1)-$(echo -n $PYDK_PYTHON_HOST_PLATFORM|cut -d- -f3)
 
 # ============== wasi sdk ===============
 
