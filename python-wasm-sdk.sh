@@ -298,12 +298,13 @@ END
 # HOST_PREFIX=/opt/python-wasm-sdk/devices/$(arch)/usr
             > ${SDKROOT}/wasm32-${TARGET}-shell.sh
 
-            CPU=wasm32 TARGET=$TARGET \
-             PYDK_SYSCONFIG_PLATFORM=wasm32-${TARGET} \
-             PREFIX=/opt/python-wasm-sdk/devices/wasisdk/usr \
+            CPU=wasm32
+            CPU=$CPU TARGET=$TARGET PYDK_PYTHON_HOST_PLATFORM=${CPU}-${TARGET} \
+             PYDK_SYSCONFIG_PLATFORM=${CPU}-${TARGET} \
+             PREFIX=/opt/python-wasm-sdk/devices/${TARGET}sdk/usr \
              ./scripts/make-shells.sh
 
-            cat >> $ROOT/wasm32-${TARGET}-shell.sh <<END
+            cat >> $ROOT/${CPU}-${TARGET}-shell.sh <<END
 #!/bin/bash
 . ${WASISDK}/wasisdk_env.sh
 
