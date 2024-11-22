@@ -172,10 +172,10 @@ END
             echo "keeping installed wasmtime and wasi binaries"
         else
             #wget https://github.com/bytecodealliance/wasmtime/releases/download/v22.0.0/wasmtime-v22.0.0-x86_64-linux.tar.xz
-
+            # wget https://github.com/bytecodealliance/wasmtime/releases/download/v26.0.1/wasmtime-v26.0.1-$(arch)-$(PLATFORM).tar.xz \
 # TODO: window only has a zip archive, better use wasmtime-py instead.
 
-            wget https://github.com/bytecodealliance/wasmtime/releases/download/v26.0.1/wasmtime-v26.0.1-$(arch)-$(PLATFORM).tar.xz \
+            wget https://github.com/bytecodealliance/wasmtime/releases/download/v27.0.0/wasmtime-v27.0.0-$(arch)-$(PLATFORM).tar.xz \
              -O-|xzcat|tar xfv -
             mv -vf $(find wasmtime*|grep /wasmtime$) ${SDKROOT}/devices/$(arch)/usr/bin
         fi

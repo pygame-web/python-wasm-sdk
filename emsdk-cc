@@ -125,6 +125,8 @@ WASM_EXTRA = env("WASM_EXTRA", "") + " " + env("WASM_OPTS", "")
 # the only sane default for now
 COPTS = env("COPTS", "-O2 -g3")
 
+SIZEOPT = '-Os' in COPTS
+
 MAIN_MODULE = LINKING = STATIC = False
 
 EXE = False
@@ -366,7 +368,8 @@ else:
                     except Exception as e:
                         dbg("ERROR: 312", e)
 
-        final.append("-sENVIRONMENT=node")
+        if SIZEOPT:
+            final.append("-sENVIRONMENT=node")
 
         # error: explicitly setting EXIT_RUNTIME not compatible with STANDALONE_WASM.
         #  EXIT_RUNTIME will always be True for programs (with a main function) and False for reactors (not main function).
@@ -378,7 +381,7 @@ else:
 
         __import__("atexit").register(make_exe)
     elif HTML:
-        if "-sENVIRONMENT=web" not in out:
+        if SIZEOPT and ("-sENVIRONMENT=web" not in out):
             final.append("-sENVIRONMENT=web")
 
     # maybe not pass all WASM opts when -c + -o but always PIC and opt level
