@@ -20,14 +20,14 @@ jobs:
     env:
        BUILDS: 3.12 3.13
        SDKROOT: /opt/python-wasm-sdk
-       EMFLAVOUR: tot
+       EMFLAVOUR: latest
        Py_GIL_DISABLED: false
        wasisdk: true
        gosdk: false
        rustsdk: false
        nimsdk: false
+       COPTS: -Os -g0
 
-    
     steps:
     - uses: actions/checkout@v3.3.0
 

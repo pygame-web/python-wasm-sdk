@@ -92,6 +92,9 @@ END
         fi
     popd
 
+# now libmpdec.a is correctly linked in libpython.
+if false
+then
     pushd ${SDKROOT}/wasisdk
         if [ -f libpython${PYBUILD}.a ]
         then
@@ -113,7 +116,7 @@ END
         wasi-c -nostdlib -fpic -r -Wl,--whole-archive -o libpython${PYBUILD}.o $LINKALL
         llvm-ar rcs ${PREFIX}/lib/libpython${PYBUILD}.a libpython${PYBUILD}.o
     popd
-
+fi
 
 else
     echo cannot find PYTHON_FOR_BUILD=$PYTHON_FOR_BUILD
