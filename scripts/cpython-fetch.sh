@@ -44,9 +44,9 @@ fi
 
 if echo $PYBUILD |grep -q 14$
 then
-    wget -c https://www.python.org/ftp/python/3.14.0/Python-3.14.0a1.tar.xz
-    tar xf Python-3.14.0a1.tar.xz
-    ln -s Python-3.14.0a1 cpython${PYBUILD}
+    wget -c https://www.python.org/ftp/python/3.14.0/Python-3.14.0a2.tar.xz
+    tar xf Python-3.14.0a2.tar.xz
+    ln -s Python-3.14.0a2 cpython${PYBUILD}
 
     mkdir $ROOT/devices/emsdk/usr/lib $ROOT/devices/$(arch)/usr/lib -p
 

@@ -60,7 +60,8 @@ EXTRABINS="/usr/local/bin /opt/bin"
 # stable==latest dev==tot
 export EMFLAVOUR=${EMFLAVOUR:latest}
 export EMSDK_QUIET=1
-
+export EMSDK_NOTTY=0
+export EMSDK_VERBOSE=0
 
 #temp fix for oom on CI (Error: Process completed with exit code 143.)
 export EMSDK_NUM_CORES=1

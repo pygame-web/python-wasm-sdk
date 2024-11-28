@@ -400,7 +400,7 @@ else:
             # TODO: module level
             #  -gsource-map --source-map-base /
             pass
-        final.extend(arglist(WASM_EXTRA, "-DPYDK_STATIC"))
+        final.extend(arglist(WASM_EXTRA, "-D__PYDK__=1"))
 
     final.extend(out)
     final.extend(COMMON)
