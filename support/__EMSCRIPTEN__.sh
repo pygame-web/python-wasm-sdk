@@ -40,7 +40,7 @@ END
 
 #include "Python.h"
 
-#if __PYDK__
+#if defined(__PYGBAG__)
 #include "pycore_call.h"          // _PyObject_CallNoArgs()
 #include "pycore_initconfig.h"    // _PyArgv
 #include "pycore_interp.h"        // _PyInterpreterState.sysdict
@@ -108,7 +108,7 @@ main(int argc, char **argv)
 
     return Py_BytesMain(argc, argv);
 }
-#endif //#if __PYDK__
+#endif // __PYGBAG__
 END
 
     popd
