@@ -1,0 +1,13 @@
+--- cpython3.13/Makefile.pre.in	2024-12-03 07:51:52.083841661 +0100
++++ cpython3.13-pic/Makefile.pre.in	2024-12-03 07:54:00.742976111 +0100
+@@ -34,8 +34,8 @@
+ abs_builddir=	@abs_builddir@
+ 
+ 
+-CC=		@CC@
+-CXX=		@CXX@
++CC=@CC@ -fPIC
++CXX=@CXX@ -fPIC
+ LINKCC=		@LINKCC@
+ AR=		@AR@
+ READELF=	@READELF@
