@@ -54,7 +54,6 @@ then
     unset CPPFLAGS
     unset LDFLAGS
 
-#export OPT="$CPOPTS -DNDEBUG -fwrapv"
     mkdir -p $ROOT/src/cpython${PYBUILD}/Tools/wasm
     cat > $ROOT/src/cpython${PYBUILD}/Tools/wasm/config.host-wasm32-emscripten <<END
 ac_cv_lib_intl_textdomain=no
@@ -101,11 +100,11 @@ END
         fi
     fi
 
-#  CFLAGS="-fPIC" CPPFLAGS="-fPIC"
-    CNF="${ROOT}/src/cpython${PYBUILD}/configure \
+     CNF="${ROOT}/src/cpython${PYBUILD}/configure \
      --prefix=$HOST_PREFIX $PYOPTS $GIL"
-    if CC=clang CXX=clang++ $CNF
+    if CC="clang" CXX="clang++" CCSHARED="-fPIC" $CNF
     then
+
         if make -j$(nproc)
         then
             if make install
@@ -113,7 +112,7 @@ END
                 echo "CPython $PYTHON_FOR_BUILD ready" 1>&2
             else
                 echo "CPython $PYTHON_FOR_BUILD failed to install" 1>&2
-                exit 117
+                exit 114
             fi
         else
             echo "
@@ -121,7 +120,7 @@ failed to build $PYTHON_FOR_BUILD
 
 CC=clang CXX=clang++ $CNF
 "  1>&2
-            exit 125
+            exit 122
         fi
     else
         echo "
@@ -134,7 +133,7 @@ CC=clang CXX=clang++ $CNF
 
 ==========================================================================
     " 1>&2
-        exit 149
+        exit 135
     fi
 
     popd

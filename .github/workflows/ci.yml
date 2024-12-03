@@ -26,7 +26,7 @@ jobs:
        gosdk: false
        rustsdk: false
        nimsdk: false
-       COPTS: -Os -g0
+       COPTS: -Os -g3
 
     steps:
     - uses: actions/checkout@v3.3.0

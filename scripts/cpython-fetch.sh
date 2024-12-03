@@ -8,7 +8,7 @@ echo "
 
 mkdir -p src
 
-pushd src 2>&1 >/dev/null
+pushd src
 
 NOPATCH=false
 PYPATCH=true
@@ -22,7 +22,7 @@ if echo $PYBUILD |grep -q 15$
 then
     if [ -d cpython${PYBUILD} ]
     then
-        pushd cpython${PYBUILD} 2>&1 >/dev/null
+        pushd cpython${PYBUILD}
         # put the tree back to original state so we can pull
         # Programs/python.c Modules/readline.c
         git restore .
@@ -133,9 +133,9 @@ popd
 # 3.10 is not wasm stable
 if [ -f support/__EMSCRIPTEN__.patches/${PYBUILD}-host.diff ]
 then
-    pushd src/cpython${PYBUILD} 2>&1 >/dev/null
+    pushd src/cpython${PYBUILD}
     patch -p1 < ../../support/__EMSCRIPTEN__.patches/${PYBUILD}-host.diff
-    popd 2>&1 >/dev/null
+    popd
 fi
 
 
@@ -147,10 +147,15 @@ if $NOPATCH
 then
     echo "finally there"
 else
-    # do some patching for 3.11+ to allow more shared libs
-    pushd src/cpython${PYBUILD} 2>&1 >/dev/null
+    pushd src/cpython${PYBUILD}
+
+    # do some patching for 3.11+ to allow shared libs and move js to pymain
     patch -p1 < ../../support/__EMSCRIPTEN__.embed/cpython${PYBUILD}.diff
-    popd 2>&1 >/dev/null
+
+    # patch host to be PIC
+    patch -p1 < ../../support/hostpic.diff
+
+    popd
 fi
 
 echo "
