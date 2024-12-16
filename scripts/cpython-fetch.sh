@@ -79,9 +79,11 @@ fi
 
 if echo $PYBUILD |grep -q 13$
 then
-    wget -q -c https://www.python.org/ftp/python/3.13.0/Python-3.13.0.tar.xz
-    tar xf Python-3.13.0.tar.xz
-    ln -s Python-3.13.0 cpython${PYBUILD}
+    wget -q -c https://www.python.org/ftp/python/3.13.1/Python-3.13.1.tar.xz
+    tar xf Python-3.13.1.tar.xz
+    ln -s Python-3.13.1 cpython${PYBUILD}
+
+    sed -i 's|ProcessPoolExecutor = None|return True|g' cpython3.13/Lib/compileall.py
 
     mkdir $ROOT/devices/emsdk/usr/lib $ROOT/devices/$(arch)/usr/lib -p
 

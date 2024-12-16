@@ -102,7 +102,7 @@ END
 
      CNF="${ROOT}/src/cpython${PYBUILD}/configure \
      --prefix=$HOST_PREFIX $PYOPTS $GIL"
-    if CC="clang" CXX="clang++" CCSHARED="-fPIC" $CNF
+    if CC="clang" CXX="clang++" CCSHARED="-fPIC" EXTRA_CFLAGS="-DTHREAD_STACK_SIZE=0x100000" $CNF
     then
 
         if make -j$(nproc)

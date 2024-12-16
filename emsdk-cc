@@ -358,7 +358,7 @@ else:
                     try:
                         with open(AOUT, "w") as file:
                             file.write("#!/usr/bin/env bash\n")
-                            file.write('node $0.cjs "$@"\n')
+                            file.write(os.environ.get('SYS_NODE', '/usr/bin/node')+' $0.cjs "$@"\n')
                     except Exception as e:
                         dbg("ERROR: 306", e)
                         os.rename(AOUT + ".cjs", AOUT)

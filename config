@@ -27,15 +27,12 @@ export XDG_DATA_HOME=${HOME}/build/share
 export XDG_CACHE_HOME=${HOME}/build/cache
 export XDG_CONFIG_HOME=${HOME}/build/config
 export XDG_DATA_DIRS=${HOME}/build/share
-
 mkdir -p $XDG_DATA_HOME $XDG_CACHE_HOME $XDG_CONFIG_HOME
 
+export PIP_ROOT_USER_ACTION=ignore
+export PIP_NO_CACHE_DIR=1
 export HPY=${HOST_PREFIX}/bin/python${PYBUILD}
 export HPIP="${HPY} -mpip"
-
-# cpython build opts
-export CPOPTS="-Os -g0 -fPIC"
-
 
 # base wasm features pure is "mvp" , "bi" is bigint
 
@@ -154,7 +151,7 @@ done
 
 # this is python used for emsdk : ${SYS_PYTHON} -> ${EMSDK_PYTHON}
 # sane default
-export SYS_PYTHON=$(command -v python${PYMAJOR})
+export SYS_PYTHON=python${PYMAJOR}
 for py in 10 9 8
 do
     if command -v python${PYMAJOR}.${py} >/dev/null

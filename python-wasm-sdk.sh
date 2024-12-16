@@ -4,14 +4,25 @@ reset
 # TODO: check how dbg tools work with default settings
 # https://developer.chrome.com/blog/wasm-debugging-2020/
 
-if command -v python3
+mkdir -p /tmp/sdk-bin
+export PATH=/tmp/sdk-bin:$PATH
+
+which command || cat > /tmp/sdk-bin/command << END
+#!/bin/bash
+shift
+which $1
+END
+chmod +x /tmp/sdk-bin/command
+
+
+if which python3
 then
-    SYS_PYTHON=$(command -v python3)
+    SYS_PYTHON=$(which python3)
 else
-    SYS_PYTHON=$(command -v python)
+    SYS_PYTHON=$(which python)
 fi
 
-DISTRIB_RELEASE="any"
+DISTRIB_RELEASE=${DISTRIB_RELEASE:-any}
 
 # is it linux enough ?
 if [ -f /etc/lsb-release ]
@@ -20,10 +31,10 @@ then
     export PLATFORM=linux
 else
     # or not
-    export DISTRIB_ID=$($SYS_PYTHON -E -c "print(__import__('sys').platform)")
-    echo no /etc/lsb-release found, please identify platform '$DISTRIB_ID'
-    DISTRIB="${DISTRIB_ID}-${DISTRIB_RELEASE}"
-    exit 1
+    export DISTRIB_ID=$($SYS_PYTHON -E -c "print(__import__('sysconfig').get_config_var('HOST_GNU_TYPE'))")
+    export PLATFORM=$($SYS_PYTHON -E -c "print(__import__('sys').platform)")
+    echo no /etc/lsb-release found, please identify platform $PLATFORM : \"${DISTRIB_ID}-${DISTRIB_RELEASE}\" or hit enter to continue
+    read
 fi
 
 export DISTRIB="${DISTRIB_ID}-${DISTRIB_RELEASE}"
@@ -60,7 +71,7 @@ do
     fi
 done
 
-if [ -d ${SDKROOT} ]
+if mkdir -p ${SDKROOT}
 then
     echo "Assuming destination $SDKROOT is ready"
 else

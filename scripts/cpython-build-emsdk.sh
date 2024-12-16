@@ -67,7 +67,7 @@ else
 
 
 
-    EMCC_CFLAGS="-O0 -g0 -fPIC" CFLAGS="-O0 -g0 -fPIC" CC=${SDKROOT}/emsdk/upstream/emscripten/emcc \
+    CC=${SDKROOT}/emsdk/upstream/emscripten/emcc \
      emconfigure $ROOT/src/libffi/configure --host=wasm32-bi-emscripten \
       --prefix=$PREFIX --enable-static --disable-shared --disable-dependency-tracking\
       --disable-builddir --disable-multi-os-directory --disable-raw-api --disable-docs
@@ -147,7 +147,7 @@ else
 
 #     --with-tzpath="/usr/share/zoneinfo" \
 
-    export EMCC_CFLAGS="$CPOPTS -D_XOPEN_SOURCE_EXTENDED=1 -I$PREFIX/include/ncursesw -sUSE_ZLIB -sUSE_BZIP2"
+    export EMCC_CFLAGS="-D_XOPEN_SOURCE_EXTENDED=1 -I$PREFIX/include/ncursesw -sUSE_ZLIB -sUSE_BZIP2"
 
     CPPFLAGS="$CPPFLAGS -I$PREFIX/include/ncursesw"
     CFLAGS="$CPPFLAGS -I$PREFIX/include/ncursesw"

@@ -208,7 +208,14 @@ END
 
         curl -fsSL https://bun.sh/install | bash
 
-        npm install --prefix $ROOT/emsdk/node/??.??.* -g pnpm@^9.0.0
+        # emsdk shipped node cannot run on alpine
+        if [ -f /alpine ]
+        then
+            cp -vf /usr/bin/node $ROOT/emsdk/node/??.??.*/bin/node
+        fi
+
+        export PATH=$(echo -n ${SDKROOT}/emsdk/node/??.??.*/bin):$PATH
+        $ROOT/emsdk/node/??.??.*/bin/npm install --prefix $ROOT/emsdk/node/??.??.* -g pnpm@^9.0.0
 
 # maybe rewrite that in python and move it to emcc.py
 
@@ -523,7 +530,7 @@ END
         # emsdk env does not set it, but it's required for eg sdl2-config
         echo -n
     else
-        export PATH=$EMSDK/upstream/emscripten/system/bin:$EMSDK/upstream/emscripten:$PATH
+        export PATH=$(echo -n ${EMSDK}/node/??.??.*/bin):$EMSDK/upstream/emscripten/system/bin:$EMSDK/upstream/emscripten:$PATH
     fi
 
     #ln $EMSDK/upstream/emscripten/emstrip $EMSDK/upstream/emscripten/strip

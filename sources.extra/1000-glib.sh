@@ -118,8 +118,9 @@ c = 'emcc'
 cpp = 'em++'
 ar = 'emar'
 ranlib = 'emranlib'
-pkgconfig = ['pkg-config', '--static']
+pkg-config = ['pkg-config', '--static']
 # https://docs.gtk.org/glib/cross-compiling.html#cross-properties
+
 [properties]
 growing_stack = true
 have_c99_vsnprintf = true
@@ -136,6 +137,10 @@ system = 'emscripten'
 cpu_family = 'wasm32'
 cpu = 'wasm32'
 endian = 'little'
+
+[ninja]
+backend_max_links = 1
+
 END
 
     meson setup _build --prefix=$PREFIX --cross-file=emscripten-crossfile.meson --default-library=static --buildtype=release \
