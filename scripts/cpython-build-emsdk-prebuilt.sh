@@ -83,20 +83,105 @@ $HPIP install --force ninja
 # patch ninja for jobs limit and wrapper detection
 # https://github.com/ninja-build/ninja/issues/1482
 
-cat > ${HOST_PREFIX}/bin/ninja <<END
-#!${HOST_PREFIX}/bin/python${PYBUILD}
+cat > ${HOST_PREFIX}/lib/python${PYBUILD}/site-packages/ninja/__init__.py <<END
+from __future__ import annotations
+
+import os
+import subprocess
+import sys
+import sysconfig
+from collections.abc import Iterable
+from typing import NoReturn
+
+from ._version import version as __version__
+from .ninja_syntax import Writer, escape, expand
+
+__all__ = ["BIN_DIR", "DATA", "Writer", "__version__", "escape", "expand", "ninja"]
+
+
+def __dir__() -> list[str]:
+    return __all__
+
+
+def _get_ninja_dir() -> str:
+    ninja_exe = "ninja" + sysconfig.get_config_var("EXE")
+
+    # Default path
+    path = os.path.join(sysconfig.get_path("scripts"), ninja_exe)
+    if os.path.isfile(path):
+        return os.path.dirname(path)
+
+    # User path
+    if sys.version_info >= (3, 10):
+        user_scheme = sysconfig.get_preferred_scheme("user")
+    elif os.name == "nt":
+        user_scheme = "nt_user"
+    elif sys.platform.startswith("darwin") and getattr(sys, "_framework", None):
+        user_scheme = "osx_framework_user"
+    else:
+        user_scheme = "posix_user"
+
+    path = sysconfig.get_path("scripts", scheme=user_scheme)
+
+    if os.path.isfile(os.path.join(path, ninja_exe)):
+        return path
+
+    # Fallback to python location
+    path = os.path.dirname(sys.executable)
+    if os.path.isfile(os.path.join(path, ninja_exe)):
+        return path
+
+    return ""
+
+
+BIN_DIR = _get_ninja_dir()
+
+
+def _program(name: str, args: Iterable[str]) -> int:
+    cmd = os.path.join('${HOST_PREFIX}/bin', name)
+    return subprocess.call([cmd, *args], close_fds=False)
+
+def ninja() -> NoReturn:
+    import os
+    os.environ['NINJA'] = "1"
+    if not sys.argv[-1] != "--version":
+        sys.argv.insert(1,'1')
+        sys.argv.insert(1,'-j')
+#        import time
+#        while os.path.isfile('/tmp/ninja'):
+#            time.sleep(.5)
+#        open('/tmp/ninja','w').close()
+
+    ret = _program('ninja.real', sys.argv[1:])
+#    try:
+#        os.unlink('/tmp/ninja')
+#    except:
+#        pass
+    raise SystemExit(ret)
+
+END
+
+
+
+if [ -f $HOST_PREFIX/bin/ninja.real ]
+then
+    echo ninja already patched
+else
+    mv $HOST_PREFIX/bin/ninja $HOST_PREFIX/bin/ninja.real
+    cat > $HOST_PREFIX/bin/ninja <<END
+#!/opt/python-wasm-sdk/devices/x86_64/usr/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys
-sys.argv.insert(1,'1')
-sys.argv.insert(1,'-j')
-import os
-os.environ['NINJA']="1"
 from ninja import ninja
 if __name__ == '__main__':
-    sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?\$', '', sys.argv[0])
+    sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])
     sys.exit(ninja())
 END
+    chmod +x $HOST_PREFIX/bin/ninja
+fi
+
+
 
 echo "
     *   cpython-build-emsdk-prebuilt pip==$PIP   *

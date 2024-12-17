@@ -79,8 +79,17 @@ fi
 
 if echo $PYBUILD |grep -q 13$
 then
-    wget -q -c https://www.python.org/ftp/python/3.13.1/Python-3.13.1.tar.xz
-    tar xf Python-3.13.1.tar.xz
+    if [ -d Python-3.13.1 ]
+    then
+        echo "  * Using local cpython sources"
+    else
+        pwd
+        ls
+        echo "  * fetching remote cpython sources"
+        wget -q -c https://www.python.org/ftp/python/3.13.1/Python-3.13.1.tar.xz
+        tar xf Python-3.13.1.tar.xz || exit 87
+    fi
+
     ln -s Python-3.13.1 cpython${PYBUILD}
 
     sed -i 's|ProcessPoolExecutor = None|return True|g' cpython3.13/Lib/compileall.py

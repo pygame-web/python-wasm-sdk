@@ -5,13 +5,6 @@
 
 . ${CONFIG:-config}
 
-if which meson
-then
-    echo meson found $(which meson)
-else
-    $HPY -m pip install meson
-fi
-
 . scripts/emsdk-fetch.sh
 
 if pushd ${ROOT}/src
@@ -46,8 +39,7 @@ then
     done
 
     # Common compiler flags
-    export CFLAGS="-O3"
-    export CXXFLAGS="$CFLAGS"
+    export COPTS="-Os -g0"
     export LDFLAGS="-L$PREFIX/lib"
 
 
@@ -138,14 +130,37 @@ cpu_family = 'wasm32'
 cpu = 'wasm32'
 endian = 'little'
 
-[ninja]
+[backend]
 backend_max_links = 1
 
 END
 
-    meson setup _build --prefix=$PREFIX --cross-file=emscripten-crossfile.meson --default-library=static --buildtype=release \
+    echo "
+
+
+    ============ MESON SETUP $(which ninja) =========================
+
+
+"
+    meson setup _build --reconfigure --prefix=$PREFIX --cross-file=emscripten-crossfile.meson --default-library=static --buildtype=minsize \
       --force-fallback-for=pcre2,gvdb -Dselinux=disabled -Dxattr=false -Dlibmount=disabled -Dnls=disabled \
       -Dtests=false -Dglib_assert=false -Dglib_checks=false
+    echo "
+
+
+    ============ MESON COMPILE =========================
+
+
+"
+    # meson compile _build -j 1
+    echo "
+
+
+    ============ MESON INSTALL =========================
+
+
+"
+
     meson install -C _build --tag devel
     popd  # glib
     popd # src

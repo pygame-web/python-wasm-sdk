@@ -6,6 +6,11 @@ then
 
     . ${CONFIG:-config}
 
+
+
+    # for full rebuild
+    # rm emsdk/.complete
+
     if [ -d emsdk ]
     then
         echo "
@@ -13,28 +18,40 @@ then
             with sys python $SYS_PYTHON
 " 1>&2
     else
-        # emsdk could have been deleted for full rebuild
-        rm emsdk/.complete
-
-        if git clone --no-tags --depth 1 --single-branch --branch main https://github.com/emscripten-core/emsdk.git
-        then
-            pushd emsdk
-                #git checkout 91f8563a9d1a4a0ec03bbb2be23485367d85a091
-                ./emsdk install ${EMFLAVOUR:-latest}
-                ./emsdk activate ${EMFLAVOUR:-latest}
+        git clone --no-tags --depth 1 --single-branch --branch main https://github.com/emscripten-core/emsdk.git
+        pushd emsdk
+            #git checkout 91f8563a9d1a4a0ec03bbb2be23485367d85a091
+            ./emsdk install ${EMFLAVOUR:-latest}
+            ./emsdk activate ${EMFLAVOUR:-latest}
+        popd
+    fi
 
 
-                pushd upstream/emscripten
-                    echo "FIXME: applying stdio* are not const"
-                    sed -i 's|extern FILE \*const|extern FILE \*|g' cache/sysroot/include/stdio.h
 
-                    echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/20281 dylink.js : handle ** argument case"
-if [ -f test/other/test_em_js_side.c b/test/other/test_em_js_side.c ]
-then
-                    wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/20281.diff
-                    patch -p1 < 20281.diff
-else
-                    patch -p1 <<END
+
+
+    if [ -f emsdk/.complete ]
+    then
+        echo " * found emsdk/.complete : not patching/building emsdk"
+    else
+        pushd emsdk/upstream/emscripten
+
+
+
+
+            echo "FIXME: applying stdio* are not const"
+            sed -i 's|extern FILE \*const|extern FILE \*|g' cache/sysroot/include/stdio.h
+
+
+
+
+            echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/20281 dylink.js : handle ** argument case"
+            if [ -f test/other/test_em_js_side.c b/test/other/test_em_js_side.c ]
+            then
+                wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/20281.diff
+                patch -p1 < 20281.diff
+            else
+                patch -p1 <<END
 diff --git a/src/library_dylink.js b/src/library_dylink.js
 index 632e20aa61e3..ebb13995d6c3 100644
 --- a/src/library_dylink.js
@@ -50,28 +67,30 @@ index 632e20aa61e3..ebb13995d6c3 100644
            var func = `(${jsArgs}) => ${body};`;
 END
 
-fi
-                    echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/17956 file corruption when using emscripten_run_preload_plugins with BrowserFS"
-                    wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/17956.diff
+            fi
 
-                    if patch -p1 < 17956.diff
-                    then
-                        echo applied https://github.com/emscripten-core/emscripten/pull/17956
-                        # 18941 has been merged
-                    else
-                        # deal with old version of emsdk for the above 3.1.45 patch
-                        sed -i 's|new Uint8Array(data.object.contents), true, true|FS.readFile(_file), true, true|g' src/library_browser.js
-                        # merged since 3.1.34 which quite the more stable atm
-                        #echo "MAYBE FIXME: Applying https://github.com/emscripten-core/emscripten/pull/18941"
-                        #wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/18941.diff
-                        #patch -p1 < 18941.diff
-                    fi
-                popd
+
+            echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/17956 file corruption when using emscripten_run_preload_plugins with BrowserFS"
+            wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/17956.diff
+
+                if patch -p1 < 17956.diff
+                then
+                    echo applied https://github.com/emscripten-core/emscripten/pull/17956
+                    # 18941 has been merged
+                else
+                    # deal with old version of emsdk for the above 3.1.45 patch
+                    sed -i 's|new Uint8Array(data.object.contents), true, true|FS.readFile(_file), true, true|g' src/library_browser.js
+                    # merged since 3.1.34 which quite the more stable atm
+                    #echo "MAYBE FIXME: Applying https://github.com/emscripten-core/emscripten/pull/18941"
+                    #wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/18941.diff
+                    #patch -p1 < 18941.diff
+                fi
+        popd # emsdk/upstream/emscripten
 
 #                wget https://raw.githubusercontent.com/paradust7/minetest-wasm/main/emsdk_emcc.patch
 #                patch -p1 < emsdk_emcc.patch
 
-                pushd upstream/emscripten
+        pushd upstream/emscripten
                     echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/21472 glfw3: gl level version major/minor hints"
                     wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/21472.diff
                     patch -p1 < 21472.diff
@@ -94,12 +113,12 @@ fi
                     #echo "FIXME: scriptDirectory workaround" MERGER
                     #wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/22605.diff
                     #patch -p1 < 22605.diff
-                popd
+        popd # upstream/emscripten
 
 
 
-                # https://github.com/paradust7/minetest-wasm/blob/main/emsdk_dirperms.patch
-                patch -p1 <<END
+        # https://github.com/paradust7/minetest-wasm/blob/main/emsdk_dirperms.patch
+        patch -p1 <<END
 --- emsdk-orig/upstream/emscripten/system/lib/wasmfs/wasmfs.cpp	2022-07-29 17:22:28.000000000 +0000
 +++ emsdk/upstream/emscripten/system/lib/wasmfs/wasmfs.cpp	2022-08-06 02:07:24.098196400 +0000
 @@ -141,7 +141,7 @@
@@ -133,8 +152,8 @@ END
 #END
 
 
-                # https://raw.githubusercontent.com/paradust7/minetest-wasm/main/emsdk_setlk.patch
-                patch -p1 << END
+            # https://raw.githubusercontent.com/paradust7/minetest-wasm/main/emsdk_setlk.patch
+            patch -p1 << END
 --- emsdk-orig/upstream/emscripten/system/lib/wasmfs/syscalls.cpp	2022-07-29 17:22:28.000000000 +0000
 +++ emsdk/upstream/emscripten/system/lib/wasmfs/syscalls.cpp	2022-08-06 05:05:17.014502697 +0000
 @@ -1419,7 +1419,7 @@
@@ -148,12 +167,7 @@ END
      case F_SETOWN:
 END
 
-
-
-
-            popd
-        fi
-    fi
+    fi # emsdk/.complete
 
     export EMSDK_PYTHON=$SYS_PYTHON
 

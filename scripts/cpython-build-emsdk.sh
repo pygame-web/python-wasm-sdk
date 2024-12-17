@@ -15,9 +15,7 @@ export PYTHON_FOR_BUILD=${PYTHON_FOR_BUILD:-${HPY}}
 
 . ./scripts/emsdk-fetch.sh
 
-REBUILD_WASM=${REBUILD_WASMPY:-false}
-
-if $REBUILD || $REBUILD_WASMPY
+if ${REBUILD_WASMPY:-false}
 then
     rm -rf build/cpython-wasm/ build/pycache/config.cache
     rm build/cpython-wasm/libpython${PYBUILD}.a 2>/dev/null
@@ -130,7 +128,7 @@ echo "
 
 
 
-if [ -f build/cpython-wasm/libpython${PYBUILD}.a ]
+if [ -f ${SDKROOT}/build/cpython-wasm/libpython${PYBUILD}.a ]
 then
     echo "
         * not rebuilding cpython-wasm for [$PYDK_PYTHON_HOST_PLATFORM]

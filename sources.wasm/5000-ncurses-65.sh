@@ -4,89 +4,107 @@
 
 . scripts/emsdk-fetch.sh
 
+
+
+export NCURSES=${NCURSES:-"ncurses-6.5"}
+export URL_NCURSES=${URL_NCURSES:-"https://invisible-mirror.net/archives/ncurses/$NCURSES.tar.gz"}
+
 # --disable-database --enable-termcap
 
-NCOPTS="--enable-ext-colors --enable-ext-mouse --prefix=$PREFIX --disable-echo --without-pthread \
+NCOPTS="--cache-file=${SDKROOT}/build/${NCURSES}.cache --enable-ext-mouse --prefix=$PREFIX --disable-echo --without-pthread \
  --without-tests --without-tack --without-progs --without-manpages \
  --disable-db-install --without-cxx --without-cxx-binding --enable-pc-files \
  --with-pkg-config-libdir=$PREFIX/lib/pkgconfig \
  --with-termlib --enable-termcap --disable-database"
 
-export PYDK_CC=true
-export NCURSES=${NCURSES:-"ncurses-6.5"}
-export URL_NCURSES=${URL_NCURSES:-"https://invisible-mirror.net/archives/ncurses/$NCURSES.tar.gz"}
 
-if cd ${ROOT}/src
+function FIX () {
+    echo "
+
+
+    FIXING report_offsets build
+
+
+"
+    pushd ${SDKROOT}/build/ncurses/ncurses
+    ${EMSDK}/upstream/emscripten/emcc -o report_offsets \
+ -fpic -DHAVE_CONFIG_H -DUSE_BUILD_CC -DBUILDING_NCURSES -DNDEBUG \
+ -I../ncurses -I${SDKROOT}/src/${NCURSES}/ncurses -I../include -I${SDKROOT}/src/${NCURSES}/ncurses/../include \
+ -I../ncurses -I. -I${SDKROOT}/src/${NCURSES}/ncurses -I../include -I${SDKROOT}/src/${NCURSES}/ncurses/../include -I${SDKROOT}/devices/emsdk/usr/include \
+ -Wno-unused-command-line-argument -Qunused-arguments -Wno-error=implicit-function-declaration \
+ ${SDKROOT}/src/${NCURSES}/ncurses/report_offsets.c -L${SDKROOT}/devices/emsdk/usr/lib
+    popd
+}
+
+
+if cd ${SDKROOT}/src
 then
-
-    wget -c $URL_NCURSES && tar xfz $NCURSES.tar.gz
-
-    if cd ${ROOT}/src/$NCURSES
+    if [ -d ${SDKROOT}/src/$NCURSES ]
     then
-        [ -f $NCURSES.done ] || patch -p1 < $SDKROOT/support/__EMSCRIPTEN__.deps/${NCURSES}_emscripten.patch
-        touch $NCURSES.done
+        echo using $NCURSES local sources
+    else
+        wget -c $URL_NCURSES && tar xfz $NCURSES.tar.gz
     fi
 
-    cd $ROOT
-    mkdir -p ${ROOT}/build/ncurses/
-
-    if  [ -f ../devices/emsdk/usr/lib/libncurses.a ]
+    if cd ${SDKROOT}/src/$NCURSES
     then
-        echo "
-            * skiping [ncurses] or already built
-        " 1>&2
-    else
-        rm -rf ${ROOT}/build/ncurses/*
-        cd ${ROOT}/build/ncurses
+        [ -f $NCURSES.patched ] || patch -p1 < $SDKROOT/support/__EMSCRIPTEN__.deps/${NCURSES}_emscripten.patch
+        touch $NCURSES.patched
+    fi
 
-        #CC=clang CFLAGS="-fpic -Wno-unused-command-line-argument" $ROOT/src/${NCURSES}/configure \
-        # $NCOPTS && make && make install
+    mkdir -p ${SDKROOT}/build/ncurses/
 
-        CFLAGS="-fpic -Wno-unused-command-line-argument" emconfigure \
-         $ROOT/src/${NCURSES}/configure \
-         $NCOPTS
+    if true
+    then
+        cd $ROOT
 
-        if true #patch -p1 < $SDKROOT/support/__EMSCRIPTEN__.deps/${NCURSES}_emscripten_make.patch
+        if  [ -f ${PREFIX}/lib/libncurses.a ]
         then
+            echo "
+                * ncurses (non unicode) already built
+            " 1>&2
+        else
+            echo " building non unicode ${NCURSES}"
+            rm -rf ${SDKROOT}/build/ncurses/*
+            cd ${SDKROOT}/build/ncurses
+
+            CFLAGS="-fpic -Wno-unused-command-line-argument" emconfigure \
+             $ROOT/src/${NCURSES}/configure $NCOPTS --disable-widec
+
             emmake make clean
-            if emmake make
-            then
-                emmake make install
-            fi
+            emmake make 2>&1 > /dev/null || FIX
+            emmake make install 2>&1 > /dev/null || exit 76
+
         fi
     fi
 
-    cd $ROOT
-    mkdir -p ${ROOT}/build/ncurses/
-
-    if [ -f devices/emsdk/usr/lib/libncursesw.a ]
+    if  true
     then
-        echo "
-            * ncursesw already built
-        "  1>&2
-    else
-        # build wide char
-        rm -rf ${ROOT}/build/ncurses/*
+        cd $ROOT
 
-        cd ${ROOT}/build/ncurses
-
-        #CC=clang CFLAGS="-fpic -Wno-unused-command-line-argument" $ROOT/src/${NCURSES}/configure \
-        # $NCOPTS --enable-widec && make && make install
-
-        CFLAGS="-fpic -Wno-unused-command-line-argument" emconfigure \
-         $ROOT/src/${NCURSES}/configure $NCOPTS --enable-widec
-
-        cp ncurses/Makefile ncurses/Makefile.makew
-
-        if true #patch -p0 < $SDKROOT/support/__EMSCRIPTEN__.deps/${NCURSES}_emscripten_makew.patch
+        if [ -f ${PREFIX}/lib/libncursesw.a ]
         then
+            echo "
+                * ncursesw already built
+            "  1>&2
+        else
+            echo " building wide char ${NCURSES}"
+
+            # build wide char
+            rm -rf ${SDKROOT}/build/ncurses/*
+
+            cd ${SDKROOT}/build/ncurses
+
+            #CC=clang CFLAGS="-fpic -Wno-unused-command-line-argument" $ROOT/src/${NCURSES}/configure \
+            # $NCOPTS --enable-widec && make && make install
+
+            CFLAGS="-fpic -Wno-unused-command-line-argument" emconfigure \
+             $ROOT/src/${NCURSES}/configure $NCOPTS --enable-ext-colors --enable-widec 2>&1 > /dev/null
+
             emmake make clean
-            if emmake make
-            then
-                emmake make install
-            fi
+            emmake make 2>&1 > /dev/null || FIX
+            emmake make install 2>&1 > /dev/null || exit 106
         fi
     fi
-
 fi
 

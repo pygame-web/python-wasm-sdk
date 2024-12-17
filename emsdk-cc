@@ -308,7 +308,7 @@ if SKIP:
     final.extend(sys.argv)
 else:
     if AOUT:
-        if CMAKE or CONFIGURE:
+        if CMAKE or NINJA or RUSTC or CONFIGURE:
             EXE = False
         # should not happen
         elif AOUT.endswith(".o") and "-c" not in out:
