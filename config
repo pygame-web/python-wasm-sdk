@@ -148,6 +148,7 @@ do
     fi
 done
 
+export SYS_NODE=$(echo -n $SDKROOT/emsdk/node/??.??.*/bin/node)
 
 # this is python used for emsdk : ${SYS_PYTHON} -> ${EMSDK_PYTHON}
 # sane default

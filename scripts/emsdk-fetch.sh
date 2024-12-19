@@ -222,14 +222,22 @@ END
 
         curl -fsSL https://bun.sh/install | bash
 
+        export SYS_NODE=$(echo -n $SDKROOT/emsdk/node/??.??.*/bin/node)
+
         # emsdk shipped node cannot run on alpine
         if [ -f /alpine ]
         then
-            cp -vf /usr/bin/node $ROOT/emsdk/node/??.??.*/bin/node
+            if [ -f $SYS_NODE.glibc ]
+            then
+                echo "node alpine node version already selected"
+            else
+                mv $SYS_NODE $SYS_NODE.glibc
+                cp -vf /usr/bin/node $SYS_NODE
+            fi
         fi
 
         export PATH=$(echo -n ${SDKROOT}/emsdk/node/??.??.*/bin):$PATH
-        $ROOT/emsdk/node/??.??.*/bin/npm install --prefix $ROOT/emsdk/node/??.??.* -g pnpm@^9.0.0
+        $SDKROOT/emsdk/node/??.??.*/bin/npm install --prefix $SDKROOT/emsdk/node/??.??.* -g pnpm@^9.0.0
 
 # maybe rewrite that in python and move it to emcc.py
 
@@ -560,6 +568,7 @@ END
         [ -f $FIXED ] || cp $TRUE $FIXED
     done
 
+    export SYS_NODE=$(echo -n $SDKROOT/emsdk/node/??.??.*/bin/node)
 
     export NPROC=1
     export EMSDK_NUM_CORES=$NPROC
