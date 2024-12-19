@@ -44,11 +44,12 @@ jobs:
         echo "Android support:"
         env|grep ANDROID
 
-    - name: Install dependencies
+    - name: Install dependencies and force sdk node
       run: |
         sudo apt-get update --fix-missing
         # git clang libffi-dev libssl-dev zlib1g-dev pkg-config libncursesw5-dev python3-pip make
         sudo apt-get install -y bash patchelf wget lz4
+        sudo rm /usr/bin/node
 
     - name: Build sdk
       run: |
