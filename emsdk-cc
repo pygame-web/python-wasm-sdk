@@ -49,11 +49,12 @@ def arglist(*argv):
 
 # -Wwarn-absolute-paths
 # --valid-abspath ${SDKROOT}
-# COMMON="-Wno-unsupported-floating-point-opt"
+# COMMON=
+# -Wno-unsupported-floating-point-opt
+# -Wno-limited-postlink-optimizations
 
 COMMON = arglist(
     """
-    -Wno-limited-postlink-optimizations
     -Wno-unused-command-line-argument
     -Wno-unreachable-code-fallthrough
     -Wno-unused-function
@@ -170,6 +171,10 @@ for argc, arg in enumerate(sys.argv):
 
     if arg == '-static':
         STATIC = True
+
+    if arg.startswith("-sENVIRONMENT"):
+        SIZEOPT = False
+        USE_RAWFS = False
 
     if arg == "-sENVIRONMENT=web":
         EXE = False
