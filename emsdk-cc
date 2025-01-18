@@ -22,8 +22,6 @@ if not sys.argv[0].endswith(".py"):
 else:
     EXEC = sys.argv.pop(0)
 
-args = sys.argv
-
 
 def env(k, default):
     if default is false:
@@ -58,6 +56,8 @@ COMMON = arglist(
     -Wno-unused-command-line-argument
     -Wno-unreachable-code-fallthrough
     -Wno-unused-function
+    -Wno-invalid-noreturn
+    -Wno-declaration-after-statement
     """,
     os.environ.get("PYDK_CFLAGS", ""),
 )
@@ -102,6 +102,7 @@ if MVP:
         -D_FILE_OFFSET_BITS=64
         -sSUPPORT_LONGJMP=emscripten
         -mno-bulk-memory
+        -mno-bulk-memory-opt
         -mnontrapping-fptoint
         -mno-reference-types
         -mno-sign-ext
@@ -126,7 +127,7 @@ WASM_EXTRA = env("WASM_EXTRA", "") + " " + env("WASM_OPTS", "")
 # the only sane default for now
 COPTS = env("COPTS", "-O2 -g3")
 
-SIZEOPT = '-Os' in COPTS
+SIZEOPT = "-Os" in COPTS
 
 MAIN_MODULE = LINKING = STATIC = False
 
@@ -169,7 +170,7 @@ for argc, arg in enumerate(sys.argv):
     if arg.find("MAIN_MODULE") > 0:
         MAIN_MODULE = True
 
-    if arg == '-static':
+    if arg == "-static":
         STATIC = True
 
     if arg.startswith("-sENVIRONMENT"):
@@ -192,6 +193,10 @@ for argc, arg in enumerate(sys.argv):
     if arg in ("-g0", "-g1", "-g2", "-g3", "-g4"):
         continue
 
+    if arg.endswith("/libpq/libpq.so"):
+        arg = "-lpq"
+        # for wasm-ld
+        sys.argv[argc] = arg
 
     if not MAIN_MODULE:
         # https://github.com/emscripten-core/emscripten/issues/22742
@@ -252,20 +257,31 @@ for argc, arg in enumerate(sys.argv):
                 AOUT = sys.argv[out_pos]
 
     elif not STATIC:
-        if arg.endswith(".so") and arg.startswith("/usr/lib"):
-            arg = f"-l{arg.rsplit('/',1)[-1][3:-3]}"
-            if arg in ('-lportmidi','-lporttime'):
-                continue
-        elif arg.endswith(".so") or arg == "-shared" or arg.find("SIDE_MODULE") > 0:
-            IS_SHARED = True
-            if arg == "-shared":
-                pass
-            elif arg.endswith(".so"):
-                if arg.find("wasm32-emscripten.so") > 0 or arg.find("abi3.so") > 0:
-                    PY_MODULE = true
-                SHARED_TARGET = arg
-                out.append(arg)
+        if arg.endswith(".so"):
+            if arg.startswith("/usr/lib"):
+                arg = f"-l{arg.rsplit('/',1)[-1][3:-3]}"
+                if arg in ("-lportmidi", "-lporttime"):
+                    continue
 
+            if arg.find("wasm32-emscripten.so") > 0 or arg.find("abi3.so") > 0:
+                PY_MODULE = true
+                SHARED_TARGET = arg
+
+            # FIX linking .so when it should have been .a for final exe without MAIN_MODULE set
+            # should be "LINKING" state
+            # is this arg the -o ? if yes do not even try static
+            elif out_pos != argc:
+                # if there is no static version let wasm-ld handle it.
+                if os.path.isfile(arg[:3] + ".a"):
+                    arg = arg[:3] + ".a"
+                    sys.argv[argc] = arg
+                elif IS_SHARED:
+                    dbg("WARNING maybe should use static here :", arg)
+                    # raise SystemExit(666)
+
+        # TODO check is -shared  implies -sSIDE_MODULE=1
+        elif arg == "-shared":
+            IS_SHARED = True
             SHARED = f"-shared -sASSERTIONS=0 -sSIDE_MODULE=1 -L{os.environ['PREFIX']}/lib"
             continue
 
@@ -278,7 +294,7 @@ for argc, arg in enumerate(sys.argv):
                     continue
 
     # fix sysroot is not default to PIC
-    arg = arg.replace("/lib/wasm32-emscripten/lib","/lib/wasm32-emscripten/pic/lib")
+    arg = arg.replace("/lib/wasm32-emscripten/lib", "/lib/wasm32-emscripten/pic/lib")
 
     out.append(arg)
 
@@ -363,7 +379,7 @@ else:
                     try:
                         with open(AOUT, "w") as file:
                             file.write("#!/usr/bin/env bash\n")
-                            file.write(os.environ.get('SYS_NODE', '/usr/bin/node')+' $0.cjs "$@"\n')
+                            file.write(os.environ.get("SYS_NODE", "/usr/bin/node") + ' $0.cjs "$@"\n')
                     except Exception as e:
                         dbg("ERROR: 306", e)
                         os.rename(AOUT + ".cjs", AOUT)

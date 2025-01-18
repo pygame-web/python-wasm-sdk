@@ -24,21 +24,18 @@ fi
 
 
 
-if [ -f $PREFIX/lib/lib${PKG}.a ]
+if [ -f $PREFIX/lib/libmpdec.a ]
 then
     echo "
-        ${PKG} already built at $PREFIX/lib/lib${PKG}.a
+        ${PKG} already built at $PREFIX/lib/libmpdec.a
     "
 else
     . scripts/emsdk-fetch.sh
 
     mkdir -p $ROOT/build/${PKG}
     pushd $ROOT/build/${PKG}
-# --with-pic
     emconfigure ${ROOT}/src/${PKG}/configure --prefix=$PREFIX --enable-static --disable-shared --program-suffix=.cjs
     emmake make install
-    #cp -r $PREFIX/include/libmpdec $SYSROOT/include/
-    #cp -r $PREFIX/lib/libmpdec* $SYSROOT/lib/
     popd
 fi
 

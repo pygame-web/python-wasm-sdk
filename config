@@ -70,7 +70,7 @@ export PYDK_SYSCONFIG_PLATFORM=$(echo -n $PYDK_PYTHON_HOST_PLATFORM|cut -d- -f1)
 # ============== wasi sdk ===============
 
 # stable
-export WASI_SDK=${WASI_SDK:-24.0}
+export WASI_SDK=${WASI_SDK:-25.0}
 export WASI_SDK_MAJOR=$(echo ${WASI_SDK}|cut -d. -f1)
 export WASI_SDK_MINOR=$(echo ${WASI_SDK}|cut -d. -f2)
 export WASI_URL=https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_SDK_MAJOR}/wasi-sdk-${WASI_SDK}-$(arch)-linux.tar.gz
@@ -89,8 +89,8 @@ NIM_VERSION=nim-2.0.8
 NIM_VERSION=nim-2.2.0
 NIM_URL=https://nim-lang.org/download/${NIM_VERSION}-linux_x64.tar.xz
 
-NIM_VERSION=nim-git
-NIM_URL=https://github.com/nim-lang/Nim
+#NIM_VERSION=nim-git
+#NIM_URL=https://github.com/nim-lang/Nim
 
 export NIM_VERSION NIM_URL
 export NIMSDK=${NIMSDK:-"${SDKROOT}/nimsdk"}
