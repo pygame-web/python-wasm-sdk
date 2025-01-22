@@ -147,156 +147,159 @@ NINJA = env("NINJA", false)
 
 out = []
 
-# fix rust calling
-for argc, arg in enumerate(sys.argv):
+# special partial linking mode
+if "-r" in sys.argv:
+    SKIP = True
+else:
+    # fix rust calling
+    for argc, arg in enumerate(sys.argv):
 
-    # clean up rustc way of passing args.
+        # clean up rustc way of passing args.
 
-    if arg in ("-l", "-L", "-I"):
-        sys.argv[argc] += sys.argv[argc + 1]
-        sys.argv[argc + 1] = ""
-        RUSTC = True
+        if arg in ("-l", "-L", "-I"):
+            sys.argv[argc] += sys.argv[argc + 1]
+            sys.argv[argc + 1] = ""
+            RUSTC = True
 
-while "" in sys.argv:
-    sys.argv.remove("")
+    while "" in sys.argv:
+        sys.argv.remove("")
 
-for argc, arg in enumerate(sys.argv):
-    if arg.startswith("CMakeFiles/") or arg.startswith("@CMakeFiles/"):
-        CMAKE = True
+    for argc, arg in enumerate(sys.argv):
+        if arg.startswith("CMakeFiles/") or arg.startswith("@CMakeFiles/"):
+            CMAKE = True
 
-    if arg.startswith("--preload-file") or arg.startswith("--embed-file"):
-        USE_RAWFS = False
+        if arg.startswith("--preload-file") or arg.startswith("--embed-file"):
+            USE_RAWFS = False
 
-    if arg.find("MAIN_MODULE") > 0:
-        MAIN_MODULE = True
+        if arg.find("MAIN_MODULE") > 0:
+            MAIN_MODULE = True
 
-    if arg == "-static":
-        STATIC = True
+        if arg == "-static":
+            STATIC = True
 
-    if arg.startswith("-sENVIRONMENT"):
-        SIZEOPT = False
-        USE_RAWFS = False
+        if arg.startswith("-sENVIRONMENT"):
+            SIZEOPT = False
+            USE_RAWFS = False
 
-    if arg == "-sENVIRONMENT=web":
-        EXE = False
-        HTML = True
+        if arg == "-sENVIRONMENT=web":
+            EXE = False
+            HTML = True
 
+    for argc, arg in enumerate(sys.argv):
+        if arg in ("-v", "--version"):
+            SKIP = True
+            break
 
-for argc, arg in enumerate(sys.argv):
-    if arg in ("-v", "--version"):
-        SKIP = True
-        break
-
-    # THEY ARE NOT SAFE TO CHANGE !
-    if arg in ("-O0", "-O1", "-O2", "-O3", "-Os", "-Oz"):
-        continue
-    if arg in ("-g0", "-g1", "-g2", "-g3", "-g4"):
-        continue
-
-    if arg.endswith("/libpq/libpq.so"):
-        arg = "-lpq"
-        # for wasm-ld
-        sys.argv[argc] = arg
-
-    if not MAIN_MODULE:
-        # https://github.com/emscripten-core/emscripten/issues/22742
-        # https://github.com/hoodmane/emscripten/commit/34144634026c91a73bd3e1db85627132d3a37a6d
-        if arg == "-lc":
+        # THEY ARE NOT SAFE TO CHANGE !
+        if arg in ("-O0", "-O1", "-O2", "-O3", "-Os", "-Oz"):
+            continue
+        if arg in ("-g0", "-g1", "-g2", "-g3", "-g4"):
             continue
 
-    # only html may not exit runtime.
-    if not HTML and arg.find("EXIT_RUNTIME") > 0:
-        continue
+        if arg.endswith("/libpq/libpq.so"):
+            arg = "-lpq"
+            # for wasm-ld
+            sys.argv[argc] = arg
 
-    if arg.lower() in ("-fpic", "-latomic"):
-        continue
-
-    if arg in ("-Wl,--as-needed", "-Wl,--eh-frame-hdr", "-Wl,-znoexecstack", "-Wl,-znow", "-Wl,-zrelro", "-Wl,-zrelro,-znow"):
-        continue
-
-    if arg in ("-lgcc", "-lgcc_s", "-fallow-argument-mismatch"):
-        continue
-
-    if arg == "-pthread":
-        if MVP:
-            continue
-
-    # FAILSAFE
-    # that is for some very bad known setup.py behaviour regarding cross compiling and some old codebases.
-    # should not be needed ..
-    if arg.startswith("-I/"):
-        if arg.startswith("-I/usr/"):
-            continue
-
-    if arg.startswith("-L/"):
-        if arg.startswith("-L/usr/"):
-            continue
-
-    if arg.find("ASSERTIONS") > 0:
-        continue
-
-    # rustc has an habit of "-l" "c" instead of "-lc"
-    if arg.startswith("-l"):
-        if len(arg) > 2:
-            LINKING = True
-            # prevent duplicate lib when linking
-            if arg in out:
+        if not MAIN_MODULE:
+            # https://github.com/emscripten-core/emscripten/issues/22742
+            # https://github.com/hoodmane/emscripten/commit/34144634026c91a73bd3e1db85627132d3a37a6d
+            if arg == "-lc":
                 continue
 
-    elif arg in ("-o", "-c"):
-        MODE = arg
-        MODE_POS = argc
-        if arg == "-c":
-            COMPILE = True
-        # TODO maybe add node runner for a .cjs
-        elif arg == "-o":
-            out_pos = argc + 1
-            if IS_SHARED:
-                SHARED_TARGET = sys.argv[out_pos]
-            elif not AOUT:
-                AOUT = sys.argv[out_pos]
-
-    elif not STATIC:
-        if arg.endswith(".so"):
-            if arg.startswith("/usr/lib"):
-                arg = f"-l{arg.rsplit('/',1)[-1][3:-3]}"
-                if arg in ("-lportmidi", "-lporttime"):
-                    continue
-
-            if arg.find("wasm32-emscripten.so") > 0 or arg.find("abi3.so") > 0:
-                PY_MODULE = true
-                SHARED_TARGET = arg
-
-            # FIX linking .so when it should have been .a for final exe without MAIN_MODULE set
-            # should be "LINKING" state
-            # is this arg the -o ? if yes do not even try static
-            elif out_pos != argc:
-                # if there is no static version let wasm-ld handle it.
-                if os.path.isfile(arg[:3] + ".a"):
-                    arg = arg[:3] + ".a"
-                    sys.argv[argc] = arg
-                elif IS_SHARED:
-                    dbg("WARNING maybe should use static here :", arg)
-                    # raise SystemExit(666)
-
-        # TODO check is -shared  implies -sSIDE_MODULE=1
-        elif arg == "-shared":
-            IS_SHARED = True
-            SHARED = f"-shared -sASSERTIONS=0 -sSIDE_MODULE=1 -L{os.environ['PREFIX']}/lib"
+        # only html may not exit runtime.
+        if not HTML and arg.find("EXIT_RUNTIME") > 0:
             continue
 
-    # duplicates can happen on cmake/rustc but they are expected to be here for a reason so skip them
-    if not (CMAKE or NINJA or RUSTC):
-        # prevent duplicates objects/archives files on cmdline when linking
-        if LINKING or MODE == "-o":
-            if arg.endswith(".a") or arg.endswith(".o"):
+        if arg.lower() in ("-fpic", "-latomic"):
+            continue
+
+        if arg in ("-Wl,--as-needed", "-Wl,--eh-frame-hdr", "-Wl,-znoexecstack", "-Wl,-znow", "-Wl,-zrelro", "-Wl,-zrelro,-znow"):
+            continue
+
+        if arg in ("-lgcc", "-lgcc_s", "-fallow-argument-mismatch"):
+            continue
+
+        if arg == "-pthread":
+            if MVP:
+                continue
+
+        # FAILSAFE
+        # that is for some very bad known setup.py behaviour regarding cross compiling and some old codebases.
+        # should not be needed ..
+        if arg.startswith("-I/"):
+            if arg.startswith("-I/usr/"):
+                continue
+
+        if arg.startswith("-L/"):
+            if arg.startswith("-L/usr/"):
+                continue
+
+        if arg.find("ASSERTIONS") > 0:
+            continue
+
+        # rustc has an habit of "-l" "c" instead of "-lc"
+        if arg.startswith("-l"):
+            if len(arg) > 2:
+                LINKING = True
+                # prevent duplicate lib when linking
                 if arg in out:
                     continue
 
-    # fix sysroot is not default to PIC
-    arg = arg.replace("/lib/wasm32-emscripten/lib", "/lib/wasm32-emscripten/pic/lib")
+        elif arg in ("-o", "-c"):
+            MODE = arg
+            MODE_POS = argc
+            if arg == "-c":
+                COMPILE = True
+            # TODO maybe add node runner for a .cjs
+            elif arg == "-o":
+                out_pos = argc + 1
+                if IS_SHARED:
+                    SHARED_TARGET = sys.argv[out_pos]
+                elif not AOUT:
+                    AOUT = sys.argv[out_pos]
 
-    out.append(arg)
+        elif not STATIC:
+            if arg.endswith(".so"):
+                if arg.startswith("/usr/lib"):
+                    arg = f"-l{arg.rsplit('/',1)[-1][3:-3]}"
+                    if arg in ("-lportmidi", "-lporttime"):
+                        continue
+
+                if arg.find("wasm32-emscripten.so") > 0 or arg.find("abi3.so") > 0:
+                    PY_MODULE = true
+                    SHARED_TARGET = arg
+
+                # FIX linking .so when it should have been .a for final exe without MAIN_MODULE set
+                # should be "LINKING" state
+                # is this arg the -o ? if yes do not even try static
+                elif out_pos != argc:
+                    # if there is no static version let wasm-ld handle it.
+                    if os.path.isfile(arg[:3] + ".a"):
+                        arg = arg[:3] + ".a"
+                        sys.argv[argc] = arg
+                    elif IS_SHARED:
+                        dbg("WARNING maybe should use static here :", arg)
+                        # raise SystemExit(666)
+
+            # TODO check is -shared  implies -sSIDE_MODULE=1
+            elif arg == "-shared":
+                IS_SHARED = True
+                SHARED = f"-shared -sASSERTIONS=0 -sSIDE_MODULE=1 -L{os.environ['PREFIX']}/lib"
+                continue
+
+        # duplicates can happen on cmake/rustc but they are expected to be here for a reason so skip them
+        if not (CMAKE or NINJA or RUSTC):
+            # prevent duplicates objects/archives files on cmdline when linking
+            if LINKING or MODE == "-o":
+                if arg.endswith(".a") or arg.endswith(".o"):
+                    if arg in out:
+                        continue
+
+        # fix sysroot is not default to PIC
+        arg = arg.replace("/lib/wasm32-emscripten/lib", "/lib/wasm32-emscripten/pic/lib")
+
+        out.append(arg)
 
 os.environ.pop("_EMCC_CCACHE", "")
 
