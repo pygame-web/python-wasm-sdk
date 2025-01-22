@@ -20,7 +20,6 @@ jobs:
     env:
        BUILDS: 3.12 3.13 3.14
        SDKROOT: /opt/python-wasm-sdk
-       EMFLAVOUR: latest
        Py_GIL_DISABLED: false
        wasisdk: true
        gosdk: false
