@@ -44,9 +44,9 @@ fi
 
 if echo $PYBUILD |grep -q 14$
 then
-    wget -c https://www.python.org/ftp/python/3.14.0/Python-3.14.0a2.tar.xz
-    tar xf Python-3.14.0a2.tar.xz
-    ln -s Python-3.14.0a2 cpython${PYBUILD}
+    wget -c https://www.python.org/ftp/python/3.14.0/Python-3.14.0a4.tar.xz
+    tar xf Python-3.14.0a4.tar.xz
+    ln -s Python-3.14.0a4 cpython${PYBUILD}
 
     mkdir $ROOT/devices/emsdk/usr/lib $ROOT/devices/$(arch)/usr/lib -p
 
@@ -125,17 +125,17 @@ fi
 
 if echo $PYBUILD |grep -q 12$
 then
-    wget -q -c https://www.python.org/ftp/python/3.12.7/Python-3.12.7.tar.xz
-    tar xf Python-3.12.7.tar.xz
-    ln -s Python-3.12.7 cpython${PYBUILD}
+    wget -q -c https://www.python.org/ftp/python/3.12.8/Python-3.12.8.tar.xz
+    tar xf Python-3.12.8.tar.xz
+    ln -s Python-3.12.8 cpython${PYBUILD}
 fi
 
 
 if echo $PYBUILD | grep -q 11$
 then
-    wget -q -c https://www.python.org/ftp/python/3.11.10/Python-3.11.10.tar.xz
-    tar xf Python-3.11.10.tar.xz
-    ln -s Python-3.11.10 cpython${PYBUILD}
+    wget -q -c https://www.python.org/ftp/python/3.11.11/Python-3.11.11.tar.xz
+    tar xf Python-3.11.11.tar.xz
+    ln -s Python-3.11.11 cpython${PYBUILD}
 fi
 
 popd

@@ -65,7 +65,7 @@ COMMON = arglist(
 false = False
 true = True
 
-PY_MODULE = IS_SHARED = false
+TOGGLED_SHARED = PY_MODULE = IS_SHARED = false
 SHARED_TARGET = SHARED = ""
 
 MVP = env("MVP", true)
@@ -267,8 +267,9 @@ else:
                         continue
 
                 if arg.find("wasm32-emscripten.so") > 0 or arg.find("abi3.so") > 0:
-                    PY_MODULE = true
+                    PY_MODULE = True
                     SHARED_TARGET = arg
+                    IS_SHARED = True
 
                 # FIX linking .so when it should have been .a for final exe without MAIN_MODULE set
                 # should be "LINKING" state
@@ -285,8 +286,8 @@ else:
             # TODO check is -shared  implies -sSIDE_MODULE=1
             elif arg == "-shared":
                 IS_SHARED = True
-                SHARED = f"-shared -sASSERTIONS=0 -sSIDE_MODULE=1 -L{os.environ['PREFIX']}/lib"
                 continue
+
 
         # duplicates can happen on cmake/rustc but they are expected to be here for a reason so skip them
         if not (CMAKE or NINJA or RUSTC):
@@ -408,6 +409,12 @@ else:
         if SIZEOPT and ("-sENVIRONMENT=web" not in out):
             final.append("-sENVIRONMENT=web")
 
+
+    if IS_SHARED and not TOGGLED_SHARED:
+        TOGGLED_SHARED = True
+        SHARED = f"-shared -sASSERTIONS=0 -sSIDE_MODULE=1 -L{PREFIX}/lib"
+
+
     # maybe not pass all WASM opts when -c + -o but always PIC and opt level
     final.extend(arglist("-fPIC", SHARED, COPTS))
 
@@ -415,7 +422,6 @@ else:
     final.extend(CPU)
 
     if IS_SHARED or LINKING:
-        # , "-gsource-map --source-map-base /"))
         final.append(f"-L{PREFIX}/lib")
         final.extend(arglist(WASM_EXTRA, env("LDFLAGS", "")))
     else:
