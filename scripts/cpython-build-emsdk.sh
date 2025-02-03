@@ -164,6 +164,7 @@ ac_cv_lib_ffi_ffi_call=yes
 py_cv_module__ctypes=yes
 py_cv_module__ctypes_test=yes
 ax_cv_c_float_words_bigendian=no
+ac_cv_func_sem_clockwait=no
 END
 
 
