@@ -121,8 +121,8 @@ else:
     CPU = arglist("-D_FILE_OFFSET_BITS=64 -mcpu=bleeding-edge -m64")
 
 
-# try to keep 32 but maybe with 64 iface (bigint)
-WASM_EXTRA = env("WASM_EXTRA", "") + " " + env("WASM_OPTS", "")
+# try to keep 32 but with 64 iface (bigint)
+WASM_OPTS = env("WASM_OPTS", "-sWASM_BIGINT -sMIN_SAFARI_VERSION=150000")
 
 
 # the only sane default for now
@@ -264,8 +264,6 @@ else:
 
         elif not STATIC:
             if arg.endswith(".so"):
-                if not IS_SHARED:
-                    LINKING = True
 
                 if arg.startswith("/usr/lib"):
                     arg = f"-l{arg.rsplit('/',1)[-1][3:-3]}"
@@ -274,6 +272,7 @@ else:
 
                 if arg.find("wasm32-emscripten.so") > 0 or arg.find("abi3.so") > 0:
                     PY_MODULE = True
+                    LINKING = True
                     SHARED_TARGET = arg
 
                 # FIX linking .so when it should have been .a for final exe without MAIN_MODULE set
@@ -291,6 +290,7 @@ else:
             # TODO check is -shared  implies -sSIDE_MODULE=1
             elif arg == "-shared":
                 IS_SHARED = True
+                MAIN_MODULE = False
                 continue
 
         # duplicates can happen on cmake/rustc but they are expected to be here for a reason so skip them
@@ -397,8 +397,9 @@ else:
                     except Exception as e:
                         dbg("ERROR: 312", e)
 
-        if SIZEOPT:
-            final.append("-sENVIRONMENT=node")
+# TODO: opt for size should only use 1 platform
+#        if SIZEOPT:
+#            final.append("-sENVIRONMENT=node")
 
         # error: explicitly setting EXIT_RUNTIME not compatible with STANDALONE_WASM.
         #  EXIT_RUNTIME will always be True for programs (with a main function) and False for reactors (not main function).
@@ -410,30 +411,34 @@ else:
 
         __import__("atexit").register(make_exe)
     elif HTML:
-        if SIZEOPT and ("-sENVIRONMENT=web" not in out):
-            final.append("-sENVIRONMENT=web")
+# TODO: opt for size should only use 1 platform
+#        if SIZEOPT and ("-sENVIRONMENT=web" not in out):
+#            final.append("-sENVIRONMENT=web")
+        pass
 
+    final.extend(arglist("-fPIC", WASM_OPTS, "-D__PYDK__=1"))
 
-    if IS_SHARED or LINKING or PY_MODULE:
-        SHARED = f"-shared -sASSERTIONS=0 -sSIDE_MODULE=1"
-        final.extend(arglist("-fPIC", SHARED, LOPTS))
-    else:
-        # maybe not pass all WASM opts when -c + -o but always PIC and opt level
-        final.extend(arglist("-fPIC", SHARED, COPTS))
-
-    # prevent use of extended instr
-    final.extend(CPU)
-
-    if IS_SHARED or LINKING:
-        final.append(f"-L{PREFIX}/lib")
-        final.extend(arglist(WASM_EXTRA, env("LDFLAGS", "")))
-    else:
-        final.append(f"-I{PREFIX}/include")
+    if LINKING:
         if MAIN_MODULE:
             # TODO: module level
             #  -gsource-map --source-map-base /
             pass
-        final.extend(arglist(WASM_EXTRA, "-D__PYDK__=1"))
+        elif IS_SHARED or PY_MODULE:
+            SHARED = f"-shared -sASSERTIONS=0 -sSIDE_MODULE=1"
+
+        final.extend(arglist(SHARED, LOPTS))
+        final.append(f"-L{PREFIX}/lib")
+        final.extend(arglist(env("LDFLAGS", "")))
+
+    else:
+        # maybe not pass all WASM opts when -c + -o but always PIC and opt level
+        final.append(f"-I{PREFIX}/include")
+        final.extend(arglist(COPTS))
+
+
+    # prevent use of extended instr
+    final.extend(CPU)
+
 
     final.extend(out)
     final.extend(COMMON)

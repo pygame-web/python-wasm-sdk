@@ -7,14 +7,6 @@ reset
 mkdir -p /tmp/sdk-bin
 export PATH=/tmp/sdk-bin:$PATH
 
-which command || cat > /tmp/sdk-bin/command << END
-#!/bin/bash
-shift
-which $1
-END
-chmod +x /tmp/sdk-bin/command
-
-
 if which python3
 then
     SYS_PYTHON=$(which python3)

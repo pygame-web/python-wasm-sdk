@@ -37,16 +37,12 @@ then
         pushd emsdk/upstream/emscripten
 
 
-
-
             echo "FIXME: applying stdio* are not const"
             sed -i 's|extern FILE \*const|extern FILE \*|g' cache/sysroot/include/stdio.h
 
 
-
-
             echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/20281 dylink.js : handle ** argument case"
-            if [ -f test/other/test_em_js_side.c b/test/other/test_em_js_side.c ]
+            if [ -f test/other/test_em_js_side.c ]
             then
                 wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/20281.diff
                 patch -p1 < 20281.diff
@@ -90,29 +86,29 @@ END
 #                wget https://raw.githubusercontent.com/paradust7/minetest-wasm/main/emsdk_emcc.patch
 #                patch -p1 < emsdk_emcc.patch
 
-        pushd upstream/emscripten
-                    echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/21472 glfw3: gl level version major/minor hints"
-                    wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/21472.diff
-                    patch -p1 < 21472.diff
+        pushd emsdk/upstream/emscripten
+                echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/21472 glfw3: gl level version major/minor hints"
+                wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/21472.diff
+                patch -p1 < 21472.diff
 
 
-                    echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/20442 fix mouse position for 3D canvas"
-                    # wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/20442.diff
-                    # patch -p1 < 20442.diff
-                    wget https://patch-diff.githubusercontent.com/raw/pmp-p/emscripten/pull/2.diff
-                    patch -p1 < 2.diff
+                echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/20442 fix mouse position for 3D canvas"
+                # wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/20442.diff
+                # patch -p1 < 20442.diff
+                wget https://patch-diff.githubusercontent.com/raw/pmp-p/emscripten/pull/2.diff
+                patch -p1 < 2.diff
 
-                    echo "FIXME: Applying https://github.com/pmp-p/emscripten/pull/3 ioctl TIOCSWINSZ"
-                    wget  https://github.com/pmp-p/emscripten/pull/3.diff
-                    patch -p1 < 3.diff
+                echo "FIXME: Applying https://github.com/pmp-p/emscripten/pull/3 ioctl TIOCSWINSZ"
+                wget  https://github.com/pmp-p/emscripten/pull/3.diff
+                patch -p1 < 3.diff
 
-                    #echo "FIXME:  remove XHR for .data and use fetch" MERGED
-                    #wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/22016.diff
-                    #patch -p1 < 22016.diff
+                #echo "FIXME:  remove XHR for .data and use fetch" MERGED
+                #wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/22016.diff
+                #patch -p1 < 22016.diff
 
-                    #echo "FIXME: scriptDirectory workaround" MERGER
-                    #wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/22605.diff
-                    #patch -p1 < 22605.diff
+                #echo "FIXME: scriptDirectory workaround" MERGER
+                #wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/22605.diff
+                #patch -p1 < 22605.diff
         popd # upstream/emscripten
 
 
@@ -344,10 +340,10 @@ END
     export CFLDPFX="$CPPFLAGS $LDFLAGS -Wno-unused-command-line-argument"
     export PYDK=true
 
-    if command -v ccache 2>&1 >/dev/null; then
-        export EM_COMPILER_WRAPPER=ccache
-        export _EMCC_CCACHE=1
-    fi
+#    if which ccache 2>&1 >/dev/null; then
+#        export EM_COMPILER_WRAPPER=ccache
+#        export _EMCC_CCACHE=1
+#    fi
 
     export EMCC_SKIP_SANITY_CHECK=1
     export EM_IGNORE_SANITY=1

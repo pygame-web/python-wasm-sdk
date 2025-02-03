@@ -83,14 +83,14 @@ END
     then
         # Prevent freezing bytecode with a different magic
         rm -f $HOST_PREFIX/bin/python3 $HOST_PREFIX/bin/python${PYBUILD}
-        if command -v python3.${PYMINOR}
+        if which python3.${PYMINOR}
         then
             echo "
 
     ===================================================================================
 
             it's not safe to have a python3.${PYMINOR} in the path :
-                $(command -v python3.${PYMINOR})
+                $(which python3.${PYMINOR})
             while in pre-release cycle : _sre.MAGIC / bytecode weird errors etc ...
 
     ===================================================================================

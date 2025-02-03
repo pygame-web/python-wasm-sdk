@@ -39,13 +39,13 @@ export HPIP="${HPY} -mpip"
 if [ -f /mvp ]
 then
     export WASM_FLAVOUR=mvp
-    export WASM_EXTRA="-sMIN_SAFARI_VERSION=120000"
+    export WASM_OPTS="-sMIN_SAFARI_VERSION=120000"
     export WASM_PURE=true
 else
     export WASM_FLAVOUR=bi
 
     # extra features. Safari 140100 is expected to have BIGINT ? emsdk warnings ?
-    export WASM_EXTRA="-sWASM_BIGINT -sMIN_SAFARI_VERSION=150000"
+    export WASM_OPTS="-sWASM_BIGINT -sMIN_SAFARI_VERSION=150000"
 
     # tell to not normalize modules.
     export WASM_PURE=false
