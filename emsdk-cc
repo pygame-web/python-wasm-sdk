@@ -124,10 +124,13 @@ else:
 # try to keep 32 but maybe with 64 iface (bigint)
 WASM_EXTRA = env("WASM_EXTRA", "") + " " + env("WASM_OPTS", "")
 
+
 # the only sane default for now
 COPTS = env("COPTS", "-O2 -g3")
+LOPTS = env("LOPTS", COPTS)
 
-SIZEOPT = "-Os" in COPTS
+
+SIZEOPT = "-Os" in LOPTS
 
 MAIN_MODULE = LINKING = STATIC = False
 
@@ -410,11 +413,13 @@ else:
         if SIZEOPT and ("-sENVIRONMENT=web" not in out):
             final.append("-sENVIRONMENT=web")
 
-    if IS_SHARED or (LINKING and PYMODULE):
-        SHARED = f"-shared -sASSERTIONS=0 -sSIDE_MODULE=1"
 
-    # maybe not pass all WASM opts when -c + -o but always PIC and opt level
-    final.extend(arglist("-fPIC", SHARED, COPTS))
+    if IS_SHARED or LINKING or PY_MODULE:
+        SHARED = f"-shared -sASSERTIONS=0 -sSIDE_MODULE=1"
+        final.extend(arglist("-fPIC", SHARED, LOPTS))
+    else:
+        # maybe not pass all WASM opts when -c + -o but always PIC and opt level
+        final.extend(arglist("-fPIC", SHARED, COPTS))
 
     # prevent use of extended instr
     final.extend(CPU)
