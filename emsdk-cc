@@ -65,7 +65,7 @@ COMMON = arglist(
 false = False
 true = True
 
-TOGGLED_SHARED = PY_MODULE = IS_SHARED = false
+PY_MODULE = IS_SHARED = false
 SHARED_TARGET = SHARED = ""
 
 MVP = env("MVP", true)
@@ -261,6 +261,9 @@ else:
 
         elif not STATIC:
             if arg.endswith(".so"):
+                if not IS_SHARED:
+                    LINKING = True
+
                 if arg.startswith("/usr/lib"):
                     arg = f"-l{arg.rsplit('/',1)[-1][3:-3]}"
                     if arg in ("-lportmidi", "-lporttime"):
@@ -269,7 +272,6 @@ else:
                 if arg.find("wasm32-emscripten.so") > 0 or arg.find("abi3.so") > 0:
                     PY_MODULE = True
                     SHARED_TARGET = arg
-                    IS_SHARED = True
 
                 # FIX linking .so when it should have been .a for final exe without MAIN_MODULE set
                 # should be "LINKING" state
@@ -287,7 +289,6 @@ else:
             elif arg == "-shared":
                 IS_SHARED = True
                 continue
-
 
         # duplicates can happen on cmake/rustc but they are expected to be here for a reason so skip them
         if not (CMAKE or NINJA or RUSTC):
@@ -409,11 +410,8 @@ else:
         if SIZEOPT and ("-sENVIRONMENT=web" not in out):
             final.append("-sENVIRONMENT=web")
 
-
-    if IS_SHARED and not TOGGLED_SHARED:
-        TOGGLED_SHARED = True
-        SHARED = f"-shared -sASSERTIONS=0 -sSIDE_MODULE=1 -L{PREFIX}/lib"
-
+    if IS_SHARED or (LINKING and PYMODULE):
+        SHARED = f"-shared -sASSERTIONS=0 -sSIDE_MODULE=1"
 
     # maybe not pass all WASM opts when -c + -o but always PIC and opt level
     final.extend(arglist("-fPIC", SHARED, COPTS))

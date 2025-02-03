@@ -29,7 +29,7 @@ jobs:
        EMFLAVOUR: 3.1.74    
 
     steps:
-    - uses: actions/checkout@v3.3.0
+    - uses: actions/checkout@v4.2.2
 
     - name: Display CI properties
       run: |
@@ -57,13 +57,13 @@ jobs:
         bash -c "./python-wasm-sdk.sh"
 
     - name: Upload sdk to Github artifacts
-      uses: actions/upload-artifact@v3.1.1
+      uses: actions/upload-artifact@v4
       with:
         path: /tmp/sdk
 
     - name: Upload sdk to Github Releases
       if: github.event_name == 'release'
-      uses: svenstaro/upload-release-action@2.3.0
+      uses: svenstaro/upload-release-action@2.9.0
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: /tmp/sdk/*
