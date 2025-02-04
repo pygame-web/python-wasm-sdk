@@ -478,7 +478,7 @@ if EMCC_TRACE:
 
         sys.argv.append(arg)
 
-    # for debugging configure, cmake has its own very detailed log.
+    # for debugging configure, as cmake has its own very detailed log.
     if os.path.isfile("conftest.c"):
         __import__("shutil").copy("conftest.c", SDKROOT / "emcc.c")
         if DEBUG_PATTERN not in (False, True):
