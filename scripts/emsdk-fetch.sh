@@ -20,7 +20,6 @@ then
     else
         git clone --no-tags --depth 1 --single-branch --branch main https://github.com/emscripten-core/emsdk.git
         pushd emsdk
-            #git checkout 91f8563a9d1a4a0ec03bbb2be23485367d85a091
             ./emsdk install ${EMFLAVOUR:-latest}
             ./emsdk activate ${EMFLAVOUR:-latest}
         popd
@@ -34,12 +33,12 @@ then
     then
         echo " * found emsdk/.complete : not patching/building emsdk"
     else
-        pushd emsdk/upstream/emscripten
+        pushd emsdk
 
+        pushd emsdk/upstream/emscripten
 
             echo "FIXME: applying stdio* are not const"
             sed -i 's|extern FILE \*const|extern FILE \*|g' cache/sysroot/include/stdio.h
-
 
             echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/20281 dylink.js : handle ** argument case"
             if [ -f test/other/test_em_js_side.c ]
@@ -81,12 +80,7 @@ END
                     #wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/18941.diff
                     #patch -p1 < 18941.diff
                 fi
-        popd # emsdk/upstream/emscripten
 
-#                wget https://raw.githubusercontent.com/paradust7/minetest-wasm/main/emsdk_emcc.patch
-#                patch -p1 < emsdk_emcc.patch
-
-        pushd emsdk/upstream/emscripten
                 echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/21472 glfw3: gl level version major/minor hints"
                 wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/21472.diff
                 patch -p1 < 21472.diff
@@ -109,8 +103,29 @@ END
                 #echo "FIXME: scriptDirectory workaround" MERGER
                 #wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/22605.diff
                 #patch -p1 < 22605.diff
-        popd # upstream/emscripten
 
+        popd # emsdk/upstream/emscripten
+
+#        wget https://raw.githubusercontent.com/paradust7/minetest-wasm/main/emsdk_emcc.patch
+#        patch -p1 < emsdk_emcc.patch
+
+
+        # https://github.com/emscripten-forge/recipes/blob/main/recipes/recipes/emscripten_emscripten-wasm32/patches/0001-Add-useful-error-when-symbol-resolution-fails.patch
+        patch -p1 <<END
+--- emsdk-orig/upstream/emscripten/src/library_dylink.js
++++ emsdk/upstream/emscripten/src/library_dylink.js
+@@ -723,6 +723,9 @@
+             var resolved;
+             stubs[prop] = (...args) => {
+               resolved ||= resolveSymbol(prop);
++              if (!resolved) {
++                throw new Error(`Dynamic linking error: cannot resolve symbol ${prop}`);
++              }
+               return resolved(...args);
+             };
+           }
+
+END
 
 
         # https://github.com/paradust7/minetest-wasm/blob/main/emsdk_dirperms.patch
@@ -162,7 +177,7 @@ END
      case F_GETOWN_EX:
      case F_SETOWN:
 END
-
+        popd # emsdk
     fi # emsdk/.complete
 
     export EMSDK_PYTHON=$SYS_PYTHON
@@ -349,7 +364,7 @@ END
     export EM_IGNORE_SANITY=1
 
     export SYSROOT=$EMSDK/upstream/emscripten/cache/sysroot
-    popd
+    popd  # ${SDKROOT:-/opt/python-wasm-sdk}
 else
     echo "emsdk: config already set !" 1>&2
 fi
