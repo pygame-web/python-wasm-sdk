@@ -130,7 +130,8 @@ EXTRABINS="$EXTRABINS $BUN_INSTALL/bin"
 
 # ================ aosp ===================
 
-AOSP_NDK=${AOSP_NDK:-25.2.9519653}
+AOSP_NDK=${AOSP_NDK:-27.1.12297006}
+REACT_NATIVE="react-native@0.77.0"
 
 
 # ===========     panda3d =================
