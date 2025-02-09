@@ -80,6 +80,10 @@ export WASMTIME_HOME=$WASISDK
 
 # EXTRABINS="$EXTRABINS $WASISDK/bin"
 
+# =============== JDK =======================
+export JAVA_HOME=${SDKROOT}/jdk
+EXTRABINS="$EXTRABINS ${JAVA_HOME}/bin"
+
 # =============== Nimrod ====================
 
 # stable
@@ -126,7 +130,7 @@ EXTRABINS="$EXTRABINS $BUN_INSTALL/bin"
 
 # ================ aosp ===================
 
-AOSP_NDK=25.2.9519653
+AOSP_NDK=${AOSP_NDK:-25.2.9519653}
 
 
 # ===========     panda3d =================

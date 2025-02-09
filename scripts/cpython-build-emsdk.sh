@@ -207,6 +207,12 @@ END
         EXTRA="--without-pydebug --without-trace-refs --without-dsymutil --without-pymalloc --without-strict-overflow"
     fi
 
+    if [ ${PYMINOR} -ge 14 ]
+    then
+        sed -i 's|wasm32-unknown-emscripten|wasm32-bi-emscripten|g' Makefile.pre.in
+    fi
+
+
     popd
 
     chmod +x ${SDKROOT}/emsdk-cc
