@@ -1,11 +1,10 @@
 #!/bin/bash
 reset
 
+[ -f ../config ] && . ../config
+
 # TODO: check how dbg tools work with default settings
 # https://developer.chrome.com/blog/wasm-debugging-2020/
-
-mkdir -p /tmp/sdk-bin
-export PATH=/tmp/sdk-bin:$PATH
 
 if which python3
 then

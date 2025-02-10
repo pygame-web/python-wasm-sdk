@@ -86,11 +86,12 @@ EXTRABINS="$EXTRABINS ${JAVA_HOME}/bin"
 
 # =============== Nimrod ====================
 
-# stable
+# tested
 NIM_VERSION=nim-2.0.8
 
 # testing
-NIM_VERSION=nim-2.2.0
+NIM_VERSION=${NIM_VERSION:-nim-2.2.2}
+
 NIM_URL=https://nim-lang.org/download/${NIM_VERSION}-linux_x64.tar.xz
 
 #NIM_VERSION=nim-git
@@ -130,9 +131,8 @@ EXTRABINS="$EXTRABINS $BUN_INSTALL/bin"
 
 # ================ aosp ===================
 
-AOSP_NDK=${AOSP_NDK:-27.1.12297006}
-REACT_NATIVE="react-native@0.77.0"
-
+export AOSP_NDK=${AOSP_NDK:-25.2.9519653}
+export REACT_NATIVE="react-native@0.77.0"
 
 # ===========     panda3d =================
 

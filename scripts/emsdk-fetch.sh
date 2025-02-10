@@ -35,7 +35,7 @@ then
     else
         pushd emsdk
 
-        pushd emsdk/upstream/emscripten
+        pushd upstream/emscripten
 
             echo "FIXME: applying stdio* are not const"
             sed -i 's|extern FILE \*const|extern FILE \*|g' cache/sysroot/include/stdio.h
@@ -104,7 +104,7 @@ END
                 #wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/22605.diff
                 #patch -p1 < 22605.diff
 
-        popd # emsdk/upstream/emscripten
+        popd # emsdk/upstream/emscripten -> emsdk
 
 #        wget https://raw.githubusercontent.com/paradust7/minetest-wasm/main/emsdk_emcc.patch
 #        patch -p1 < emsdk_emcc.patch
@@ -119,7 +119,7 @@ END
              stubs[prop] = (...args) => {
                resolved ||= resolveSymbol(prop);
 +              if (!resolved) {
-+                throw new Error(`Dynamic linking error: cannot resolve symbol ${prop}`);
++                throw new Error(\`Dynamic linking error: cannot resolve symbol \${prop}\`);
 +              }
                return resolved(...args);
              };
