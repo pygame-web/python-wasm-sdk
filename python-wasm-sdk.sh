@@ -216,7 +216,8 @@ END
             fi
 
             # use ./ or emsdk will pollute env
-            ./scripts/emsdk-fetch.sh > /dev/null
+            ./scripts/emsdk-fetch.sh
+        # > /dev/null
 
             echo " ---------- building cpython wasm support ${PYBUILD} ${CIVER} -----------" 1>&2
 
@@ -346,7 +347,8 @@ END
     fi
 done
 
-
+# remove builder/installer
+rm ${SDKROOT}/python-was?-sdk.sh
 
 exit 0
 

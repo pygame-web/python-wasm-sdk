@@ -77,6 +77,12 @@ elif env("CONFIG_SITE", false):
 else:
     CONFIGURE = env("CONFIGURE", false)
 
+# 3.1.56 - 3.1.61
+# no '-mno-bulk-memory-opt' '-mno-fp16'
+
+# 3.1.68 wasm opt
+# --enable-call-indirect-overlong
+
 
 if MVP:
     # turn of wasm ex (https://github.com/emscripten-core/emscripten/pull/20536)
@@ -102,14 +108,12 @@ if MVP:
         -D_FILE_OFFSET_BITS=64
         -sSUPPORT_LONGJMP=emscripten
         -mno-bulk-memory
-        -mno-bulk-memory-opt
         -mnontrapping-fptoint
         -mno-reference-types
         -mno-sign-ext
         -mno-extended-const
         -mno-atomics
         -mno-tail-call
-        -mno-fp16
         -mno-multivalue
         -mno-relaxed-simd
         -mno-simd128
@@ -117,6 +121,9 @@ if MVP:
         -mno-exception-handling
         """
     )
+#        -mno-fp16
+#        -mno-bulk-memory-opt
+
 else:
     CPU = arglist("-D_FILE_OFFSET_BITS=64 -mcpu=bleeding-edge -m64")
 

@@ -6,8 +6,6 @@ then
 
     . ${CONFIG:-config}
 
-
-
     # for full rebuild
     # rm emsdk/.complete
 
@@ -26,9 +24,6 @@ then
     fi
 
 
-
-
-
     if [ -f emsdk/.complete ]
     then
         echo " * found emsdk/.complete : not patching/building emsdk"
@@ -41,11 +36,11 @@ then
             sed -i 's|extern FILE \*const|extern FILE \*|g' cache/sysroot/include/stdio.h
 
             echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/20281 dylink.js : handle ** argument case"
-            if [ -f test/other/test_em_js_side.c ]
-            then
-                wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/20281.diff
-                patch -p1 < 20281.diff
-            else
+#            if [ -f test/other/test_em_js_side.c ]
+#            then
+#                wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/20281.diff
+#                patch -p1 < 20281.diff
+#            else
                 patch -p1 <<END
 diff --git a/src/library_dylink.js b/src/library_dylink.js
 index 632e20aa61e3..ebb13995d6c3 100644
@@ -62,47 +57,47 @@ index 632e20aa61e3..ebb13995d6c3 100644
            var func = `(${jsArgs}) => ${body};`;
 END
 
-            fi
+#            fi
 
 
             echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/17956 file corruption when using emscripten_run_preload_plugins with BrowserFS"
             wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/17956.diff
 
-                if patch -p1 < 17956.diff
-                then
-                    echo applied https://github.com/emscripten-core/emscripten/pull/17956
-                    # 18941 has been merged
-                else
-                    # deal with old version of emsdk for the above 3.1.45 patch
-                    sed -i 's|new Uint8Array(data.object.contents), true, true|FS.readFile(_file), true, true|g' src/library_browser.js
-                    # merged since 3.1.34 which quite the more stable atm
-                    #echo "MAYBE FIXME: Applying https://github.com/emscripten-core/emscripten/pull/18941"
-                    #wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/18941.diff
-                    #patch -p1 < 18941.diff
-                fi
+            if patch -p1 < 17956.diff
+            then
+                echo applied https://github.com/emscripten-core/emscripten/pull/17956
+                # 18941 has been merged
+            else
+                # deal with old version of emsdk for the above 3.1.45 patch
+                sed -i 's|new Uint8Array(data.object.contents), true, true|FS.readFile(_file), true, true|g' src/library_browser.js
+                # merged since 3.1.34 which quite the more stable atm
+                #echo "MAYBE FIXME: Applying https://github.com/emscripten-core/emscripten/pull/18941"
+                #wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/18941.diff
+                #patch -p1 < 18941.diff
+            fi
 
-                echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/21472 glfw3: gl level version major/minor hints"
-                wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/21472.diff
-                patch -p1 < 21472.diff
+            echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/21472 glfw3: gl level version major/minor hints"
+            wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/21472.diff
+            patch -p1 < 21472.diff
 
 
-                echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/20442 fix mouse position for 3D canvas"
-                # wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/20442.diff
-                # patch -p1 < 20442.diff
-                wget https://patch-diff.githubusercontent.com/raw/pmp-p/emscripten/pull/2.diff
-                patch -p1 < 2.diff
+            echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/20442 fix mouse position for 3D canvas"
+            # wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/20442.diff
+            # patch -p1 < 20442.diff
+            wget https://patch-diff.githubusercontent.com/raw/pmp-p/emscripten/pull/2.diff
+            patch -p1 < 2.diff
 
-                echo "FIXME: Applying https://github.com/pmp-p/emscripten/pull/3 ioctl TIOCSWINSZ"
-                wget  https://github.com/pmp-p/emscripten/pull/3.diff
-                patch -p1 < 3.diff
+            echo "FIXME: Applying https://github.com/pmp-p/emscripten/pull/3 ioctl TIOCSWINSZ"
+            wget  https://github.com/pmp-p/emscripten/pull/3.diff
+            patch -p1 < 3.diff
 
-                #echo "FIXME:  remove XHR for .data and use fetch" MERGED
-                #wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/22016.diff
-                #patch -p1 < 22016.diff
+            #echo "FIXME:  remove XHR for .data and use fetch" MERGED
+            #wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/22016.diff
+            #patch -p1 < 22016.diff
 
-                #echo "FIXME: scriptDirectory workaround" MERGER
-                #wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/22605.diff
-                #patch -p1 < 22605.diff
+            #echo "FIXME: scriptDirectory workaround" MERGER
+            #wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/22605.diff
+            #patch -p1 < 22605.diff
 
         popd # emsdk/upstream/emscripten -> emsdk
 
@@ -202,7 +197,7 @@ END
     if [ -f emsdk/.complete ]
     then
         echo "
-        * emsdk prereq ok
+        * emsdk third parties ok
     "  1>&2
     else
         # sdl2_image is too old
@@ -225,32 +220,19 @@ END
             embuilder --pic build $one
         done
 
-        for one in $ALL
-        do
-            embuilder build $one
-            embuilder --pic build $one
-        done
 
-        curl -fsSL https://bun.sh/install | bash
+       echo "
+        * building third parties done, mark is emsdk/.complete )
+    "  1>&2
 
-        export SYS_NODE=$(echo -n $SDKROOT/emsdk/node/??.??.*/bin/node)
+#        for one in $ALL
+#        do
+#            embuilder build $one
+#            embuilder --pic build $one
+#        done
 
-        # emsdk shipped node cannot run on alpine
-        if [ -f /alpine ]
-        then
-            if [ -f $SYS_NODE.glibc ]
-            then
-                echo "node alpine node version already selected"
-            else
-                mv $SYS_NODE $SYS_NODE.glibc
-                cp -vf /usr/bin/node $SYS_NODE
-            fi
-        fi
 
         export PATH=$(echo -n ${SDKROOT}/emsdk/node/??.??.*/bin):$PATH
-        $SDKROOT/emsdk/node/??.??.*/bin/npm install --prefix $SDKROOT/emsdk/node/??.??.* -g pnpm@^9.0.0
-
-# maybe rewrite that in python and move it to emcc.py
 
         cat > emsdk/upstream/emscripten/emcc <<END
 #!/bin/bash
@@ -308,7 +290,6 @@ END
 
         chmod +x emsdk/upstream/emscripten/em*
         touch emsdk/.complete
-        sync
     fi
 
     # EM_PKG_CONFIG_PATH ?
@@ -327,45 +308,52 @@ END
         export PATH=$(echo -n ${EMSDK}/node/??.??.*/bin):$EMSDK/upstream/emscripten/system/bin:$EMSDK/upstream/emscripten:$PATH
     fi
 
-    #ln $EMSDK/upstream/emscripten/emstrip $EMSDK/upstream/emscripten/strip
-    #ln $EMSDK/upstream/emscripten/emstrip.py $EMSDK/upstream/emscripten/strip.py
-
+    echo "
+    * installing wasm-objdump (wasi)
+"
     mkdir -p ${SDKROOT}/devices/$(arch)/usr/bin/
     cp $SDKROOT/wasisdk/bin/wasm-objdump* ${SDKROOT}/devices/$(arch)/usr/bin/
 
+
+
+
     TRUE=$(which true)
+    echo "
+    * pointing readelf and ldconfig to ${TRUE}
+"
     for fix in readelf ldconfig
     do
         FIXED=$EMSDK/upstream/emscripten/system/bin/$fix
         [ -f $FIXED ] || cp $TRUE $FIXED
     done
 
+
+
+    # emsdk shipped node cannot run on alpine
     export SYS_NODE=$(echo -n $SDKROOT/emsdk/node/??.??.*/bin/node)
+    if [ -f /alpine ]
+    then
+        if [ -f $SYS_NODE.glibc ]
+        then
+            echo "node alpine node version already selected"
+        else
+            mv $SYS_NODE $SYS_NODE.glibc
+            cp -vf /usr/bin/node $SYS_NODE
+        fi
+    fi
 
     export NPROC=1
     export EMSDK_NUM_CORES=$NPROC
 
     mkdir -p src
-
-    export CPPFLAGS="-I$PREFIX/include"
-    export LDFLAGS="-L$PREFIX/lib"
-    # -msoft-float
-
-    # module build opts
-    export CFLDPFX="$CPPFLAGS $LDFLAGS -Wno-unused-command-line-argument"
-    export PYDK=true
-
-#    if which ccache 2>&1 >/dev/null; then
-#        export EM_COMPILER_WRAPPER=ccache
-#        export _EMCC_CCACHE=1
-#    fi
-
-    export EMCC_SKIP_SANITY_CHECK=1
-    export EM_IGNORE_SANITY=1
-
     export SYSROOT=$EMSDK/upstream/emscripten/cache/sysroot
     popd  # ${SDKROOT:-/opt/python-wasm-sdk}
+
+    echo "
+    will use node = $SYS_NODE
+    sysroot = $SYSROOT
+"
 else
-    echo "emsdk: config already set !" 1>&2
+    echo "emsdk: already fetched and config set !" 1>&2
 fi
 
