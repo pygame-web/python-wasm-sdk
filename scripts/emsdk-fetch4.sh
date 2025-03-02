@@ -30,6 +30,36 @@ then
     else
         pushd emsdk
             pushd upstream/emscripten
+            patch -p1 << END
+diff --git a/src/lib/libbrowser.js b/src/lib/libbrowser.js
+index 548506f..9c3d9b1 100644
+--- a/src/lib/libbrowser.js
++++ b/src/lib/libbrowser.js
+@@ -604,7 +604,8 @@ var LibraryBrowser = {
+       PATH.basename(_file),
+       // TODO: This copy is not needed if the contents are already a Uint8Array,
+       //       which they often are (and always are in WasmFS).
+-      new Uint8Array(data.object.contents), true, true,
++      // new Uint8Array(data.object.contents), true, true,
++      FS.readFile(_file), true, true,
+       () => {
+         {{{ runtimeKeepalivePop() }}}
+         if (onload) {{{ makeDynCall('vp', 'onload') }}}(file);
+diff --git a/src/lib/libdylink.js b/src/lib/libdylink.js
+index 44e349d..b97edac 100644
+--- a/src/lib/libdylink.js
++++ b/src/lib/libdylink.js
+@@ -828,7 +828,7 @@ var LibraryDylink = {
+             cSig = cSig.split(',');
+             for (var i in cSig) {
+               var jsArg = cSig[i].split(' ').pop();
+-              jsArgs.push(jsArg.replace('*', ''));
++              jsArgs.push(jsArg.replaceAll('*', ''));
+             }
+           }
+           var func = `(${jsArgs}) => ${body};`;
+END
+
             popd # upstream/emscripten
         popd # emsdk
     fi # emsdk/.complete
