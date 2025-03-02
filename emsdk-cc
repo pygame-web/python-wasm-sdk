@@ -137,7 +137,8 @@ COPTS = env("COPTS", "-O2 -g3")
 LOPTS = env("LOPTS", COPTS)
 
 
-SIZEOPT = "-Os" in LOPTS
+SIZEOPT = ("-Os" in LOPTS) or ("-Oz" in LOPTS)
+
 
 MAIN_MODULE = LINKING = STATIC = False
 
@@ -294,8 +295,9 @@ else:
                         dbg("WARNING maybe should use static here :", arg)
                         # raise SystemExit(666)
 
-            # TODO check is -shared  implies -sSIDE_MODULE=1
             elif arg == "-shared":
+                # to get -sSIDE_MODULE=1
+                LINKING = True
                 IS_SHARED = True
                 MAIN_MODULE = False
                 continue
@@ -485,7 +487,7 @@ if EMCC_TRACE:
 
         sys.argv.append(arg)
 
-    # for debugging configure, as cmake has its own very detailed log.
+    # only for debugging configure, as cmake has its own very detailed log.
     if os.path.isfile("conftest.c"):
         __import__("shutil").copy("conftest.c", SDKROOT / "emcc.c")
         if DEBUG_PATTERN not in (False, True):

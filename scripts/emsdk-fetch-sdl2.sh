@@ -1,8 +1,7 @@
 #!/bin/bash
 
-. ${CONFIG:-config}
-
-. scripts/emsdk-fetch.sh
+# . ${CONFIG:-config}
+# . scripts/emsdk-fetch.sh
 
 
 cd ${ROOT}/src

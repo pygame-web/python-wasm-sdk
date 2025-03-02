@@ -216,7 +216,12 @@ END
             fi
 
             # use ./ or emsdk will pollute env
-            ./scripts/emsdk-fetch.sh
+            if echo $EMFLAVOUR|grep -q ^3\\.
+            then
+                ./scripts/emsdk-fetch.sh
+            else
+                ./scripts/emsdk-fetch4.sh
+            fi
         # > /dev/null
 
             echo " ---------- building cpython wasm support ${PYBUILD} ${CIVER} -----------" 1>&2
