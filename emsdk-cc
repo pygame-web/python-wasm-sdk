@@ -225,6 +225,9 @@ else:
         if arg.lower() in ("-fpic", "-latomic"):
             continue
 
+        if arg.lower() in ("-msse", "-msse2", "-msse3", "-mssse3", "-msse4.1", "-msse4.2", "-msse4", "-mavx", "-mfpu=neon"):
+            continue
+
         if arg in ("-Wl,--as-needed", "-Wl,--eh-frame-hdr", "-Wl,-znoexecstack", "-Wl,-znow", "-Wl,-zrelro", "-Wl,-zrelro,-znow"):
             continue
 

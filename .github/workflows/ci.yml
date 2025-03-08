@@ -26,7 +26,7 @@ jobs:
        rustsdk: false
        nimsdk: false
        COPTS: -O2 -g3
-       EMFLAVOUR: 4.0.4
+       EMFLAVOUR: 3.1.61
 
     steps:
     - uses: actions/checkout@v4.2.2
