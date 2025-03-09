@@ -43,5 +43,7 @@ else
     PYDK_CFLAGS="-Wno-nontrivial-memaccess" emmake make install
     popd
 
+    cp -v ./src/assimpjs-wasm/assimp/code/Common/*.h ${PREFIX}/include/assimp/
+
     [ -f $PREFIX/lib/libassimp.a ] || exit 46
 fi
