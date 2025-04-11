@@ -6,7 +6,7 @@
 
 mkdir -p src native build/libdwarf  build/zstd
 
-DPIC="-DCMAKE_POSITION_INDEPENDENT_CODE=ON"
+DPIC="-DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5"
 
 pushd src
     [ -d libdwarf-code ] || git clone --recursive --no-tags --depth 1 --single-branch --branch main https://github.com/davea42/libdwarf-code

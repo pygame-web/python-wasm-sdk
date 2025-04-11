@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 # https://stackoverflow.com/questions/20530105/how-to-specify-a-custom-stdlib-directory-for-llvm
 # https://stackoverflow.com/questions/60712261/how-to-prevent-osx-gcc-to-always-search-usr-local-include

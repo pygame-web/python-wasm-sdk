@@ -42,7 +42,8 @@ int main(int argc, char**arv){
 END
 
     emcc -sASSERTIONS=0 -sENVIRONMENT=node,web -o hello_em.html hello_em.c
-    $SDKROOT/emsdk/node/*.*.*64bit/bin/node hello_em.js >> $SDKROOT/config
+    echo "export PYBUILD=\${PYBUILD:-$PYBUILD}" > $SDKROOT/versions
+    $SDKROOT/emsdk/node/*.*.*64bit/bin/node hello_em.js >> $SDKROOT/versions
     rm hello_em.js hello_em.wasm hello_em.c
 popd
 

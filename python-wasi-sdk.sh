@@ -79,6 +79,8 @@ for PYBUILD in $BUILDS
 do
     cd "$ORIGIN"
 
+    export PYBUILD
+
 
     if [ -f ${SDKROOT}/dev ]
     then

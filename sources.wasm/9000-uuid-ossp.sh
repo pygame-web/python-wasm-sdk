@@ -62,7 +62,7 @@ END
             cp -vf /data/git/python-wasm-sdk/libtool ./
             chmod u-w+x /tmp/libtool /tmp/shtool libtool
 
-            if PATH=/tmp:$PATH CONFIG_SIZE=$(pwd)/config.site emconfigure ../../src/libuuid/configure --with-gnu-ld $mode --disable-shared --prefix=$PREFIX
+            if PATH=/tmp:$PATH CONFIG_SITE=$(pwd)/config.site emconfigure ../../src/libuuid/configure --with-gnu-ld $mode --disable-shared --prefix=$PREFIX
             then
                 cp -vf /data/git/python-wasm-sdk/{libtool,shtool} /tmp/
                 cp -vf /data/git/python-wasm-sdk/libtool ./

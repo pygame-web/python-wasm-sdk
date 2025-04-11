@@ -157,6 +157,7 @@ RUSTC = False
 NINJA = env("NINJA", false)
 
 out = []
+out_pos = 0
 
 # special partial linking mode
 if "-r" in sys.argv:

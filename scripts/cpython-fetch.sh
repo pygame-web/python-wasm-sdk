@@ -79,18 +79,18 @@ fi
 
 if echo $PYBUILD |grep -q 13$
 then
-    if [ -d Python-3.13.2 ]
+    if [ -d Python-3.13.3 ]
     then
         echo "  * Using local cpython sources"
     else
         pwd
         ls
         echo "  * fetching remote cpython sources"
-        wget -q -c https://www.python.org/ftp/python/3.13.2/Python-3.13.2.tar.xz
-        tar xf Python-3.13.2.tar.xz || exit 87
+        wget -q -c https://www.python.org/ftp/python/3.13.3/Python-3.13.3.tar.xz
+        tar xf Python-3.13.3.tar.xz || exit 87
     fi
 
-    ln -s Python-3.13.2 cpython${PYBUILD}
+    ln -s Python-3.13.3 cpython${PYBUILD}
 
     sed -i 's|ProcessPoolExecutor = None|return True|g' cpython3.13/Lib/compileall.py
 
@@ -125,17 +125,17 @@ fi
 
 if echo $PYBUILD |grep -q 12$
 then
-    wget -q -c https://www.python.org/ftp/python/3.12.9/Python-3.12.9.tar.xz
-    tar xf Python-3.12.9.tar.xz
-    ln -s Python-3.12.9 cpython${PYBUILD}
+    wget -q -c https://www.python.org/ftp/python/3.12.10/Python-3.12.10.tar.xz
+    tar xf Python-3.12.10.tar.xz
+    ln -s Python-3.12.10 cpython${PYBUILD}
 fi
 
 
 if echo $PYBUILD | grep -q 11$
 then
-    wget -q -c https://www.python.org/ftp/python/3.11.11/Python-3.11.11.tar.xz
-    tar xf Python-3.11.11.tar.xz
-    ln -s Python-3.11.11 cpython${PYBUILD}
+    wget -q -c https://www.python.org/ftp/python/3.11.12/Python-3.11.12.tar.xz
+    tar xf Python-3.11.12.tar.xz
+    ln -s Python-3.11.12 cpython${PYBUILD}
 fi
 
 popd

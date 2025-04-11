@@ -1,11 +1,11 @@
 #!/bin/bash
 
-SDKROOT=${SDKROOT:-/opt/python-wasm-sdk}
-
 if [[ -z ${WASISDK_ENV+z} ]]
 then
-    export WASISDK_ENV=true
+    SDKROOT=${SDKROOT:-/tmp/sdk}
     . ${CONFIG:-${SDKROOT}/config}
+
+    export WASISDK_ENV=true
 
     export WASI=true
     export ARCH=wasisdk
