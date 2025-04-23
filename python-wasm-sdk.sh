@@ -1,6 +1,13 @@
 #!/bin/bash
 reset
 
+if [ $UID -ne 0 ]; then
+    echo "not UID 0, assuming not docker"
+else
+    echo "UID 0, assuming docker debian:stable"
+    apt-get update && apt-get --yes install build-essential clang autoconf wget curl lz4 lsb-release zlib1g-dev libssl-dev git
+fi
+
 [ -f ../config ] && . ../config
 
 # TODO: check how dbg tools work with default settings
@@ -21,8 +28,14 @@ then
     . /etc/lsb-release
     export PLATFORM=linux
 else
-    # or not
-    export DISTRIB_ID=$($SYS_PYTHON -E -c "print(__import__('sysconfig').get_config_var('HOST_GNU_TYPE'))")
+    if [ -f /etc/os-release ]
+    then
+        . /etc/os-release
+        export DISTRIB_ID="${ID}${VERSION_ID}"
+    else
+        # or not
+        export DISTRIB_ID=$($SYS_PYTHON -E -c "print(__import__('sysconfig').get_config_var('HOST_GNU_TYPE'))")
+    fi
     export PLATFORM=$($SYS_PYTHON -E -c "print(__import__('sys').platform)")
     echo no /etc/lsb-release found, please identify platform $PLATFORM : \"${DISTRIB_ID}-${DISTRIB_RELEASE}\" or hit enter to continue
     read
@@ -336,13 +349,13 @@ END
             ${SDKROOT}/lang/nimsdk.sh
         fi
 
-        mkdir -p /tmp/sdk
+        mkdir -p /tmp/sdk/dist
         # pack extra build scripts
         pushd /
             tar -cpPRz \
              ${SDKROOT}/scripts/emsdk-extra.sh \
              ${SDKROOT}/scripts/emsdk-fetch.sh \
-             ${SDKROOT}/sources.extra/* > /tmp/sdk/sdk-extra.tar.gz
+             ${SDKROOT}/sources.extra/* > /tmp/sdk/dist/sdk-extra.tar.gz
 
             # pack sdl as minimal prebuilt tar, and use lz4 compression on it
             . ${SDKROOT}/scripts/pack-sdk.sh
