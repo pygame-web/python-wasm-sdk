@@ -32,6 +32,7 @@ else
     then
         . /etc/os-release
         export DISTRIB_ID="${ID}${VERSION_ID}"
+        export DISTRIB_RELEASE=$(arch)
     else
         # or not
         export DISTRIB_ID=$($SYS_PYTHON -E -c "print(__import__('sysconfig').get_config_var('HOST_GNU_TYPE'))")
