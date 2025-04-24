@@ -28,6 +28,7 @@ then
     . /etc/lsb-release
     export PLATFORM=linux
 else
+    # is it Debian
     if [ -f /etc/os-release ]
     then
         . /etc/os-release
@@ -36,10 +37,10 @@ else
     else
         # or not
         export DISTRIB_ID=$($SYS_PYTHON -E -c "print(__import__('sysconfig').get_config_var('HOST_GNU_TYPE'))")
+        export PLATFORM=$($SYS_PYTHON -E -c "print(__import__('sys').platform)")
+        echo no /etc/lsb-release found, please identify platform $PLATFORM : \"${DISTRIB_ID}-${DISTRIB_RELEASE}\" or hit enter to continue
+        read
     fi
-    export PLATFORM=$($SYS_PYTHON -E -c "print(__import__('sys').platform)")
-    echo no /etc/lsb-release found, please identify platform $PLATFORM : \"${DISTRIB_ID}-${DISTRIB_RELEASE}\" or hit enter to continue
-    read
 fi
 
 export DISTRIB="${DISTRIB_ID}-${DISTRIB_RELEASE}"
