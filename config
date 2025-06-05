@@ -122,7 +122,7 @@ EXTRABINS="$EXTRABINS $GOROOT/bin"
 # ============== wasmer  =================
 # curl https://get.wasmer.io -sSfL | sh
 
-export WASMER_DIR==/opt/python-wasm-sdk/wasmer
+export WASMER_DIR=${SDKROOT}/wasmer
 
 
 # ================ bun ====================

@@ -62,6 +62,8 @@ COMMON = arglist(
     os.environ.get("PYDK_CFLAGS", ""),
 )
 
+#     -Wno-unnecessary-virtual-specifier
+
 false = False
 true = True
 
@@ -222,6 +224,7 @@ else:
         # only html may not exit runtime.
         if not HTML and arg.find("EXIT_RUNTIME") > 0:
             continue
+
 
         if arg.lower() in ("-fpic", "-latomic"):
             continue

@@ -57,7 +57,7 @@ index 44e349d..b97edac 100644
 +              jsArgs.push(jsArg.replaceAll('*', ''));
              }
            }
-           var func = `(${jsArgs}) => ${body};`;
+           var func = `(\${jsArgs}) => \${body};`;
 END
 
             popd # upstream/emscripten

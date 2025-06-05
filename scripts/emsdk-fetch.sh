@@ -29,6 +29,24 @@ then
         echo " * found emsdk/.complete : not patching/building emsdk"
     else
         pushd emsdk
+            if grep -q __emscripten_tempret_get upstream/emscripten/src/library_dylink.js
+            then
+                echo -n
+            else
+                patch -p1 <<END
+--- emsdk/upstream/emscripten/src/library_dylink.js
++++ emsdk.fix/upstream/emscripten/src/library_dylink.js
+@@ -724,6 +724,8 @@
+             stubs[prop] = (...args) => {
+               resolved ||= resolveSymbol(prop);
+               if (!resolved) {
++                if (prop==='getTempRet0')
++                    return __emscripten_tempret_get(...args);
+                 throw new Error(\`Dynamic linking error: cannot resolve symbol \${prop}\`);
+               }
+               return resolved(...args);
+END
+            fi
 
         pushd upstream/emscripten
 
@@ -36,11 +54,6 @@ then
             sed -i 's|extern FILE \*const|extern FILE \*|g' cache/sysroot/include/stdio.h
 
             echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/20281 dylink.js : handle ** argument case"
-#            if [ -f test/other/test_em_js_side.c ]
-#            then
-#                wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/20281.diff
-#                patch -p1 < 20281.diff
-#            else
                 patch -p1 <<END
 diff --git a/src/library_dylink.js b/src/library_dylink.js
 index 632e20aa61e3..ebb13995d6c3 100644
@@ -54,11 +67,8 @@ index 632e20aa61e3..ebb13995d6c3 100644
 +              jsArgs.push(jsArg.replaceAll('*', ''));
              }
            }
-           var func = `(${jsArgs}) => ${body};`;
+           var func = `(\${jsArgs}) => \${body};`;
 END
-
-#            fi
-
 
             echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/17956 file corruption when using emscripten_run_preload_plugins with BrowserFS"
             wget https://patch-diff.githubusercontent.com/raw/emscripten-core/emscripten/pull/17956.diff

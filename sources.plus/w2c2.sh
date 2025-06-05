@@ -39,6 +39,7 @@ pushd native
 
     cmake $DPIC -DCMAKE_INSTALL_PREFIX=$HOST_PREFIX ${SDKROOT}/src/w2c2 \
      -DDWARF_FOUND=1 -DDWARF_LIBRARIES="-ldwarf -lzstd" -DDWARF_LIBRARY_DIRS=$HOST_PREFIX/lib -DDWARF_INCLUDE_DIRS=$HOST_PREFIX/include
-    make
+    make && cp ${SDKROOT}/src/w2c2/w2c2/*h ./w2c2/
+
 popd
 

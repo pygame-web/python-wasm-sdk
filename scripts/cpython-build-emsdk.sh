@@ -7,7 +7,9 @@
 # for allowing to avoid pyc creation
 
     echo "
-    * building cpython-wasm EMSDK_PYTHON=$SYS_PYTHON
+
+    * building cpython-wasm EMSDK_PYTHON=$SYS_PYTHON and install to $PREFIX
+
 " 1>&2
 
 

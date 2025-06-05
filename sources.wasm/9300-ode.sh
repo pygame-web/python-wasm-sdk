@@ -18,7 +18,7 @@ then
     mkdir -p $ROOT/build/ode
 
     pushd $ROOT/build/ode
-        emcmake cmake -DCMAKE_INSTALL_PREFIX=$PREFIX \
+        emcmake cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_INSTALL_PREFIX=$PREFIX \
  -DODE_NO_THREADING_INTF=OFF -DODE_NO_BUILTIN_THREADING_IMPL=OFF \
  -DODE_WITH_DEMOS=OFF ${ROOT}/src/ODE-wasm
     sed -i 's/#error/\/\/#warning/g' ode/src/config.h

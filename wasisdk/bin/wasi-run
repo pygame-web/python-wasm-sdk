@@ -12,4 +12,4 @@ else
     fi
 fi
 echo "WASI: $WASM $@" > /proc/self/fd/2
-wasmtime --env PYTHONDONTWRITEBYTECODE=1 --dir /::/ -- $WASM $@
+wasmtime --env PYTHONDONTWRITEBYTECODE=1 --dir / --dir $(pwd)::. $WASM $@
