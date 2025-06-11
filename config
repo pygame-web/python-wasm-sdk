@@ -124,6 +124,10 @@ EXTRABINS="$EXTRABINS $GOROOT/bin"
 
 export WASMER_DIR=${SDKROOT}/wasmer
 
+# ============== pnpm ====================
+
+export PNPM_HOME=$(echo -n $SDKROOT/emsdk/node/*.*.*/bin)
+EXTRABINS="$EXTRABINS $PNPM_HOME"
 
 # ================ bun ====================
 export BUN_INSTALL=${SDKROOT}/bun

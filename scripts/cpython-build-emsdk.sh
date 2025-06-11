@@ -45,17 +45,22 @@ else
 
     if [ -d src/libffi ]
     then
-        echo -n
+        echo    "
+            using local sources
+        "
     else
         pushd src 2>&1 >/dev/null
-        # breaks with 3.1.46
-        #git clone https://github.com/pmp-p/libffi-emscripten.git libffi
+            # breaks with 3.1.46
+            #git clone https://github.com/pmp-p/libffi-emscripten.git libffi
 
-        # breaks with 3.1.46
-        git clone --no-tags --depth 1 --single-branch --branch master https://github.com/libffi/libffi
-        pushd libffi
-            ./autogen.sh
-        popd
+            # breaks with 3.1.46
+            #git clone --no-tags --depth 1 --single-branch --branch master https://github.com/libffi/libffi
+            #pushd libffi
+                ./autogen.sh
+            #popd
+            wget https://github.com/libffi/libffi/releases/download/v3.4.8/libffi-3.4.8.tar.gz
+            tar xvfz libffi-3.4.8.tar.gz && rm libffi-3.4.8.tar.gz
+            mv libffi-*.*.* libffi
         popd
     fi
 
