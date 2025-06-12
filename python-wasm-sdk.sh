@@ -1,6 +1,7 @@
 #!/bin/bash
 reset
-
+export DOCKER=false
+export PREBUILT=$(pwd)/prebuilt
 if [ $UID -ne 0 ]; then
     echo "not UID 0, assuming no docker/proot"
 else
@@ -11,6 +12,7 @@ else
     else
         echo "UID 0, assuming docker debian:stable"
         apt-get update && apt-get --yes install build-essential clang autoconf wget curl lz4 lsb-release zlib1g-dev libssl-dev git
+        export DOCKER=true
     fi
 fi
 
@@ -32,9 +34,9 @@ which strip || cp /bin/true /usr/bin/strip
 pause () {
     if ${CI}
     then
-        echo -n
+        echo "$0:$LINENO"
     else
-        echo "<paused> press enter ..."
+        echo "<paused as $LINENO> press enter ..."
         read
     fi
 }
@@ -194,7 +196,7 @@ do
                 pause
             else
                 cat /tmp/python-wasm-sdk.log
-                exit 192
+                exit $LINENO
             fi
 
             . scripts/cpython-build-host-deps.sh > /dev/null
@@ -259,29 +261,10 @@ END
             else
                 if ./scripts/cpython-build-${TARGET}-deps.sh
                 then
-#                    if $CI
-                    if false
-                    then
-                        pushd /
-                        tar  \
- --exclude=${SDKROOT}/devices/*/usr/bin/*3.1* \
- --exclude=${SDKROOT}/devices/*/usr/lib/python3.1? \
- --exclude=${SDKROOT}/devices/*/usr/include/python3.1? \
- --exclude=${SDKROOT}/config \
- --exclude=${SDKROOT}/python-was?-sdk.sh \
- --exclude=${SDKROOT}/python3-was? \
- --exclude=${SDKROOT}/scripts/* \
- --exclude=${SDKROOT}/sources.* \
- --exclude=${SDKROOT}/build \
- --exclude=${SDKROOT}/src \
- -cpR $SDKROOT > /tmp/emsdk.tar
-
-                        date "+%d-%m-%4Y" > /tmp/sdk/emsdk.version
-                        popd
-                    fi
+                    date "+%d-%m-%4Y" > /tmp/sdk/emsdk.timestamp
                 else
                     echo " cpython-build-emsdk-deps failed" 1>&2
-                    exit 213
+                    exit $LINENO
                 fi
             fi
 
@@ -290,7 +273,7 @@ END
             then
 
                 echo " --------- adding some usefull pkg ${PYBUILD} ${CIVER} ---------" 1>&2
-                ./scripts/cpython-build-${TARGET}-prebuilt.sh || exit 223
+                ./scripts/cpython-build-${TARGET}-prebuilt.sh || exit $LINENO
 
 
                 # experimental stuff
@@ -311,7 +294,7 @@ END
 
             else
                 echo " cpython-build-emsdk failed" 1>&2
-                exit 239
+                exit $LINENO
             fi
 
         fi
@@ -325,19 +308,27 @@ END
             export TARGET=wasi
 
             mkdir -p src build ${SDKROOT}/devices/wasisdk ${SDKROOT}/prebuilt/wasisdk
+            if [ -d $PREBUILT ]
+            then
+                # unpack wasi sdk  (common)
+                tar xf $PREBUILT/wasi-sdk-25.tar.xz
+                # unpack wasi sdk ( binary )
+                tar xf $PREBUILT/wasi-sdk-25.0-$(arch)-linux.tar.xz
+            else
+                # do not source to protect env
+                ./scripts/cpython-build-wasisdk.sh
 
-            # do not source to protect env
-            ./scripts/cpython-build-wasisdk.sh
+                > ${SDKROOT}/python3-${TARGET}
 
-            > ${SDKROOT}/python3-${TARGET}
+                > ${SDKROOT}/wasm32-${TARGET}-shell.sh
 
-            > ${SDKROOT}/wasm32-${TARGET}-shell.sh
+                CPU=wasm32
+                CPU=$CPU TARGET=$TARGET PYDK_PYTHON_HOST_PLATFORM=${CPU}-${TARGET} \
+                 PYDK_SYSCONFIG_PLATFORM=${CPU}-${TARGET} \
+                 PREFIX=${SDKROOT}/devices/${TARGET}sdk/usr \
+                 ./scripts/make-shells.sh
 
-            CPU=wasm32
-            CPU=$CPU TARGET=$TARGET PYDK_PYTHON_HOST_PLATFORM=${CPU}-${TARGET} \
-             PYDK_SYSCONFIG_PLATFORM=${CPU}-${TARGET} \
-             PREFIX=${SDKROOT}/devices/${TARGET}sdk/usr \
-             ./scripts/make-shells.sh
+            fi
 
             cat >> $ROOT/${CPU}-${TARGET}-shell.sh <<END
 #!/bin/bash
@@ -373,7 +364,7 @@ END
 
     else
         echo "cd failed"  1>&2
-        exit 208
+        exit $LINENO
     fi
 done
 
