@@ -1,4 +1,18 @@
-#include <stdio.h>
+#include <stdio.h> // for FILE
+static FILE *
+popen(const char *command, const char *type){
+    return NULL;
+}
+
+static int
+pclose(FILE *stream){
+    (void)stream;
+    return 0;
+}
+
+#ifndef __wasilibc_use_wasip2
+#define __wasi__p1
+
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -13,10 +27,6 @@
 #define	LOCK_EX	2
 #define	LOCK_NB	4
 
-static FILE *
-popen(const char *command, const char *type){
-    return NULL;
-}
 
 static char *
 __randname(char *tmpl)
@@ -136,11 +146,6 @@ lockf(int fd, int cmd, off_t len) {
     return 0;
 }
 
-static int
-pclose(FILE *stream){
-    (void)stream;
-    return 0;
-}
 
 
 static pid_t
@@ -313,3 +318,6 @@ hstrerror(int ecode)
 {
     return &cc_hstrerror[0];
 }
+#else
+#define __wasi__p2
+#endif // __wasi__p2

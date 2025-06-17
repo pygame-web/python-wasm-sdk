@@ -44,9 +44,10 @@ fi
 
 if echo $PYBUILD |grep -q 14$
 then
-    wget -c https://www.python.org/ftp/python/3.14.0/Python-3.14.0a5.tar.xz
-    tar xf Python-3.14.0a5.tar.xz
-    ln -s Python-3.14.0a5 cpython${PYBUILD}
+
+    wget -c https://www.python.org/ftp/python/3.14.0/Python-3.14.0b3.tar.xz
+    tar xf Python-3.14.0b3.tar.xz
+    ln -s Python-3.14.0b3 cpython${PYBUILD}
 
     mkdir $SDKROOT/devices/emsdk/usr/lib $SDKROOT/devices/$(arch)/usr/lib -p
 
@@ -86,10 +87,10 @@ then
         pwd
         ls
         echo "  * fetching remote cpython sources"
-        wget -q -c https://www.python.org/ftp/python/3.13.3/Python-3.13.3.tar.xz
-        tar xf Python-3.13.3.tar.xz || exit 87
+        wget -q -c  https://www.python.org/ftp/python/3.13.5/Python-3.13.5.tar.xz
+        tar xf Python-3.13.5.tar.xz || exit 90
+        ln -s Python-3.13.5 cpython${PYBUILD}
 
-        ln -s Python-3.13.3 cpython${PYBUILD}
 
         sed -i 's|ProcessPoolExecutor = None|return True|g' cpython3.13/Lib/compileall.py
 
@@ -125,17 +126,20 @@ fi
 
 if echo $PYBUILD |grep -q 12$
 then
-    wget -q -c https://www.python.org/ftp/python/3.12.10/Python-3.12.10.tar.xz
-    tar xf Python-3.12.10.tar.xz
-    ln -s Python-3.12.10 cpython${PYBUILD}
+    wget -q -c https://www.python.org/ftp/python/3.12.11/Python-3.12.11.tar.xz
+    tar xf Python-3.12.11.tar.xz
+    ln -s Python-3.12.11 cpython${PYBUILD}
 fi
 
 
 if echo $PYBUILD | grep -q 11$
 then
-    wget -q -c https://www.python.org/ftp/python/3.11.12/Python-3.11.12.tar.xz
-    tar xf Python-3.11.12.tar.xz
-    ln -s Python-3.11.12 cpython${PYBUILD}
+#    wget -q -c https://www.python.org/ftp/python/3.11.12/Python-3.11.12.tar.xz
+#    tar xf Python-3.11.12.tar.xz
+#    ln -s Python-3.11.12 cpython${PYBUILD}
+    wget -q -c https://www.python.org/ftp/python/3.11.13/Python-3.11.13.tar.xz
+    tar xf Python-3.11.13.tar.xz
+    ln -s Python-3.11.13 cpython${PYBUILD}
 fi
 
 popd
@@ -145,7 +149,7 @@ popd
 if [ -f support/__EMSCRIPTEN__.patches/${PYBUILD}-host.diff ]
 then
     pushd src/cpython${PYBUILD}
-    patch -p1 < ../../support/__EMSCRIPTEN__.patches/${PYBUILD}-host.diff
+        patch -p1 < ../../support/__EMSCRIPTEN__.patches/${PYBUILD}-host.diff
     popd
 fi
 
