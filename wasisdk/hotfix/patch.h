@@ -1,4 +1,6 @@
 #include <stdio.h> // for FILE
+#include <unistd.h> // for uid_t, pid_t
+
 static FILE *
 popen(const char *command, const char *type){
     return NULL;
@@ -10,24 +12,29 @@ pclose(FILE *stream){
     return 0;
 }
 
-#ifndef __wasilibc_use_wasip2
-#define __wasi__p1
+static gid_t
+getegid(void) {
+	return 99;
+}
 
-#include <string.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <sys/stat.h>
-#include <limits.h>
-#include <string.h>
-#include <stdlib.h>
-#include <time.h>
-#include <stdint.h>
+static uid_t
+geteuid(void) {
+    return 1000;
+}
 
-#define P_tmpdir "/tmp"
-#define	LOCK_EX	2
-#define	LOCK_NB	4
+#include <sys/types.h> // for mode_t
+static mode_t
+umask(mode_t mask) {
+	return 18;
+}
 
 
+
+#include <errno.h>  // for E*
+#include <sys/stat.h> // for stat
+#include <string.h> // for strlen
+
+#include <time.h> // for clock_gettime
 static char *
 __randname(char *tmpl)
 {
@@ -42,6 +49,7 @@ __randname(char *tmpl)
 
 	return tmpl;
 }
+
 
 static char *
 mktemp(char *tmpl)
@@ -76,126 +84,13 @@ mkstemp(char *tmpl) {
 }
 
 
-#if 0
-
-static char *
-tempnam(const char *dir, const char *pfx)
-{
-	char s[PATH_MAX];
-	size_t l, dl, pl;
-
-	if (!dir) dir = P_tmpdir;
-	if (!pfx) pfx = "temp";
-
-	dl = strlen(dir);
-	pl = strlen(pfx);
-	l = dl + 1 + pl + 1 + 6;
-
-	if (l >= PATH_MAX) {
-		errno = ENAMETOOLONG;
-		return 0;
-	}
-
-	memcpy(s, dir, dl);
-	s[dl] = '/';
-	memcpy(s+dl+1, pfx, pl);
-	s[dl+1+pl] = '_';
-	s[l] = 0;
-
-	__randname(s+l-6);
-    return strdup(s);
-}
-
-#else
-
-static char *
-tempnam (const char *dir, const char *pfx)
-{
-    char buf[FILENAME_MAX];
-    int all;
-    char *ptr;
-    int	dirlen = strlen(dir);
-    if (dirlen>=FILENAME_MAX)
-    	return NULL;
-
-    memcpy(buf,dir,FILENAME_MAX);
-    buf[dirlen] = '/';
-
-
-    if (pfx) {
-        all = dirlen + 1 + strlen(pfx);
-        if (all>=FILENAME_MAX)
-    	    return NULL;
-        memcpy(buf+dirlen+1, pfx, FILENAME_MAX - all);
-    } else {
-        all = dirlen + 1;
-    }
-
-    memcpy(buf+all, "XXXXXX", 6	);
-    all += 6 ;
-    buf[all]= 0;
-    ptr =	(char *)malloc(all);
-    memcpy(ptr,	buf, all);
-    return mktemp(ptr);
-}
-
-#endif
-
-static int
-lockf(int fd, int cmd, off_t len) {
-    return 0;
-}
-
-
-
-static pid_t
-getpid(void) {
-    char *val = getenv("WASIX_PID");
-    char *end = val + strlen(val);
-    if (val && val[0] != '\0') {
-	return (pid_t)strtol(val, &end, 10);
-    }
-#ifdef _WASIX_PID
-    return (pid_t)(_WASIX_PID);
-#else
-    return 66600;
-#endif
-}
-
-
-static pid_t
-getppid(void) {
-    char *val = getenv("WASIX_PPID");
-    char *end = val + strlen(val);
-    if (val && val[0] != '\0') {
-	return (pid_t)strtol(val, &end, 10);
-    }
-#ifdef _WASIX_PPID
-    return (pid_t)(_WASIX_PPID);
-#else
-    return 1;
-#endif
-}
-
-
-static gid_t
-getegid(void) {
-	return 99;
-}
-
-static uid_t
-geteuid(void) {
-    return 1000;
-}
-
-static mode_t
-umask(mode_t mask) {
-	return 18;
-}
-
-
 // errno.h
 #define EHOSTDOWN 117		/* Host is down */
+
+
+// sys/socket.h
+#define AF_UNIX 1  // PF_LOCAL
+
 
 
 // pwd.h
@@ -214,56 +109,20 @@ kill(pid_t pid, int sig) {
 }
 
 
-// socket.h
-#define SO_KEEPALIVE    9
-#define SO_REUSEADDR    2
+#include <stdlib.h> // for strtol
 
-typedef uint32_t socklen_t;
-
-static int
-bind(int socket, void *address, socklen_t address_len) {
-	return 0;
-}
-
-
-
-#if defined(PYDK)
-
-    extern ssize_t recvfrom(int socket, void *buffer, size_t length, int flags, void *address, socklen_t *address_len);
-    extern int socket(int domain, int type, int protocol);
-    extern ssize_t sendto(int socket, const void *message, size_t length, int flags, void *dest_addr, socklen_t dest_len);
-    extern int connect(int socket, void *address, socklen_t address_len);
-
-
+static pid_t
+getppid(void) {
+    char *val = getenv("WASIX_PPID");
+    char *end = val + strlen(val);
+    if (val && val[0] != '\0') {
+	return (pid_t)strtol(val, &end, 10);
+    }
+#ifdef _WASIX_PPID
+    return (pid_t)(_WASIX_PPID);
 #else
-
-static int
-connect(int socket, void *address, socklen_t address_len) {
-	return 0;
-}
-
-static ssize_t
-sendto(int socket, const void *message, size_t length, int flags, void *dest_addr, socklen_t dest_len) {
-	return 0;
-}
-static int
-fd_sock = 100;
-
-static ssize_t
-recvfrom(int socket, void *buffer, size_t length, int flags, void *address, socklen_t *address_len) {
-	return 0;
-}
-
-static int
-socket(int domain, int type, int protocol) {
-    return fd_sock++;
-}
-
+    return 1;
 #endif
-
-static int
-setsockopt(int socket, int level, int option_name, const void *option_value, socklen_t option_len) {
-	return 0;
 }
 
 
@@ -271,53 +130,190 @@ setsockopt(int socket, int level, int option_name, const void *option_value, soc
 
 
 
+// *********************************************************************************************
+// *********************************************************************************************
+// *********************************************************************************************
+// *********************************************************************************************
+
+
+
+#ifndef __wasilibc_use_wasip2
+#   define __wasi__p1
+
+
+#   include <limits.h>
+#   include <string.h>
+#   include <stdlib.h>
+#   include <stdint.h>
+
+#   define P_tmpdir "/tmp"
+#   define	LOCK_EX	2
+#   define	LOCK_NB	4
+
+    static char *
+    tempnam (const char *dir, const char *pfx)
+    {
+        char buf[FILENAME_MAX];
+        int all;
+        char *ptr;
+        int	dirlen = strlen(dir);
+        if (dirlen>=FILENAME_MAX)
+        	return NULL;
+
+        memcpy(buf,dir,FILENAME_MAX);
+        buf[dirlen] = '/';
+
+
+        if (pfx) {
+            all = dirlen + 1 + strlen(pfx);
+            if (all>=FILENAME_MAX)
+        	    return NULL;
+            memcpy(buf+dirlen+1, pfx, FILENAME_MAX - all);
+        } else {
+            all = dirlen + 1;
+        }
+
+        memcpy(buf+all, "XXXXXX", 6	);
+        all += 6 ;
+        buf[all]= 0;
+        ptr =	(char *)malloc(all);
+        memcpy(ptr,	buf, all);
+        return mktemp(ptr);
+    }
+
+
+    static int
+    lockf(int fd, int cmd, off_t len) {
+        return 0;
+    }
+
+
+// override
+    static pid_t
+    pydk_getpid(void) {
+        char *val = getenv("WASIX_PID");
+        char *end = val + strlen(val);
+        if (val && val[0] != '\0') {
+	    return (pid_t)strtol(val, &end, 10);
+        }
+#   ifdef _WASIX_PID
+        return (pid_t)(_WASIX_PID);
+#   else
+        return 66600;
+#   endif
+    }
+#   define getpid() pydk_getpid()
+
+// setjmp
+
+// override
+#   define __wasm_exception_handling__
+#   include <setjmp.h>
+    static int pydk_sigsetjmp(sigjmp_buf env, int savesigs) {
+        return 0;
+    }
+#   define sigsetjmp(env, savesigs) pydk_sigsetjmp(env, savesigs)
 
 
 
 
-#define SOCK_RAW 3
-#define SO_ERROR 0x1007
 
-static struct servent *
-getservbyname(const char *name, const char *proto) {
-    return NULL;
-}
+// socket.h
+#   define SO_KEEPALIVE    9
+#   define SO_REUSEADDR    2
 
-static struct servent *
-getservbyport(int port, const char *proto) {
-    return NULL;
-}
+    typedef uint32_t socklen_t;
 
-static struct protoent *
-getprotobyname(const char *name) {
-    return NULL;
-}
-static struct hostent *
-gethostbyname(const char *name){
-    return NULL;
-}
+    static int
+    bind(int socket, void *address, socklen_t address_len) {
+	    return 0;
+    }
 
-static struct hostent *
-gethostbyaddr(const void *addr, socklen_t len, int type) {
-    return NULL;
-}
 
-static struct protoent *
-getprotoent(void) {
-    return NULL;
-}
 
-static const char cc_hstrerror[] = "hstrerror";
+#   if defined(PYDK)
 
-static int * __h_errno_location(void){
-    return NULL;
-}
+        extern ssize_t recvfrom(int socket, void *buffer, size_t length, int flags, void *address, socklen_t *address_len);
+        extern int socket(int domain, int type, int protocol);
+        extern ssize_t sendto(int socket, const void *message, size_t length, int flags, void *dest_addr, socklen_t dest_len);
+        extern int connect(int socket, void *address, socklen_t address_len);
 
-static const char *
-hstrerror(int ecode)
-{
-    return &cc_hstrerror[0];
-}
+
+#   else
+
+        static int
+        connect(int socket, void *address, socklen_t address_len) {
+	        return 0;
+        }
+
+        static ssize_t
+        sendto(int socket, const void *message, size_t length, int flags, void *dest_addr, socklen_t dest_len) {
+	        return 0;
+        }
+        static int
+        fd_sock = 100;
+
+        static ssize_t
+        recvfrom(int socket, void *buffer, size_t length, int flags, void *address, socklen_t *address_len) {
+	        return 0;
+        }
+
+        static int
+        socket(int domain, int type, int protocol) {
+            return fd_sock++;
+        }
+
+#   endif
+
+    static int
+    setsockopt(int socket, int level, int option_name, const void *option_value, socklen_t option_len) {
+	    return 0;
+    }
+
+
+#   define SOCK_RAW 3
+#   define SO_ERROR 0x1007
+
+    static struct servent *
+    getservbyname(const char *name, const char *proto) {
+        return NULL;
+    }
+
+    static struct servent *
+    getservbyport(int port, const char *proto) {
+        return NULL;
+    }
+
+    static struct protoent *
+    getprotobyname(const char *name) {
+        return NULL;
+    }
+    static struct hostent *
+    gethostbyname(const char *name){
+        return NULL;
+    }
+
+    static struct hostent *
+    gethostbyaddr(const void *addr, socklen_t len, int type) {
+        return NULL;
+    }
+
+    static struct protoent *
+    getprotoent(void) {
+        return NULL;
+    }
+
+    static const char cc_hstrerror[] = "hstrerror";
+
+    static int * __h_errno_location(void){
+        return NULL;
+    }
+
+    static const char *
+    hstrerror(int ecode)
+    {
+        return &cc_hstrerror[0];
+    }
 #else
-#define __wasi__p2
+#   define __wasi__p2
 #endif // __wasi__p2
