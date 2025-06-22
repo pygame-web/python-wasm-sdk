@@ -31,7 +31,7 @@ popd
 for module in src/flit/flit_core \
  git+https://github.com/pygame-web/wheel \
  git+https://github.com/pygame-web/setuptools \
- git+https://github.com/python-cffi/cffi \
+ git+https://github.com/pygame-web/cffi \
  git+https://github.com/pypa/installer
 do
     echo "
