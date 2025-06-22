@@ -27,6 +27,7 @@ jobs:
        nimsdk: false
        COPTS: -O2 -g3
        EMFLAVOUR: 3.1.61
+       URL_NCURSES: https://pygame-web.github.io/archives/repo/src/ncurses-6.5.tar.gz
 
     steps:
     - uses: actions/checkout@v4.2.2
