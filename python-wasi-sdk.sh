@@ -34,9 +34,9 @@ which strip || cp /bin/true /usr/bin/strip
 pause () {
     if ${CI}
     then
-        echo "$0:$LINENO"
+        echo "$0:$1"
     else
-        echo "<paused as $LINENO> press enter ..."
+        echo "<paused at $1> press enter ..."
         read
     fi
 }
@@ -61,7 +61,7 @@ else
         export DISTRIB_ID=$($SYS_PYTHON -E -c "print(__import__('sysconfig').get_config_var('HOST_GNU_TYPE'))")
         export PLATFORM=$($SYS_PYTHON -E -c "print(__import__('sys').platform)")
         echo no /etc/lsb-release found, please identify platform $PLATFORM : \"${DISTRIB_ID}-${DISTRIB_RELEASE}\" or hit enter to continue
-        pause
+        pause $LINENO
     fi
 fi
 
@@ -178,22 +178,22 @@ do
             cd ${SDKROOT}
             . scripts/cpython-fetch.sh
 
-            pause
+            pause $LINENO
 
             cd ${SDKROOT}
 
             # generic wasm patchwork
             . support/__EMSCRIPTEN__.sh
 
-            pause
+            pause $LINENO
 
             . scripts/cpython-build-host.sh 2>&1 >/tmp/python-wasm-sdk.log
 
-            pause
+            pause $LINENO
 
             if [ -f $HPY ]
             then
-                pause
+                pause $LINENO
             else
                 cat /tmp/python-wasm-sdk.log
                 exit $LINENO
@@ -201,7 +201,7 @@ do
 
             . scripts/cpython-build-host-deps.sh > /dev/null
 
-            pause
+            pause $LINENO
 
         fi
 
