@@ -7,7 +7,10 @@
 
 
 export NCURSES=${NCURSES:-"ncurses-6.5"}
-export URL_NCURSES=${URL_NCURSES:-"https://invisible-mirror.net/archives/ncurses/$NCURSES.tar.gz"}
+# flaky
+# export URL_NCURSES=${URL_NCURSES:-"https://invisible-mirror.net/archives/ncurses/$NCURSES.tar.gz"}
+# reliable copy
+export URL_NCURSES=${URL_NCURSES:-"https://pygame-web.github.io/archives/repo/src/$NCURSES.tar.gz"}
 
 # --disable-database --enable-termcap
 

@@ -48,6 +48,10 @@ else
         echo    "
             using local sources
         "
+        pushd src/libffi
+           ./autogen.sh
+        popd
+
     else
         pushd src 2>&1 >/dev/null
             # breaks with 3.1.46
@@ -55,9 +59,6 @@ else
 
             # breaks with 3.1.46
             #git clone --no-tags --depth 1 --single-branch --branch master https://github.com/libffi/libffi
-            #pushd libffi
-                ./autogen.sh
-            #popd
             wget https://github.com/libffi/libffi/releases/download/v3.4.8/libffi-3.4.8.tar.gz
             tar xvfz libffi-3.4.8.tar.gz && rm libffi-3.4.8.tar.gz
             mv libffi-*.*.* libffi
@@ -389,9 +390,8 @@ else
     . emsdk/emsdk_env.sh
     popd
     export PATH=$SDKROOT/${TARGET}/upstream/emscripten:$SDKROOT/${TARGET}/upstream/emscripten/system/bin:\$PATH
-    # export PKG_CONFIG_SYSROOT_DIR="${SDKROOT}/devices/emsdk"
     export PKG_CONFIG_LIBDIR="${SDKROOT}/emsdk/upstream/emscripten/system/lib/pkgconfig"
-    export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig:${HOST_PREFIX}/lib/pkgconfig"
+    export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig:${SDKROOT}/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig:${HOST_PREFIX}/lib/pkgconfig"
     export NODE=\$(find \$EMSDK|grep /bin/node\$)
 fi
 

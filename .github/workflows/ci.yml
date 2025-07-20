@@ -21,7 +21,7 @@ jobs:
        BUILDS: 3.12 3.13
        SDKROOT: /opt/python-wasm-sdk
        Py_GIL_DISABLED: false
-       wasisdk: true
+       wasisdk: false
        gosdk: false
        rustsdk: false
        nimsdk: false
@@ -57,16 +57,11 @@ jobs:
         chmod +x ./python-wasm-sdk.sh
         bash -c "./python-wasm-sdk.sh"
 
-    - name: Upload sdk to Github artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        path: /tmp/sdk
-
     - name: Upload sdk to Github Releases
       if: github.event_name == 'release'
       uses: svenstaro/upload-release-action@2.9.0
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: /tmp/sdk/*
+        file: /tmp/sdk/dist/*
         file_glob: true
         tag: ${{ github.ref }}

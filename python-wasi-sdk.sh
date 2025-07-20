@@ -2,6 +2,8 @@
 reset
 export DOCKER=false
 export PREBUILT=$(pwd)/prebuilt
+export SDKROOT=${SDKROOT:-/tmp/sdk}
+
 if [ $UID -ne 0 ]; then
     echo "not UID 0, assuming no docker/proot"
 else
@@ -10,8 +12,11 @@ else
         echo "UID 0, with alpine proot"
 
     else
-        echo "UID 0, assuming docker debian:stable"
-        apt-get update && apt-get --yes install build-essential clang autoconf wget curl lz4 lsb-release zlib1g-dev libssl-dev git
+        echo "UID 0, assuming docker debian:12"
+        apt-get update && apt-get --yes install build-essential clang lsb-release zlib1g-dev lzma-dev libssl-dev \
+          git wget curl lz4 xz-utils bison flex pkg-config autoconf m4 libtool make
+        # prevent removing any wasi prebuilt patching from docker rc file
+        touch $SDKROOT/dev
         export DOCKER=true
     fi
 fi
@@ -41,6 +46,8 @@ pause () {
     fi
 }
 
+# sane default
+PLATFORM=linux
 
 DISTRIB_RELEASE=${DISTRIB_RELEASE:-any}
 
@@ -48,7 +55,7 @@ DISTRIB_RELEASE=${DISTRIB_RELEASE:-any}
 if [ -f /etc/lsb-release ]
 then
     . /etc/lsb-release
-    export PLATFORM=linux
+    PLATFORM=linux
 else
     # is it Debian
     if [ -f /etc/os-release ]
@@ -66,8 +73,8 @@ else
 fi
 
 export DISTRIB="${DISTRIB_ID}-${DISTRIB_RELEASE}"
+export PLATFORM
 
-export SDKROOT=${SDKROOT:-/tmp/sdk}
 
 # default is behave like a CI
 export CI=${CI:-true}
@@ -306,14 +313,41 @@ END
             cd ${SDKROOT}
 
             export TARGET=wasi
+            export CPU=wasm32
 
             mkdir -p src build ${SDKROOT}/devices/wasisdk ${SDKROOT}/prebuilt/wasisdk
             if [ -d $PREBUILT ]
             then
+                pushd /
                 # unpack wasi sdk  (common)
                 tar xf $PREBUILT/wasi-sdk-25.tar.xz
-                # unpack wasi sdk ( binary )
-                tar xf $PREBUILT/wasi-sdk-25.0-$(arch)-linux.tar.xz
+
+                if false
+                then
+                    # unpack wasi sdk ( binary )
+                    tar xf $PREBUILT/wasi-sdk-25.0-$(arch)-linux.tar.xz
+                else
+                    [ -d $SDKROOT/wasisdk/upstream ] || exit $LINENO
+                    # use stock release binaries from bin,lib folders
+	                if [ -d $SDKROOT/wasisdk/upstream/lib ]
+	                then
+		                echo "wasi sdk $(arch) support is installed"
+	                else
+		                pushd $SDKROOT/wasisdk
+		                if arch|grep -q aarch64
+		                then
+			                wget https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-25/wasi-sdk-25.0-arm64-linux.tar.gz -O/tmp/sdk.tar.gz
+		                else
+			                wget https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-25/wasi-sdk-25.0-x86_64-linux.tar.gz -O/tmp/sdk.tar.gz
+		                fi
+		                tar xfz /tmp/sdk.tar.gz && rm /tmp/sdk.tar.gz
+		                mv wasi-sdk-25.0-*/{bin,lib} upstream/
+
+		                popd
+	                fi
+                fi
+                popd
+
             else
                 # do not source to protect env
                 ./scripts/cpython-build-wasisdk.sh
@@ -322,7 +356,6 @@ END
 
                 > ${SDKROOT}/wasm32-${TARGET}-shell.sh
 
-                CPU=wasm32
                 CPU=$CPU TARGET=$TARGET PYDK_PYTHON_HOST_PLATFORM=${CPU}-${TARGET} \
                  PYDK_SYSCONFIG_PLATFORM=${CPU}-${TARGET} \
                  PREFIX=${SDKROOT}/devices/${TARGET}sdk/usr \
@@ -341,7 +374,7 @@ parse_git_branch() {
 export PS1="[PyDK:${TARGET}] \[\e[32m\]\w \[\e[91m\]\$(parse_git_branch)\[\e[00m\]\$ "
 
 END
-            chmod +x ${SDKROOT}/python3-${TARGET} ${SDKROOT}/wasm32-${TARGET}-shell.sh
+            chmod +x ${SDKROOT}/python3-${TARGET} ${SDKROOT}/${CPU}-${TARGET}-shell.sh
 
         fi
 

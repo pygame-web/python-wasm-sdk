@@ -58,6 +58,7 @@ COMMON = arglist(
     -Wno-unused-function
     -Wno-invalid-noreturn
     -Wno-declaration-after-statement
+    -Wno-invalid-noreturn
     """,
     os.environ.get("PYDK_CFLAGS", ""),
 )

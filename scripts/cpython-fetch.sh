@@ -103,6 +103,10 @@ then
         fi
 
         pushd cpython${PYBUILD}
+
+            # gh-135621: Remove dependency on curses from PyREPL #136758
+            wget --no-check-certificate https://pmp-p.ddns.net/py/patches/3.13/136758.diff
+            patch -p1 < 136758.diff
             patch -p1 <<END
 --- Python-3.13.0rc3/Objects/moduleobject.c	2024-10-01 04:03:08.000000000 +0200
 +++ Python-3.13.0rc3.wasm/Objects/moduleobject.c	2024-10-02 13:16:33.030387509 +0200

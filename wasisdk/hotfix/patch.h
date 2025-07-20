@@ -233,19 +233,6 @@ sdk_tmpfile(void) {
 #   define getrusage(who, usage) sdk_getrusage(who, usage)
 
 
-#   include <wasi/api.h>
-
-    SCOPE void sdk_exit(int ec) {
-        printf("EXIT(%d)\r\n", ec);
-        const char * base = 0 ;
-        memset(base, ec, 1);
-        // abort();
-        // proc_exit(ec);
-        __wasi_proc_exit(ec);
-
-    }
-#   define exit(ec) sdk_exit(ec)
-
 
 #   include <stdio.h>
 #   include <unistd.h>
@@ -259,7 +246,7 @@ sdk_tmpfile(void) {
         __wasi_filesize_t position = 0;
 
         // The WASI equivalent of lseek — seek to current position with offset 0
-        __wasi_errno_t err = __wasi_fd_seek(
+        __wasi_errno_t err = __sdk_fd_seek(
             wasi_fd,
             0,
             __WASI_WHENCE_CUR,
@@ -294,6 +281,45 @@ sdk_tmpfile(void) {
         puts("# 217:" __FILE__ ": siglongjmp STUB");
     }
 #   define siglongjmp(env, val) sdk_siglongjmp(env, val)
+
+
+__attribute__((import_module("wasi_snapshot_preview1"))) \
+__attribute__((import_name("__wasi_fd_seek"))) \
+extern int __wasi_fd_seek(int fd,int  offset,int  whence, unsigned long long *retptr);
+
+/*
+#   define __wasi_fd_seek(fd, offset, whence, retptr) __sdk_fd_seek(fd, offset, whence, retptr)
+*/
+
+
+// dup in ./src/port/getopt.c
+// extern int getopt(int argc, char * const argv[], const char *optstring);
+// #define getopt(argc, argv, optstring) sdk_getopt(argc, argv, optstring)
+
+#   include <wasi/api.h>
+    SCOPE void sdk_exit(int ec) {
+        printf("EXIT(%d)\r\n", ec);
+        const char * base = 0 ;
+        memset(base, ec, 1);
+        abort();
+
+//        __wasi_proc_exit(ec);
+
+    }
+#   define exit(ec) sdk_exit(ec)
+
+
+    SCOPE int sdk_pthread_sigmask(int how, const sigset_t *set, sigset_t *oldset) {
+        return 0;
+    }
+#   define pthread_sigmask(how, set, oldset) sdk_pthread_sigmask(how, set, oldset)
+
+
+
+    SCOPE int sdk_sigpending(sigset_t *set) {
+        return -1;
+    }
+#   define sigpending(set) sdk_sigpending(set)
 
 
 #   if defined(PYDK)

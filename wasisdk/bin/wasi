@@ -179,7 +179,7 @@ if fixargs:
         out.extend("-fPIC -fno-rtti -fno-exceptions -z stack-size=131072".split(" "))
         if not CONFIGURE:
             out.extend(
-                "-Wno-unknown-pragmas -Wno-unused-but-set-variable -Wno-unused-command-line-argument -Wno-unsupported-floating-point-opt -Wno-nullability-completeness".split(
+                "-Wno-unknown-pragmas -Wno-invalid-noreturn -Wno-unused-but-set-variable -Wno-unused-command-line-argument -Wno-unsupported-floating-point-opt -Wno-nullability-completeness".split(
                     " "
                 )
             )

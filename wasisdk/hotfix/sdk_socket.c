@@ -171,17 +171,19 @@ connect(int socket, void *address, socklen_t address_len) {
     return 0;
 }
 */
-
-#include <sys/un.h>
-SCOPE int
-sdk_connect(int socket, void *address, socklen_t address_len) {
+/*
         // Retrieve the socket name
         struct sockaddr_un retrieved_addr;
         socklen_t addrlen = sizeof(struct sockaddr_un);
         if (getsockname(socket, (struct sockaddr *)&retrieved_addr, &addrlen) == -1) {
             puts("getsockname error");
         }
-        printf("# 184:" __FILE__ ": unix socket path '%s' struct %p\r\n", retrieved_addr.sun_path, retrieved_addr);
+        printf("# 184:" __FILE__ ": unix socket path '%s'\r\n", retrieved_addr.sun_path);
+*/
+
+#include <sys/un.h>
+SCOPE int
+sdk_connect(int socket, void *address, socklen_t address_len) {
 #if 1
     fd_queue = 0;
     fd_FILE = fopen(PGS_ILOCK, "w");
@@ -203,7 +205,6 @@ sdk_connect(int socket, void *address, socklen_t address_len) {
 #define connect(socket, address, address_len) sdk_connect(socket, address, address_len)
 
 
-
 SCOPE void
 sdk_sock_flush() {
     if (fd_queue) {
@@ -221,7 +222,7 @@ sdk_sock_flush() {
             rename(PGS_ILOCK, PGS_IN);
             sched_yield();
 
-// freopen does not work on wasi/emscripte
+// freopen does not work on wasi/emscripten
 // freopen(PGS_ILOCK, "w", fd_FILE);
             fd_FILE = fopen(PGS_ILOCK, "w");
             fd_out = fileno(fd_FILE);
@@ -235,7 +236,8 @@ sdk_sock_flush() {
 
     // limit inf loops
     if (watchdog++ > 32) {
-        puts("# 231: sdk_sock_flush : busy looping ? exit(238) !\r\n"); exit(__LINE__);
+        puts("# 231: sdk_sock_flush : busy looping ? exit(0) !\r\n");
+        sdk_exit(0);
     }
 }
 
@@ -459,16 +461,6 @@ sdk_gai_strerror(int errcode) {
     }
 }
 #define gai_strerror(errcode) sdk_gai_strerror(errcode)
-
-
-
-
-
-
-
-
-
-
 
 
 

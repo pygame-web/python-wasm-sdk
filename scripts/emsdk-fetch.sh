@@ -6,6 +6,8 @@ then
 
     . ${CONFIG:-config}
 
+
+
     # for full rebuild
     # rm emsdk/.complete
 
@@ -23,6 +25,7 @@ then
         popd
     fi
 
+    export SYSROOT=${SDKROOT}/emsdk/upstream/emscripten/cache/sysroot
 
     if [ -f emsdk/.complete ]
     then
@@ -51,7 +54,7 @@ END
         pushd upstream/emscripten
 
             echo "FIXME: applying stdio* are not const"
-            sed -i 's|extern FILE \*const|extern FILE \*|g' cache/sysroot/include/stdio.h
+            sed -i 's|extern FILE \*const|extern FILE \*|g' ${SYSROOT}/include/stdio.h
 
             echo "FIXME: Applying https://github.com/emscripten-core/emscripten/pull/20281 dylink.js : handle ** argument case"
                 patch -p1 <<END
@@ -210,12 +213,21 @@ END
         * emsdk third parties ok
     "  1>&2
     else
-        # sdl2_image is too old
         ALL="libembind libgl libal libhtml5 libstubs libnoexit libsockets"
         ALL="$ALL libc libdlmalloc libcompiler_rt libc++-noexcept libc++abi-noexcept"
         ALL="$ALL libfetch zlib bzip2 libpng libjpeg freetype harfbuzz"
-        ALL="$ALL sdl2 sdl2_mixer sdl2_gfx sdl2_ttf"
         ALL="$ALL sqlite3 vorbis ogg"
+
+        # sdl2_image is too old
+        if ${SDL3:-false}
+        then
+            echo "Will build SDL3"
+        else
+            ALL="$ALL sdl2 sdl2_mixer sdl2_gfx sdl2_ttf"
+        fi
+
+
+
 
         echo "
         * building third parties libraries for emsdk ( can take time ... )
@@ -231,6 +243,51 @@ END
         done
 
 
+        # why ?
+
+        cat > ${SYSROOT}/lib/pkgconfig/freetype2.pc <<END
+prefix=${SYSROOT}
+exec_prefix=${PREFIX}
+libdir=\${prefix}/lib/wasm32-emscripten/pic
+includedir=\${prefix}/include
+
+Name: FreeType 2
+URL: https://freetype.org
+Description: A free, high-quality, and portable font engine.
+Version: 26.2.20
+Libs: -L\${libdir} -lfreetype -lharfbuzz
+Cflags: -I\${includedir}/freetype2
+END
+        cat > ${SYSROOT}/lib/pkgconfig/sdl2.pc <<END
+prefix=${SYSROOT}
+exec_prefix=${PREFIX}
+libdir=\${prefix}/lib/wasm32-emscripten/pic
+includedir=\${prefix}/include
+
+Name: sdl2
+Description: Simple DirectMedia Layer is a cross-platform multimedia library designed to provide low level access to audio, keyboard, mouse, joystick, 3D hardware via OpenGL, and 2D video framebuffer.
+Version: 2.30.9
+Requires.private:
+Conflicts:
+Libs: -L\${libdir} -lSDL2
+Cflags: -I${includedir} -I${includedir}/SDL2   -D_REENTRANT
+END
+        cat > ${SYSROOT}/lib/pkgconfig/SDL2_mixer.pc <<END
+prefix=${SYSROOT}
+exec_prefix=/usr
+libdir=\${prefix}/lib/wasm32-emscripten/pic
+includedir=\${prefix}/include
+
+Name: SDL2_mixer
+Description: mixer library for Simple DirectMedia Layer
+Version: 2.8.0
+Requires: sdl2 >= 2.30.9
+Libs: -L\${libdir} -lvorbis -logg -lSDL2_mixer_ogg
+Cflags: -I${includedir}/SDL2
+END
+
+
+
 
         if ${SDL3:-false}
         then
@@ -238,16 +295,20 @@ END
             ./scripts/emsdk-fetch-sdl3.sh
 #=============================================================================================================================
         else
+            MIXER_LIB=${SYSROOT}/lib/wasm32-emscripten/pic/libSDL2_mixer.a
+            [ -f ${MIXER_LIB} ] || llvm-ar cr {$MIXER_LIB}
+            MIXER_LIB=${SYSROOT}/lib/wasm32-emscripten/libSDL2_mixer.a
+            [ -f ${MIXER_LIB} ] || llvm-ar cr {$MIXER_LIB}
 #=============================================================================================================================
             ./scripts/emsdk-fetch-sdl2.sh
 #=============================================================================================================================
         fi # SDL3
 
+        echo "
 
-       echo "
-        * building third parties done, mark is emsdk/.complete )
+        * building third parties done, marking emsdk/.complete )
+
     "  1>&2
-
 
 
         export PATH=$(echo -n ${SDKROOT}/emsdk/node/??.??.*/bin):$PATH
@@ -314,8 +375,11 @@ END
     # https://emscripten.org/docs/compiling/Building-Projects.html#pkg-config
 
     # export PKG_CONFIG_SYSROOT_DIR="${SDKROOT}/devices/emsdk"
+
+    # be carefull changes also needed in scripts/make-shells.sh
+
     export PKG_CONFIG_LIBDIR="${SDKROOT}/emsdk/upstream/emscripten/system/lib/pkgconfig"
-    export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig:${HOST_PREFIX}/lib/pkgconfig"
+    export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig:${SYSROOT}/lib/pkgconfig:${HOST_PREFIX}/lib/pkgconfig"
     export EM_PKG_CONFIG_PATH=$PKG_CONFIG_PATH
 
     if echo $PATH|grep -q $EMSDK/upstream/emscripten/system/bin
@@ -364,7 +428,7 @@ END
     export EMSDK_NUM_CORES=$NPROC
 
     mkdir -p src
-    export SYSROOT=$EMSDK/upstream/emscripten/cache/sysroot
+
     popd  # ${SDKROOT:-/opt/python-wasm-sdk}
 
     echo "

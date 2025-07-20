@@ -37,6 +37,7 @@ else
     emmake make install
     cp -r $PREFIX/include/${PKG}* $SYSROOT/include/
     cp -r $PREFIX/lib/${PKG}* $SYSROOT/lib/
+    [ -f $SYSROOT/lib/libxslt.a ] || exit 40
     popd
 fi
 

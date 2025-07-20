@@ -98,30 +98,34 @@ END
         if echo $EMFLAVOUR|grep -q tot
         then
             SDL3=true
+        else
+            SDL3=${SDL3:-false}
+        fi
+
+        if $SDL3
+        then
             echo "
     * using SDL3
-"
+            "
         else
-            SDL3=false
             echo "
     * using SDL2
-"
+            "
             ALL="$ALL sdl2 sdl2_mixer sdl2_gfx sdl2_ttf"
         fi
 
         echo "
         * building third parties libraries for emsdk ( can take time ... )
-    "  1>&2
+        "  1>&2
 
         for one in $ALL
         do
             echo "
             + $done
-    "  1>&2
+            "  1>&2
             embuilder build $one
             embuilder --pic build $one
         done
-
 
         if $SDL3
         then
