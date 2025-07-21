@@ -1,0 +1,11 @@
+#!/bin/bash
+SDKROOT=${SDKROOT:-/tmp/sdk}
+if . $SDKROOT/wasisdk/wasisdk_env.sh
+then
+    CMAKE=$1
+    shift
+    $CMAKE \
+     -DCMAKE_SYSTEM_NAME=WASI \
+     -DCMAKE_INSTALL_PREFIX=$PREFIX \
+    "$@"
+fi
