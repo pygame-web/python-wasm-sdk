@@ -40,12 +40,11 @@ pushd ${SDKROOT}
 list(APPEND CMAKE_MODULE_PATH "${WASISDK}/share/cmake/Modules")
 
 
-# This is arbitrary, AFAIK, for now.
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.10.0)
 set(CMAKE_SYSTEM_NAME WASI)
 set(CMAKE_SYSTEM_VERSION 1)
 set(CMAKE_SYSTEM_PROCESSOR wasm32)
-set(triple wasm32-wasi)
+set(triple wasm32-wasip1)
 
 set(WASI True)
 option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
@@ -56,8 +55,8 @@ set(COMPILER_SUPPORTS_FEXCEPTIONS FALSE)
 #add_compile_options(-fpic)
 #add_compile_options(-fno-exceptions)
 
+set(WASI_SDK_PREFIX "${WASISDK}/upstream")
 set(CMAKE_PREFIX_PATH "${CMAKE_INSTALL_PREFIX}")
-
 set(CMAKE_CROSSCOMPILING 1)
 
 
@@ -95,9 +94,9 @@ set(CMAKE_CXX_PLATFORM_ID "wasi")
 set(CMAKE_ASM_COMPILER "${WASI_SDK_PREFIX}/bin/clang${WASI_HOST_EXE_SUFFIX}")
 set(CMAKE_AR "${WASI_SDK_PREFIX}/bin/llvm-ar${WASI_HOST_EXE_SUFFIX}")
 set(CMAKE_RANLIB "${WASI_SDK_PREFIX}/bin/llvm-ranlib${WASI_HOST_EXE_SUFFIX}")
-set(CMAKE_C_COMPILER_TARGET ${triple})
-set(CMAKE_CXX_COMPILER_TARGET ${triple})
-set(CMAKE_ASM_COMPILER_TARGET ${triple})
+set(CMAKE_C_COMPILER_TARGET \${triple})
+set(CMAKE_CXX_COMPILER_TARGET \${triple})
+set(CMAKE_ASM_COMPILER_TARGET \${triple})
 
 # Don't look in the sysroot for executables to run during the build
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)

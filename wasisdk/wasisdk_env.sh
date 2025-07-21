@@ -36,13 +36,12 @@ then
     export PATH="${WASISDK}/bin:${WASI_SDK_PREFIX}/bin:$PATH"
 
     # instruct pkg-config to use wasi target root
-    export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig:${WASI_SYSROOT}/lib/wasm32-wasi/pkgconfig"
-
-    # for thirparty prebuilts .pc in sdk
     export PKG_CONFIG_LIBDIR="${WASI_SYSROOT}/lib/wasm32-wasi/pkgconfig"
     #:${WASI_SYSROOT}/share/pkgconfig"
     export PKG_CONFIG_SYSROOT_DIR="${WASI_SYSROOT}"
 
+    # for thirparty prebuilts .pc in sdk
+    export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig:${WASI_SYSROOT}/lib/pkgconfig"
 
     export PS1="[PyDK:wasi] \w $ "
 

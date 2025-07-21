@@ -5,6 +5,8 @@
 
 SCOPE FILE *
 popen(const char *command, const char *type){
+    (void)command;
+    (void)type;
     return NULL;
 }
 
@@ -27,6 +29,7 @@ geteuid(void) {
 #include <sys/types.h> // for mode_t
 SCOPE mode_t
 umask(mode_t mask) {
+    (void)mask;
 	return 18;
 }
 
@@ -35,6 +38,8 @@ umask(mode_t mask) {
 
 SCOPE int
 sdk_chmod(const char * path, int mode_t) {
+    (void)path;
+    (void)mode_t;
     return 0;
 }
 #define chmod(path, mode) sdk_chmod(path, mode)
@@ -109,7 +114,12 @@ mkstemp(char *tmpl) {
 SCOPE int
 // getpwuid_r(uid_t uid, struct passwd *pwd, char *buf, size_t buflen, struct passwd **result) {
 sdk_getpwuid_r(uid_t uid, void *pwd, char *buf, size_t buflen, void **result) {
-  return ENOENT;
+    (void)uid;
+    (void)pwd;
+    (void)buf;
+    (void)buflen;
+    (void)result;
+    return ENOENT;
 }
 #define getpwuid_r(uid, pwd, buf, buflen, result) sdk_getpwuid_r(uid, pwd, buf, buflen, result)
 
@@ -209,6 +219,9 @@ sdk_tmpfile(void) {
 
     SCOPE int
     lockf(int fd, int cmd, off_t len) {
+        (void)fd;
+        (void)cmd;
+        (void)len;
         return 0;
     }
 
@@ -228,6 +241,8 @@ sdk_tmpfile(void) {
 
     SCOPE int
     sdk_getrusage(int who, void *usage) {
+        (void)who;
+        (void)usage;
         return -1;
     }
 #   define getrusage(who, usage) sdk_getrusage(who, usage)
@@ -274,10 +289,14 @@ sdk_tmpfile(void) {
 #   define __wasm_exception_handling__
 #   include <setjmp.h>
     SCOPE int sdk_sigsetjmp(sigjmp_buf env, int savesigs) {
+        (void)env;
+        (void)savesigs;
         return 0;
     }
 #   define sigsetjmp(env, savesigs) sdk_sigsetjmp(env, savesigs)
     SCOPE void sdk_siglongjmp(sigjmp_buf env, int val) {
+        (void)env;
+        (void)val;
         puts("# 217:" __FILE__ ": siglongjmp STUB");
     }
 #   define siglongjmp(env, val) sdk_siglongjmp(env, val)
@@ -298,8 +317,8 @@ extern int __wasi_fd_seek(int fd,int  offset,int  whence, unsigned long long *re
 
 #   include <wasi/api.h>
     SCOPE void sdk_exit(int ec) {
+        void * base = 0 ;
         printf("EXIT(%d)\r\n", ec);
-        const char * base = 0 ;
         memset(base, ec, 1);
         abort();
 
@@ -309,7 +328,11 @@ extern int __wasi_fd_seek(int fd,int  offset,int  whence, unsigned long long *re
 #   define exit(ec) sdk_exit(ec)
 
 
+
     SCOPE int sdk_pthread_sigmask(int how, const sigset_t *set, sigset_t *oldset) {
+        (void)how;
+        (void)set;
+        (void)oldset;
         return 0;
     }
 #   define pthread_sigmask(how, set, oldset) sdk_pthread_sigmask(how, set, oldset)
@@ -317,6 +340,7 @@ extern int __wasi_fd_seek(int fd,int  offset,int  whence, unsigned long long *re
 
 
     SCOPE int sdk_sigpending(sigset_t *set) {
+        (void)set;
         return -1;
     }
 #   define sigpending(set) sdk_sigpending(set)
