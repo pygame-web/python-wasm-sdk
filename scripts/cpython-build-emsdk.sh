@@ -173,6 +173,9 @@ py_cv_module__ctypes=yes
 py_cv_module__ctypes_test=yes
 ax_cv_c_float_words_bigendian=no
 ac_cv_func_sem_clockwait=no
+
+ac_cv_file__dev_ptmx=no
+ac_cv_file__dev_ptc=no
 END
 
 
@@ -206,28 +209,35 @@ END
     sed -i 's|-sWASM_BIGINT||g' configure.ac
 
 
+    EXTRA_PYOPTS=""
+
     if [ ${PYMINOR} -ge 13 ]
     then
         sed -i 's|{ABIFLAGS}t|{ABIFLAGS}|g' configure
         sed -i 's|{ABIFLAGS}t|{ABIFLAGS}|g' configure.ac
         sed -i 's|--wasi preview2||g' configure
         sed -i 's|--wasi preview2||g' configure.ac
-        EXTRA="--without-pydebug --without-trace-refs --without-dsymutil --without-pymalloc --without-strict-overflow"
+        EXTRA_PYOPTS="--without-pydebug --without-trace-refs --without-dsymutil --without-pymalloc --without-strict-overflow"
     fi
 
     if [ ${PYMINOR} -ge 14 ]
     then
-        sed -i 's|wasm32-unknown-emscripten|wasm32-bi-emscripten|g' Makefile.pre.in
-    fi
 
+        cp Tools/wasm/config.host-wasm32-emscripten Tools/wasm/config.site-wasm32-emscripten
+
+        sed -i 's|wasm32-unknown-emscripten|wasm32-bi-emscripten|g' Makefile.pre.in
+        EXTRA_PYOPTS="$EXTRA_PYOPTS --disable-ipv6"
+    else
+        EXTRA_PYOPTS="$EXTRA_PYOPTS --with-emscripten-target=browser"
+    fi
 
     popd
 
     chmod +x ${SDKROOT}/emsdk-cc
 
     export PYDK_CC=true
-    PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig" CONFIG_SITE=$ROOT/src/cpython${PYBUILD}/Tools/wasm/config.site-wasm32-pydk \
-     emconfigure $ROOT/src/cpython${PYBUILD}/configure -C --with-emscripten-target=browser $GIL \
+    PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig" CONFIG_SITE=$SDKROOT/src/cpython${PYBUILD}/Tools/wasm/config.site-wasm32-pydk \
+     emconfigure $ROOT/src/cpython${PYBUILD}/configure -C $GIL \
      --cache-file=${PYTHONPYCACHEPREFIX}/config.cache \
      --enable-wasm-dynamic-linking $TESTSUITE\
      --host=$PYDK_PYTHON_HOST_PLATFORM \

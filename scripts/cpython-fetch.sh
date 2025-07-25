@@ -44,10 +44,10 @@ fi
 
 if echo $PYBUILD |grep -q 14$
 then
+    wget -c https://www.python.org/ftp/python/3.14.0/Python-3.14.0rc1.tar.xz
+    tar xf Python-3.14.0rc1.tar.xz
+    ln -s Python-3.14.0rc1 cpython${PYBUILD}
 
-    wget -c https://www.python.org/ftp/python/3.14.0/Python-3.14.0b3.tar.xz
-    tar xf Python-3.14.0b3.tar.xz
-    ln -s Python-3.14.0b3 cpython${PYBUILD}
 
     mkdir $SDKROOT/devices/emsdk/usr/lib $SDKROOT/devices/$(arch)/usr/lib -p
 
@@ -58,6 +58,7 @@ then
     fi
 
     pushd cpython${PYBUILD}
+
         patch -p1 <<END
 --- Python-3.13.0rc3/Objects/moduleobject.c	2024-10-01 04:03:08.000000000 +0200
 +++ Python-3.13.0rc3.wasm/Objects/moduleobject.c	2024-10-02 13:16:33.030387509 +0200

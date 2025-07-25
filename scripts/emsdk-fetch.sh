@@ -36,18 +36,26 @@ then
             then
                 echo -n
             else
+
+                # including
+                # https://github.com/emscripten-forge/recipes/blob/main/recipes/recipes/emscripten_emscripten-wasm32/patches/0001-Add-useful-error-when-symbol-resolution-fails.patch
                 patch -p1 <<END
---- emsdk/upstream/emscripten/src/library_dylink.js
-+++ emsdk.fix/upstream/emscripten/src/library_dylink.js
-@@ -724,6 +724,8 @@
+--- emsdk/upstream/emscripten/src/library_dylink.js	2025-07-25 08:13:59.548799211 +0200
++++ emsdk.fix/upstream/emscripten/src/library_dylink.js	2025-07-25 08:11:56.611055127 +0200
+@@ -723,6 +723,13 @@
+             var resolved;
              stubs[prop] = (...args) => {
                resolved ||= resolveSymbol(prop);
-               if (!resolved) {
++              if (!resolved) {
 +                if (prop==='getTempRet0')
 +                    return __emscripten_tempret_get(...args);
-                 throw new Error(\`Dynamic linking error: cannot resolve symbol \${prop}\`);
-               }
++                if (prop==='setTempRet0')
++                    return __emscripten_tempret_set(...args);
++                throw new Error(`Dynamic linking error: cannot resolve symbol ${prop}`);
++              }
                return resolved(...args);
+             };
+           }
 END
             fi
 
@@ -118,22 +126,7 @@ END
 #        patch -p1 < emsdk_emcc.patch
 
 
-        # https://github.com/emscripten-forge/recipes/blob/main/recipes/recipes/emscripten_emscripten-wasm32/patches/0001-Add-useful-error-when-symbol-resolution-fails.patch
-        patch -p1 <<END
---- emsdk-orig/upstream/emscripten/src/library_dylink.js
-+++ emsdk/upstream/emscripten/src/library_dylink.js
-@@ -723,6 +723,9 @@
-             var resolved;
-             stubs[prop] = (...args) => {
-               resolved ||= resolveSymbol(prop);
-+              if (!resolved) {
-+                throw new Error(\`Dynamic linking error: cannot resolve symbol \${prop}\`);
-+              }
-               return resolved(...args);
-             };
-           }
 
-END
 
 
         # https://github.com/paradust7/minetest-wasm/blob/main/emsdk_dirperms.patch
