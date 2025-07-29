@@ -134,6 +134,11 @@ export BUN_INSTALL=${SDKROOT}/bun
 
 EXTRABINS="$EXTRABINS $BUN_INSTALL/bin"
 
+# ================= deno ==================
+export DENO_INSTALL=${SDKROOT}/deno
+
+EXTRABINS="$EXTRABINS $DENO_INSTALL/bin"
+
 # ================ aosp ===================
 
 export AOSP_NDK=${AOSP_NDK:-25.2.9519653}
