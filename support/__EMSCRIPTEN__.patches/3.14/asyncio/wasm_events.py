@@ -104,7 +104,6 @@ __all__ = (
     "AbstractChildWatcher",
     "SafeChildWatcher",
     "FastChildWatcher",
-    "DefaultEventLoopPolicy",
 )
 
 
@@ -1664,7 +1663,7 @@ class FastChildWatcher(BaseChildWatcher):
                 callback(pid, returncode, *args)
 
 
-class DefaultEventLoopPolicy(events.BaseDefaultEventLoopPolicy):
+class _DefaultEventLoopPolicy(events._BaseDefaultEventLoopPolicy):
     """event loop policy with a watcher for child processes."""
 
     _loop_factory = SelectorEventLoop
@@ -1680,20 +1679,10 @@ class DefaultEventLoopPolicy(events.BaseDefaultEventLoopPolicy):
                 if isinstance(threading.current_thread(), threading._MainThread):
                     self._watcher.attach_loop(self._local._loop)
 
-    def set_event_loop(self, loop):
-        """Set the event loop.
-
-        As a side effect, if a child watcher was set before, then calling
-        .set_event_loop() from the main thread will call .attach_loop(loop) on
-        the child watcher.
-        """
-
-        super().set_event_loop(loop)
-
-        if self._watcher is not None and isinstance(
-            threading.current_thread(), threading._MainThread
-        ):
-            self._watcher.attach_loop(loop)
+    def get_event_loop(self):
+        if self._local._loop is None:
+            self._local._loop = self._loop_factory()
+        return self._local._loop
 
     def get_child_watcher(self):
         """Get the watcher for child processes.

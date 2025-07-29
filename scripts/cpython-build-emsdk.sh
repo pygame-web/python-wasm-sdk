@@ -171,13 +171,15 @@ ac_cv_func_dlopen=yes
 ac_cv_lib_ffi_ffi_call=yes
 py_cv_module__ctypes=yes
 py_cv_module__ctypes_test=yes
-ax_cv_c_float_words_bigendian=no
 ac_cv_func_sem_clockwait=no
 
 ac_cv_file__dev_ptmx=no
 ac_cv_file__dev_ptc=no
-END
+ac_cv_func_memfd_create=no
 
+ax_cv_c_float_words_bigendian=no
+# ax_cv_check_cflags__Werror__msse__msse2__msse3__msse4_1__msse4_2=no
+END
 
 
 #_ctypes _ctypes/_ctypes.c _ctypes/callbacks.c _ctypes/callproc.c _ctypes/stgdict.c _ctypes/cfield.c -ldl -lffi -DHAVE_FFI_PREP_CIF_VAR -DHAVE_FFI_PREP_CLOSURE_LOC -DHAVE_FFI_CLOSURE_ALLOC
@@ -222,11 +224,14 @@ END
 
     if [ ${PYMINOR} -ge 14 ]
     then
-
         cp Tools/wasm/config.host-wasm32-emscripten Tools/wasm/config.site-wasm32-emscripten
 
         sed -i 's|wasm32-unknown-emscripten|wasm32-bi-emscripten|g' Makefile.pre.in
         EXTRA_PYOPTS="$EXTRA_PYOPTS --disable-ipv6"
+        # no PY_CALL_TRAMPOLINE
+        sed -i 's|,__PyEM_EMSCRIPTEN_COUNT_ARGS_OFFSET||g' configure
+        sed -i 's|,__PyEM_EMSCRIPTEN_COUNT_ARGS_OFFSET||g' configure.ac
+
     else
         EXTRA_PYOPTS="$EXTRA_PYOPTS --with-emscripten-target=browser"
     fi
@@ -258,7 +263,7 @@ END
     sed -i 's|-lpthread|-lcrypto|g' Makefile
 
 
-    echo "=========== cpython build ================" 1>&2
+    echo "=========== cpython${PYMAJOR}.${PYMINOR} build ================" 1>&2
     if  emmake make -j$(nproc) WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/
     then
         echo -n
@@ -274,22 +279,36 @@ END
     fi
     #emmake make -j1 Modules/_ctypes/_ctypes.o
 
-    echo "=========== cpython install ================" 1>&2
-    if emmake make WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/ install
+    echo "================ cpython${PYMAJOR}.${PYMINOR} install ================" 1>&2
+    if [ ${PYMINOR} -ge 14 ]
     then
-        echo "ok"
-        #cp -rf ${PREFIX}/usr/lib/python${PYMAJOR}.${PYMINOR}/* ${ROOT}/devices/$(arch)/usr/lib/python${PYMAJOR}.${PYMINOR}/
-        #rm -rf ${PREFIX}/lib/python${PYMAJOR}.${PYMINOR}
-        #ln -sf ${ROOT}/devices/$(arch)/usr/lib/python${PYMAJOR}.${PYMINOR} ${PREFIX}/lib/python${PYMAJOR}.${PYMINOR}
+        if emmake make WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/ build-details.json install
+        then
+            pushd Modules/_hacl
+            $SDKROOT/emsdk/upstream/emscripten/emar rcs ${SDKROOT}/prebuilt/emsdk/lib_hacl${PYBUILD}.a *.o
+            popd
+            touch $PREFIX/python${PYMAJOR}.${PYMINOR}
+        fi
+    else
+        if emmake make WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/ install
+        then
+            touch $PREFIX/python${PYMAJOR}.${PYMINOR}
+        fi
+    fi
+
+
+    if [ -f $PREFIX/python${PYMAJOR}.${PYMINOR} ]
+    then
+        echo "cpython${PYMAJOR}.${PYMINOR} install success"
     else
         echo "
 
-     **** cpython wasm install failed ***
+     **** cpython${PYMAJOR}.${PYMINOR}-wasm install failed ***
 
-    emmake make WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/ install
+    emmake make WASM_ASSETS_DIR=$(realpath ${PYTHONPYCACHEPREFIX}/empty)@/ build-details.json install
 
         " 1>&2
-        exit 263
+        exit 308
 
     fi
 
@@ -353,7 +372,7 @@ MODSYSCONFIG="${SDKROOT}/prebuilt/emsdk/${PYBUILD}/_sysconfigdata__emscripten_de
 cp $PREFIX/lib/python${PYBUILD}/_sysconfigdata__emscripten_wasm32-emscripten.py \
  ${MODSYSCONFIG}
 
-sed -i 's|-Os|-O0|g' ${MODSYSCONFIG}
+sed -i 's|-Os|-O2|g' ${MODSYSCONFIG}
 sed -i 's|-g0|-g3|g' ${MODSYSCONFIG}
 
 # this one is required for `python3-wasm -mbuild` venv

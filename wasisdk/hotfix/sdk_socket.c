@@ -208,16 +208,16 @@ sdk_connect(int socket, void *address, socklen_t address_len) {
 SCOPE void
 sdk_sock_flush() {
     if (fd_queue) {
-        printf(" -- 203 sockflush : AIO YIELD, expecting %s filled on return --\r\n", PGS_OUT);
+        watchdog = 0;
+        printf(" -- 212 sockflush : AIO YIELD, expecting %s filled on return --\r\n", PGS_OUT);
         if (!fd_FILE) {
             if (!web_warned) {
-                puts("# 206: WARNING: fd_FILE not set but queue not empty, assuming web and bad FS\r\n");
+                puts("# 215: WARNING: fd_FILE not set but queue not empty, assuming web and bad FS\r\n");
                 web_warned = true;
             }
             abort();
          } else {
-
-            printf("#       213: SENT=%ld/%d fd_out=%d == fno=%d\r\n", sdk_fdtell(fd_out), fd_queue, fd_out, fileno(fd_FILE));
+            printf("#       221: SENT=%ld/%d fd_out=%d == fno=%d\r\n", sdk_fdtell(fd_out), fd_queue, fd_out, fileno(fd_FILE));
             fclose(fd_FILE);
             rename(PGS_ILOCK, PGS_IN);
             sched_yield();
@@ -226,17 +226,16 @@ sdk_sock_flush() {
 // freopen(PGS_ILOCK, "w", fd_FILE);
             fd_FILE = fopen(PGS_ILOCK, "w");
             fd_out = fileno(fd_FILE);
-            printf("#       218: fd_out=%d fno=%d\r\n", fd_out, fileno(fd_FILE));
+            printf("#       229: fd_out=%d fno=%d\r\n", fd_out, fileno(fd_FILE));
         }
         fd_queue = 0;
         return;
     }
 
-    printf(" -- 243 sockflush[%d] : NO YIELD --\r\n", watchdog);
-
-    // limit inf loops
-    if (watchdog++ > 32) {
-        puts("# 231: sdk_sock_flush : busy looping ? exit(0) !\r\n");
+    // limit inf loops in busy looping.
+    if (watchdog++ > 32768) {
+        printf(" -- 235 sockflush[%d] : NO YIELD --\r\n", watchdog);
+        puts("# 239: sdk_sock_flush : busy looping ? exit(0) !\r\n");
         sdk_exit(0);
     }
 }
@@ -255,12 +254,13 @@ sdk_recvfrom(int socket, void *buffer, size_t length, int flags, void *address, 
         watchdog = 0;
     }
 
-    FILE *sock_in = fopen(PGS_OUT,"r");
+    FILE *sock_in = fopen(PGS_OUT, "r");
     if (sock_in) {
-        if (!fd_filesize) {
+        /* file could grow, or be truncated to reclaim memory */
+//        if (!fd_filesize) {
             fseek(sock_in, 0L, SEEK_END);
             fd_filesize = ftell(sock_in);
-        }
+//        }
         fseek(sock_in, fd_current_pos, SEEK_SET);
 
         char *buf = buffer;
@@ -272,25 +272,26 @@ sdk_recvfrom(int socket, void *buffer, size_t length, int flags, void *address, 
         // move sock-in-file read pointer
         fd_current_pos += rcv;
 
+        /* we are still reading, reset watchdog */
+        watchdog = 0;
+
         // was it partial read ?
         if ( fd_current_pos < fd_filesize) {
             // fd_current_pos = ftell(sock_in);
-            printf("# 276: sdk_recvfrom(%s read=%d == %d ]%d-%d] / %d MAX %zu\r\n", PGS_OUT, rcv, (fd_current_pos -  last_pos) ,last_pos, fd_current_pos, fd_filesize, length);
+            printf("# 281: sdk_recvfrom(%s read=%d pos +%d->+%d : %d left on %d block=%zu\r\n", PGS_OUT, rcv, last_pos, fd_current_pos, fd_filesize-fd_current_pos, fd_filesize, length);
             fclose(sock_in);
             return rcv;
         }
 
         // fully read
-        printf("# 282: sdk_recvfrom(%s max=%zu total=%d) read=%d\r\n", PGS_OUT, length, fd_filesize, rcv);
+        printf("# 287: sdk_recvfrom(%s max=%zu total=%d) read=%d\r\n", PGS_OUT, length, fd_filesize, rcv);
         fd_queue = 0;
         fd_filesize = 0;
         fd_current_pos = 0;
         fclose(sock_in);
         unlink(PGS_OUT);
-        /* reset watchdog */
-        watchdog = 0;
     } else {
-        printf("# 298: sdk_recvfrom(%s max=%zu) ERROR\r\n", PGS_OUT, length);
+        printf("# 294: sdk_recvfrom(%s max=%zu) ERROR\r\n", PGS_OUT, length);
         errno = EINTR;
     }
     return rcv;

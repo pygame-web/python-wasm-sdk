@@ -229,7 +229,7 @@ else:
 
         if arg.lower() in ("-fpic", "-latomic"):
             continue
-
+        # cpython use at least: -msse -msse2 -msse3 -msse4.1 -msse4.2 for HACL
         if arg.lower() in ("-msse", "-msse2", "-msse3", "-mssse3", "-msse4.1", "-msse4.2", "-msse4", "-mavx", "-mfpu=neon"):
             continue
 

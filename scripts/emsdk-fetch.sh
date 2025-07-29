@@ -59,6 +59,22 @@ then
 END
             fi
 
+    # this one for debug mode and changing  -Wl,--global-base= with -sGLOBAL_BASE
+    patch -p1 <<END
+--- emsdk/upstream/emscripten/tools/link.py	2025-06-23 08:45:26.554013381 +0200
++++ emsdk.fix/upstream/emscripten/tools/link.py	2025-06-23 08:45:31.445921560 +0200
+@@ -1662,7 +1662,7 @@
+     # use a smaller LEB encoding).
+     # However, for debugability is better to have the stack come first
+     # (because stack overflows will trap rather than corrupting data).
+-    settings.STACK_FIRST = True
++    settings.STACK_FIRST = False
+
+   if state.has_link_flag('--stack-first'):
+     settings.STACK_FIRST = True
+END
+
+
         pushd upstream/emscripten
 
             echo "FIXME: applying stdio* are not const"
