@@ -213,9 +213,9 @@ fi
 
 if echo $PYBUILD |grep -q 12$
 then
-    wget -q -c https://www.python.org/ftp/python/3.12.11/Python-3.12.11.tar.xz
-    tar xf Python-3.12.11.tar.xz
-    ln -s Python-3.12.11 cpython${PYBUILD}
+    wget -q -c https://www.python.org/ftp/python/3.12.12/Python-3.12.12.tar.xz
+    tar xf Python-3.12.12.tar.xz
+    ln -s Python-3.12.12 cpython${PYBUILD}
 fi
 
 
