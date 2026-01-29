@@ -170,7 +170,7 @@ then
         pwd
         ls
         echo "  * fetching remote cpython sources"
-        wget -q -c  https://www.python.org/ftp/python/3.13.5/Python-3.13.11.tar.xz
+        wget -q -c  https://www.python.org/ftp/python/3.13.11/Python-3.13.11.tar.xz
         tar xf Python-3.13.11.tar.xz || exit 90
         ln -s Python-3.13.11 cpython${PYBUILD}
 
