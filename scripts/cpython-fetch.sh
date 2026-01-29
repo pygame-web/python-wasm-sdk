@@ -170,9 +170,9 @@ then
         pwd
         ls
         echo "  * fetching remote cpython sources"
-        wget -q -c  https://www.python.org/ftp/python/3.13.5/Python-3.13.5.tar.xz
-        tar xf Python-3.13.5.tar.xz || exit 90
-        ln -s Python-3.13.5 cpython${PYBUILD}
+        wget -q -c  https://www.python.org/ftp/python/3.13.5/Python-3.13.11.tar.xz
+        tar xf Python-3.13.11.tar.xz || exit 90
+        ln -s Python-3.13.11 cpython${PYBUILD}
 
 
         sed -i 's|ProcessPoolExecutor = None|return True|g' cpython3.13/Lib/compileall.py
