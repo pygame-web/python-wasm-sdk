@@ -1,0 +1,32 @@
+--- Python-3.14.3/Modules/_hacl/libintvector.h
++++ Python-3.14.3-bi/Modules/_hacl/libintvector.h
+@@ -21,13 +21,28 @@
+ 
+ #define Lib_IntVector_Intrinsics_bit_mask64(x) -((x) & 1)
+ 
+-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
++#if defined(__wasm__) && !defined(__wasm_simd128__)
++    #define SIMDE_ENABLE_NATIVE_ALIASES
++    #define SIMDE_NO_NATIVE
++//    typedef void* Lib_IntVector_Intrinsics_vec128;
++    #define WASM_SIMD
++#endif
++
++#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86) || defined(WASM_SIMD)
+ 
+ #if defined(HACL_CAN_COMPILE_VEC128)
+ 
++#if !defined(WASM_SIMD)
+ #include <emmintrin.h>
+ #include <tmmintrin.h>
+ #include <smmintrin.h>
++#else
++    #warning "Modules/_hacl: using SIMDE emulation for wasm"
++//    #include <simde/wasm/simd128.h>
++    #include <simde/x86/sse4.1.h>
++    #include <simde/x86/sse4.2.h>
++#endif
++
+ 
+ typedef __m128i Lib_IntVector_Intrinsics_vec128;
+ 

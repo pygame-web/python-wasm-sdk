@@ -20,9 +20,9 @@ CNF="emconfigure ./configure --prefix=$PREFIX --with-pic --disable-shared --host
 
 cd $ROOT/src
 
-TIFF_VER="4.6.0"
-WEBP_VER="1.4.0"
-SDL_IMG="2.8.2"
+TIFF_VER="4.7.1"
+WEBP_VER="1.6.0"
+SDL_IMG="2.8.8"
 
 
 # AVIF : OFF

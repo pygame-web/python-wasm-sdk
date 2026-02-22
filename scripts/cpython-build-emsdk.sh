@@ -160,11 +160,17 @@ else
 
 # CFLAGS="-DHAVE_FFI_PREP_CIF_VAR=1 -DHAVE_FFI_PREP_CLOSURE_LOC=1 -DHAVE_FFI_CLOSURE_ALLOC=1"
 
-    cat $ROOT/src/cpython${PYBUILD}/Tools/wasm/config.site-wasm32-emscripten \
-         > $ROOT/src/cpython${PYBUILD}/Tools/wasm/config.site-wasm32-pydk
+    # 3.14+
+    if [ -d $ROOT/src/cpython${PYBUILD}/Tools/wasm/emscripten ]
+    then
+        cat $ROOT/src/cpython${PYBUILD}/Tools/wasm/emscripten/config.site-wasm32-emscripten \
+             > $ROOT/src/cpython${PYBUILD}/Tools/wasm/config.site-wasm32-pydk
+    else
+        cat $ROOT/src/cpython${PYBUILD}/Tools/wasm/config.site-wasm32-emscripten \
+             > $ROOT/src/cpython${PYBUILD}/Tools/wasm/config.site-wasm32-pydk
+    fi
 
     cat >> $ROOT/src/cpython${PYBUILD}/Tools/wasm/config.site-wasm32-pydk << END
-
 ac_cv_exeext=.cjs
 have_libffi=yes
 ac_cv_func_dlopen=yes
@@ -224,7 +230,7 @@ END
 
     if [ ${PYMINOR} -ge 14 ]
     then
-        cp Tools/wasm/config.host-wasm32-emscripten Tools/wasm/config.site-wasm32-emscripten
+        # cp Tools/wasm/emscripten/config.host-wasm32-emscripten Tools/wasm/config.site-wasm32-emscripten
 
         sed -i 's|wasm32-unknown-emscripten|wasm32-bi-emscripten|g' Makefile.pre.in
         EXTRA_PYOPTS="$EXTRA_PYOPTS --disable-ipv6"

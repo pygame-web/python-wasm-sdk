@@ -79,7 +79,7 @@ END
 
 END
 
-    if echo $PYBUILD|grep -q 3\\.14$
+    if [ ${PYMINOR} -ge 15 ]
     then
         # Prevent freezing bytecode with a different magic
         rm -f $HOST_PREFIX/bin/python3 $HOST_PREFIX/bin/python${PYBUILD}
@@ -124,14 +124,14 @@ CC=clang CXX=clang++ $CNF
         fi
     else
         echo "
-==========================================================================
+==========================================================================================
     ERROR: could not configure cpython
 
-    reminder: you need clang libffi-dev and usual cpython requirements.
+    reminder: you need clang libffi-dev and usual cpython requirements installed on host.
 
 CC=clang CXX=clang++ $CNF
 
-==========================================================================
+==========================================================================================
     " 1>&2
         exit 135
     fi

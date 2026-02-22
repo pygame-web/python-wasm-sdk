@@ -119,8 +119,8 @@ then
 
     popd
 else
-    echo ERROR
-    exit 66
+    echo Error building SDL3
+    exit 123
 fi
 popd
 

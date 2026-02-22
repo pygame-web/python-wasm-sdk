@@ -233,12 +233,14 @@ sdk_sock_flush() {
     }
 
     // limit inf loops in busy looping.
-    if (watchdog++ > 32768) {
-        printf(" -- 235 sockflush[%d] : NO YIELD --\r\n", watchdog);
-        puts("# 239: sdk_sock_flush : busy looping ? exit(0) !\r\n");
+    if (watchdog++ > 64) {
+        printf(" -- 237 sockflush[%d] : NO YIELD --\r\n", watchdog);
+        puts("# 238: sdk_sock_flush : busy looping ? exit(0) !\r\n");
         sdk_exit(0);
     }
 }
+
+SCOPE volatile bool in_progress = false;
 
 SCOPE ssize_t
 sdk_recvfrom(int socket, void *buffer, size_t length, int flags, void *address, socklen_t *address_len) {
@@ -278,20 +280,34 @@ sdk_recvfrom(int socket, void *buffer, size_t length, int flags, void *address, 
         // was it partial read ?
         if ( fd_current_pos < fd_filesize) {
             // fd_current_pos = ftell(sock_in);
-            printf("# 281: sdk_recvfrom(%s read=%d pos +%d->+%d : %d left on %d block=%zu\r\n", PGS_OUT, rcv, last_pos, fd_current_pos, fd_filesize-fd_current_pos, fd_filesize, length);
+            int left = fd_filesize-fd_current_pos;
+
+// debug output -------------------------------------
+            if ( (last_pos < 20000) || (left<20000) ) {
+                printf("# 287: sdk_recvfrom(%s read=%d pos +%d->+%d : %d left on %d block=%zu\r\n", PGS_OUT, rcv, last_pos, fd_current_pos, left, fd_filesize, length);
+            } else {
+                if (!in_progress) {
+                    puts("...\r\n");
+                    in_progress = true;
+                }
+            }
+// --------------------------------------
             fclose(sock_in);
             return rcv;
         }
 
         // fully read
-        printf("# 287: sdk_recvfrom(%s max=%zu total=%d) read=%d\r\n", PGS_OUT, length, fd_filesize, rcv);
+        in_progress = false;
+        printf("# 301: sdk_recvfrom(read=%d +%d->%d/total=%d)  block=%zu\r\n", rcv, last_pos, fd_current_pos, fd_filesize, length);
         fd_queue = 0;
         fd_filesize = 0;
         fd_current_pos = 0;
         fclose(sock_in);
         unlink(PGS_OUT);
     } else {
-        printf("# 294: sdk_recvfrom(%s max=%zu) ERROR\r\n", PGS_OUT, length);
+        printf("# 308: sdk_recvfrom(%s max=%zu) wd=%d ERROR\r\n", PGS_OUT, length, watchdog++);
+        if (watchdog > 60)
+            return 0;
         errno = EINTR;
     }
     return rcv;

@@ -45,7 +45,7 @@ else
     export WASM_FLAVOUR=bi
 
     # extra features. Safari 140100 is expected to have BIGINT ? emsdk warnings ?
-    export WASM_OPTS="-sWASM_BIGINT -sMIN_SAFARI_VERSION=150000"
+    export WASM_OPTS="-sWASM_BIGINT -sMIN_SAFARI_VERSION=170000"
 
     # tell to not normalize modules.
     export WASM_PURE=false
@@ -54,9 +54,9 @@ fi
 EXTRABINS="/usr/local/bin /opt/bin"
 
 # ============ emscripten ==============
-# stable==latest dev==tot
+# stable==latest dev==tot tested==3.1.61
 # EMFLAVOUR comes from versions at runtime.
-export EMFLAVOUR=${EMFLAVOUR:latest}
+export EMFLAVOUR=${EMFLAVOUR:-3.1.61}
 export EMSDK_QUIET=1
 export EMSDK_NOTTY=0
 export EMSDK_VERBOSE=0

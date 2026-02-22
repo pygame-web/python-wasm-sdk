@@ -1,11 +1,15 @@
 if $emsdk
 then
     TAG=wasm
+    PLAT="\
+    ${SDKROOT}/versions \
+    "
 else
     TAG=wasi
+    PLAT=""
 fi
 
-echo "making $TAG tarball" 1>&2
+echo "  * Making $TAG tarball" 1>&2
 
 pushd /
 mkdir -p /tmp/sdk
@@ -19,9 +23,11 @@ tar -cpPR \
     ${SDKROOT}/devices/* \
     ${SDKROOT}/prebuilt/* \
     ${SDKROOT}/native \
-     > /tmp/sdk/python${PYBUILD}-${TAG}-sdk-${CIVER}.tar
+    $PLAT > /tmp/sdk/python${PYBUILD}-${TAG}-sdk-${CIVER}.tar
 
-    if lz4 -c --favor-decSpeed --best /tmp/sdk/python${PYBUILD}-${TAG}-sdk-${CIVER}.tar \
+    # --favor-decSpeed
+
+    if lz4 -c --best /tmp/sdk/python${PYBUILD}-${TAG}-sdk-${CIVER}.tar \
      > /tmp/sdk/dist/python${PYBUILD}-${TAG}-sdk-${CIVER}.tar.lz4
     then
         rm /tmp/sdk/python${PYBUILD}-${TAG}-sdk-${CIVER}.tar

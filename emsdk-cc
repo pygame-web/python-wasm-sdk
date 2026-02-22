@@ -132,7 +132,7 @@ else:
 
 
 # try to keep 32 but with 64 iface (bigint)
-WASM_OPTS = env("WASM_OPTS", "-sWASM_BIGINT -sMIN_SAFARI_VERSION=150000")
+WASM_OPTS = env("WASM_OPTS", "-sWASM_BIGINT -sMIN_SAFARI_VERSION=170000")
 
 
 # the only sane default for now

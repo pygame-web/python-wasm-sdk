@@ -18,14 +18,15 @@ $HPIP install \
  typing_extensions mypy_extensions pyproject_hooks pyproject-metadata \
  build pyparsing packaging hatchling setuptools_scm \
  docutils setuptools meson meson-python \
- idna urllib3 charset_normalizer certifi tomli requests flit pip
+ idna urllib3 charset_normalizer certifi tomli requests flit pip pycparser pypeg2
 
 
 # all needed for PEP722/723, hpy, cffi modules and wheel building
 # those may contain tiny fixes for wasm and/or current unreleased cpython.
 
 pushd src
-    git clone --no-tags --depth 1 --single-branch --branch main https://github.com/pygame-web/flit
+    # git clone --no-tags --depth 1 --single-branch --branch main https://github.com/pygame-web/flit
+    git clone --no-tags --depth 1 --single-branch --branch main https://github.com/pypa/flit
 popd
 
 for module in src/flit/flit_core \
@@ -240,7 +241,8 @@ if $WASI
 then
     echo -n
 else
-    SYSROOT=${SDKROOT}/emsdk/upstream/emscripten/cache/sysroot
+    export SYSROOT=${SDKROOT}/emsdk/upstream/emscripten/cache/sysroot
+    mkdir -p ${PREFIX}/lib/pkgconfig
 
     cat > ${PREFIX}/lib/pkgconfig/sdl2.pc <<END
 # sdl pkg-config source file
@@ -256,7 +258,7 @@ Version: 2.31.0
 Requires.private:
 Conflicts:
 Libs: -L\${libdir} -lSDL2 -lm
-Cflags: -I\${includedir} -I\${includedir}/SDL2 -I${SYSROOT}/include/SDL2 -I${SYSROOT}/include/freetype2"
+Cflags: -I\${includedir} -I\${includedir}/SDL2 -I${SYSROOT}/include/SDL2 -I${SYSROOT}/include/freetype2
 END
 
     cat > ${PREFIX}/lib/pkgconfig/SDL2_mixer.pc <<END
@@ -274,7 +276,7 @@ Cflags: -I\${includedir}/SDL2
 Requires.private:
 Libs.private:
 END
-
+    unset SYSROOT
 fi
 
 

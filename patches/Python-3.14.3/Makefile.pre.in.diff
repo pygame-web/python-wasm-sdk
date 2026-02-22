@@ -1,0 +1,50 @@
+--- Python-3.14.3/Makefile.pre.in
++++ Python-3.14.3-bi/Makefile.pre.in
+@@ -34,8 +34,8 @@
+ abs_builddir=	@abs_builddir@
+ 
+ 
+-CC=		@CC@
+-CXX=		@CXX@
++CC=@CC@ -fPIC
++CXX=@CXX@ -fPIC
+ LINKCC=		@LINKCC@
+ AR=		@AR@
+ READELF=	@READELF@
+@@ -1122,7 +1122,7 @@
+ 	@cp $< $@
+ 
+ web_example/python.mjs web_example/python.wasm: $(BUILDPYTHON)
+-	@if test $(HOST_GNU_TYPE) != 'wasm32-unknown-emscripten' ; then \
++	@if test $(HOST_GNU_TYPE) != 'wasm32-bi-emscripten' ; then \
+ 		echo "Can only build web_example when target is Emscripten" ;\
+ 		exit 1 ;\
+ 	fi
+@@ -1136,7 +1136,7 @@
+ WEBEX2_DIR=$(EMSCRIPTEN_DIR)/$(WEBEX2)/
+ 
+ $(WEBEX2)/python.mjs $(WEBEX2)/python.wasm: $(BUILDPYTHON)
+-	@if test $(HOST_GNU_TYPE) != 'wasm32-unknown-emscripten' ; then \
++	@if test $(HOST_GNU_TYPE) != 'wasm32-bi-emscripten' ; then \
+ 		echo "Can only build web_example when target is Emscripten" ;\
+ 		exit 1 ;\
+ 	fi
+@@ -3105,15 +3105,11 @@
+ 
+ .PRECIOUS: config.status $(BUILDPYTHON) Makefile Makefile.pre
+ 
+-Python/asm_trampoline.o: $(srcdir)/Python/asm_trampoline.S
+-	$(CC) -c $(PY_CORE_CFLAGS) -o $@ $<
++Python/asm_trampoline.o:
+ 
+-Python/emscripten_trampoline_inner.wasm: $(srcdir)/Python/emscripten_trampoline_inner.c
+-	# emcc has a path that ends with emsdk/upstream/emscripten/emcc, we're looking for emsdk/upstream/bin/clang.
+-	$$(dirname $$(dirname $(CC)))/bin/clang -o $@ $< -mgc -O2 -Wl,--no-entry -Wl,--import-table -Wl,--import-memory -target wasm32-unknown-unknown -nostdlib
++Python/emscripten_trampoline_inner.wasm:
+ 
+-Python/emscripten_trampoline_wasm.c: Python/emscripten_trampoline_inner.wasm
+-	$(PYTHON_FOR_REGEN) $(srcdir)/Tools/wasm/emscripten/prepare_external_wasm.py $< $@ getWasmTrampolineModule
++Python/emscripten_trampoline_wasm.c: 
+ 
+ JIT_DEPS = \
+ 		$(srcdir)/Tools/jit/*.c \

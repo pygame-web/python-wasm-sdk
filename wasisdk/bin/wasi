@@ -113,6 +113,9 @@ if fixargs:
         else:
             WASI_PATCH = ""
 
+        if arg == "-Wl,--no-stack-first":
+            continue
+
         if arg == "-Wl,--start-group":
             continue
         if arg == "-Wl,--end-group":

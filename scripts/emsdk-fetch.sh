@@ -47,10 +47,10 @@ then
              stubs[prop] = (...args) => {
                resolved ||= resolveSymbol(prop);
 +              if (!resolved) {
-+                if (prop==='getTempRet0')
++                /*if (prop==='getTempRet0')
 +                    return __emscripten_tempret_get(...args);
 +                if (prop==='setTempRet0')
-+                    return __emscripten_tempret_set(...args);
++                    return __emscripten_tempret_set(...args);*/
 +                throw new Error(`Dynamic linking error: cannot resolve symbol ${prop}`);
 +              }
                return resolved(...args);
@@ -303,15 +303,20 @@ END
 #=============================================================================================================================
             ./scripts/emsdk-fetch-sdl3.sh
 #=============================================================================================================================
-        else
-            MIXER_LIB=${SYSROOT}/lib/wasm32-emscripten/pic/libSDL2_mixer.a
-            [ -f ${MIXER_LIB} ] || llvm-ar cr {$MIXER_LIB}
-            MIXER_LIB=${SYSROOT}/lib/wasm32-emscripten/libSDL2_mixer.a
-            [ -f ${MIXER_LIB} ] || llvm-ar cr {$MIXER_LIB}
-#=============================================================================================================================
-            ./scripts/emsdk-fetch-sdl2.sh
-#=============================================================================================================================
         fi # SDL3
+
+        # always SDL2
+
+        MIXER_LIB=${SYSROOT}/lib/wasm32-emscripten/pic/libSDL2_mixer.a
+        [ -f ${MIXER_LIB} ] || ${SDKROOT}/emsdk/upstream/bin/llvm-ar cr {$MIXER_LIB}
+
+        MIXER_LIB=${SYSROOT}/lib/wasm32-emscripten/libSDL2_mixer.a
+        [ -f ${MIXER_LIB} ] || ${SDKROOT}/emsdk/upstream/bin/llvm-ar cr {$MIXER_LIB}
+
+#=============================================================================================================================
+        ./scripts/emsdk-fetch-sdl2.sh
+#=============================================================================================================================
+
 
         echo "
 

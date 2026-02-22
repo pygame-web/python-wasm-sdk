@@ -59,7 +59,7 @@ __randname(char *tmpl)
 	unsigned long r;
 
 	clock_gettime(CLOCK_REALTIME, &ts);
-	r = ts.tv_nsec*65537 ^ (uintptr_t)&ts / 16 + (uintptr_t)tmpl;
+	r = (uintptr_t)ts.tv_nsec * 65537 ^ (uintptr_t)&ts / 16 + (uintptr_t)tmpl;
 	for (i=0; i<6; i++, r>>=5)
 		tmpl[i] = 'A'+(r&15)+(r&16)*2;
 
@@ -155,7 +155,8 @@ sdk_getppid(void) {
 
 SCOPE FILE *
 sdk_tmpfile(void) {
-    return fopen(mktemp("/tmp/tmpfile"),"w");
+    char mktemp_template[] = "/tmp/tmpfile.XXXXXX";
+    return fopen(mktemp(mktemp_template),"w");
 }
 #define tmpfile() sdk_tmpfile()
 
@@ -189,9 +190,9 @@ sdk_tmpfile(void) {
     tempnam (const char *dir, const char *pfx)
     {
         char buf[FILENAME_MAX];
-        int all;
+        unsigned long all;
         char *ptr;
-        int	dirlen = strlen(dir);
+        unsigned long dirlen = strlen(dir);
         if (dirlen>=FILENAME_MAX)
         	return NULL;
 
