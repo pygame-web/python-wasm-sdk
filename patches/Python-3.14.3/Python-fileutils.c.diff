@@ -1,0 +1,14 @@
+--- Python-3.14.3/Python/fileutils.c
++++ Python-3.14.3-bi/Python/fileutils.c
+@@ -1568,7 +1568,11 @@
+     if (res < 0) {
+         if (raise)
+             PyErr_SetFromErrno(PyExc_OSError);
++#if defined(__EMSCRIPTEN__)
++        puts("# 1572:"__FILE__);
++#else
+         return -1;
++#endif
+     }
+     return 0;
+ #endif
