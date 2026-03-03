@@ -237,7 +237,8 @@ END
         # no PY_CALL_TRAMPOLINE
         sed -i 's|,__PyEM_EMSCRIPTEN_COUNT_ARGS_OFFSET||g' configure
         sed -i 's|,__PyEM_EMSCRIPTEN_COUNT_ARGS_OFFSET||g' configure.ac
-
+        sed -i 's|define_xopen_source=yes|define_xopen_source=no|g' configure
+        sed -i 's|define_xopen_source=yes|define_xopen_source=no|g' configure.ac
     else
         EXTRA_PYOPTS="$EXTRA_PYOPTS --with-emscripten-target=browser"
     fi

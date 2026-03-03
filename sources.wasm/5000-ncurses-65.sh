@@ -51,7 +51,15 @@ then
 
     if cd ${SDKROOT}/src/$NCURSES
     then
-        [ -f $NCURSES.patched ] || patch -p1 < $SDKROOT/support/__EMSCRIPTEN__.deps/${NCURSES}_emscripten.patch
+        if [ -f $NCURSES.patched ]
+        then
+            echo $NCURSES already patched
+        else
+            if [ -f $SDKROOT/support/__EMSCRIPTEN__.deps/${NCURSES}_emscripten.patch]
+            then
+                patch -p1 < $SDKROOT/support/__EMSCRIPTEN__.deps/${NCURSES}_emscripten.patch
+            fi
+        fi
         touch $NCURSES.patched
     fi
 

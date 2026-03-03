@@ -1,0 +1,13 @@
+diff --git a/Modules/_hacl/include/krml/lowstar_endianness.h b/Modules/_hacl/include/krml/lowstar_endianness.h
+index 5f706fa..8f70cc4 100644
+--- a/Modules/_hacl/include/krml/lowstar_endianness.h
++++ b/Modules/_hacl/include/krml/lowstar_endianness.h
+@@ -12,7 +12,7 @@
+ /******************************************************************************/
+ 
+ /* ... for Linux */
+-#if defined(__linux__) || defined(__CYGWIN__) || defined (__USE_SYSTEM_ENDIAN_H__) || defined(__GLIBC__)
++#if defined(__linux__) || defined(__CYGWIN__) || defined (__USE_SYSTEM_ENDIAN_H__) || defined(__GLIBC__) || defined(__EMSCRIPTEN__)
+ #  include <endian.h>
+ 
+ /* ... for OSX */

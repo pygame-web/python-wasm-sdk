@@ -40,6 +40,12 @@ then
         git clone --no-tags --depth 1 --single-branch --branch main https://github.com/python/cpython.git cpython${PYBUILD}
         export REBUILD=true
     fi
+
+    # PATCHES !!!!
+    pushd cpython${PYBUILD}
+        touch Python/emscripten_trampoline_wasm.c
+        cat ${SDKROOT}/patches/Python-3.15/*diff | patch -p1
+    popd
 fi
 
 if echo $PYBUILD |grep -q 14$

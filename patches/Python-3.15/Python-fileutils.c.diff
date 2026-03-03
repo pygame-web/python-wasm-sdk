@@ -1,6 +1,8 @@
---- Python-3.14.3/Python/fileutils.c
-+++ Python-3.14.3-bi/Python/fileutils.c
-@@ -1447,6 +1447,9 @@
+diff --git a/Python/fileutils.c b/Python/fileutils.c
+index 0c1766b..4425bc1 100644
+--- a/Python/fileutils.c
++++ b/Python/fileutils.c
+@@ -1445,6 +1445,9 @@ _Py_get_inheritable(int fd)
  static int
  set_inheritable(int fd, int inheritable, int raise, int *atomic_flag_works)
  {
@@ -10,7 +12,7 @@
  #ifdef MS_WINDOWS
      HANDLE handle;
      DWORD flags;
-@@ -1572,6 +1575,7 @@
+@@ -1570,6 +1573,7 @@ set_inheritable(int fd, int inheritable, int raise, int *atomic_flag_works)
      }
      return 0;
  #endif

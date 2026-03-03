@@ -211,7 +211,7 @@ END
         echo "
         ERROR cannot find emsdk/emsdk_env.sh in $(pwd)
 " 1>&2
-        exit 41
+        exit $LINENO
     fi
 
     export EMSDK_PYTHON=$SYS_PYTHON
